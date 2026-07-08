@@ -51,6 +51,10 @@ import {
   ScheduledTripModel,
   ScheduledTripDocument,
 } from '../infrastructure/persistence/schemas/scheduled-trip.schema';
+import {
+  DriverVehicleModel,
+  DriverVehicleDocument,
+} from '../infrastructure/persistence/schemas/driver-vehicle.schema';
 import { v4 as uuidv4 } from 'uuid';
 
 /** Shape del JWT payload inyectado por @CurrentUser() */
@@ -91,6 +95,8 @@ export class RideController {
     private readonly ratingModel: Model<DriverRatingDocument>,
     @InjectModel(ScheduledTripModel.name)
     private readonly scheduledTripModel: Model<ScheduledTripDocument>,
+    @InjectModel(DriverVehicleModel.name)
+    private readonly vehicleModel: Model<DriverVehicleDocument>,
     private readonly assignment: DriverAssignmentService,
     private readonly config: ConfigService,
   ) {}
@@ -417,9 +423,10 @@ export class RideController {
     },
   ): Promise<any | null> {
     if (!driverId) return null;
-    const [rating, name] = await Promise.all([
+    const [rating, name, vehicle] = await Promise.all([
       this.avgDriverRating(driverId),
       this.lookupDriverName(driverId),
+      this.lookupDriverVehicle(driverId),
     ]);
     const hasLoc = extra.lat != null && extra.lng != null;
     return {
@@ -427,10 +434,33 @@ export class RideController {
       name,
       rating,
       vehicleType: extra.vehicleType ?? null,
+      // Vehículo real (marca/modelo/placa) si el conductor lo registró; si no, null.
+      vehicle,
       location: hasLoc ? { lat: extra.lat, lng: extra.lng } : null,
       confirmed: !!extra.confirmedAt,
       preliminary: !extra.confirmedAt && !!extra.preliminaryAt,
     };
+  }
+
+  /** Vehículo registrado del conductor (driver_vehicles). null si no cargó. */
+  private async lookupDriverVehicle(
+    driverId: string,
+  ): Promise<{ brand: string; model: string; plate: string; year: string; color: string } | null> {
+    try {
+      const v = await this.vehicleModel.findOne({ driverId }).lean();
+      if (!v) return null;
+      const label = [v.brand, v.model].filter(Boolean).join(' ').trim();
+      if (!label && !v.plate) return null;
+      return {
+        brand: v.brand ?? '',
+        model: v.model ?? '',
+        plate: v.plate ?? '',
+        year: v.year ?? '',
+        color: v.color ?? '',
+      };
+    } catch {
+      return null;
+    }
   }
 
   /** Promedio de calificación del conductor (driver_ratings). null si no tiene. */

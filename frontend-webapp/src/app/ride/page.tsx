@@ -410,8 +410,12 @@ function RidePageInner() {
                 name: r.driver.name || 'Conductora o conductor asignado',
                 rating: r.driver.rating ?? 0,
                 photo: '',
-                vehicle: r.driver.vehicleType || '',
-                licensePlate: '',
+                // Vehículo real (marca+modelo) si el conductor lo registró; si no, el tipo.
+                vehicle:
+                  [r.driver.vehicle?.brand, r.driver.vehicle?.model].filter(Boolean).join(' ') ||
+                  r.driver.vehicleType ||
+                  '',
+                licensePlate: r.driver.vehicle?.plate || '',
               }
             : undefined,
           driverLocation: r.driver?.location

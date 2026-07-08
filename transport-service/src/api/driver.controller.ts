@@ -13,6 +13,7 @@
 import {
   Controller,
   Post,
+  Put,
   Get,
   Body,
   Query,
@@ -32,6 +33,10 @@ import { Model }           from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document as MongoDocument } from 'mongoose';
 import { RideModelSchema, RideDocument } from '../infrastructure/persistence/schemas/ride.schema';
+import {
+  DriverVehicleModel,
+  DriverVehicleDocument,
+} from '../infrastructure/persistence/schemas/driver-vehicle.schema';
 import {
   DriverDocumentModel,
   DriverDocumentDocument,
@@ -85,7 +90,39 @@ export class DriverController {
 
     @InjectModel(DriverRatingModel.name)
     private readonly ratingModel: Model<DriverRatingDocument>,
+
+    @InjectModel(DriverVehicleModel.name)
+    private readonly vehicleModel: Model<DriverVehicleDocument>,
   ) {}
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  PUT /drivers/me/vehicle — la conductora o el conductor guarda su vehículo
+  //  (marca/modelo/año/placa). El app lo envía al registrarse o al editar perfil.
+  // ──────────────────────────────────────────────────────────────────────────
+  @Put('me/vehicle')
+  @UseGuards(JwtAuthGuard)
+  async saveVehicle(
+    @CurrentUser('id') driverId: string,
+    @Body() body: { brand?: string; model?: string; year?: string; plate?: string; color?: string },
+  ) {
+    if (!driverId) throw new BadRequestException('Sesión inválida');
+    const plate = (body?.plate ?? '').trim().toUpperCase();
+    const set: Record<string, unknown> = {
+      driverId,
+      brand: (body?.brand ?? '').trim(),
+      model: (body?.model ?? '').trim(),
+      year: (body?.year ?? '').toString().trim(),
+      plate,
+      color: (body?.color ?? '').trim(),
+    };
+    const doc = await this.vehicleModel.findOneAndUpdate(
+      { driverId },
+      { $set: set },
+      { upsert: true, new: true },
+    );
+    this.logger.log(`Driver ${driverId} guardó vehículo ${doc.brand} ${doc.model} · ${doc.plate}`);
+    return { brand: doc.brand, model: doc.model, year: doc.year, plate: doc.plate, color: doc.color };
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   //  POST /drivers/me/documents

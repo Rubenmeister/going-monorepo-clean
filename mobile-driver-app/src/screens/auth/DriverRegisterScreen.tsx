@@ -159,6 +159,19 @@ export function DriverRegisterScreen({ navigation }: any) {
       });
       const token = accessToken; // alias para uploads que vienen abajo
 
+      // 1b. Guardar el vehículo (marca/modelo/año/placa) estructurado. Así la
+      // tarjeta del pasajero puede mostrar placa y modelo reales cuando se le
+      // asigna este conductor (motor día-anterior). Best-effort: no bloquea.
+      try {
+        await axios.put(
+          `${API_BASE}/drivers/me/vehicle`,
+          { brand, model, year, plate },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+      } catch {
+        /* no bloquea el registro; se puede reintentar desde el perfil */
+      }
+
       // 2. Subir documentos al endpoint de documentos
       const docTypes = Object.keys(docs) as Array<keyof typeof docs>;
       const uploadErrors: string[] = [];

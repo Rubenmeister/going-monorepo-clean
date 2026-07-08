@@ -14,6 +14,7 @@ import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
 import { DriverDocumentModel, DriverDocumentSchema, DriverRatingModel, DriverRatingSchema } from '../api/driver.controller';
 import { DriverScheduleModel, DriverScheduleSchema } from '../api/driver-schedule.controller';
 import { ScheduledTripModel, ScheduledTripSchema } from './persistence/schemas/scheduled-trip.schema';
+import { DriverVehicleModel, DriverVehicleSchema } from './persistence/schemas/driver-vehicle.schema';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { ScheduledTripModel, ScheduledTripSchema } from './persistence/schemas/s
       { name: DriverRatingModel.name,    schema: DriverRatingSchema    },
       { name: DriverScheduleModel.name, schema: DriverScheduleSchema },
       { name: ScheduledTripModel.name, schema: ScheduledTripSchema },
+      { name: DriverVehicleModel.name, schema: DriverVehicleSchema },
     ]),
   ],
   providers: [
