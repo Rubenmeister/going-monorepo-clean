@@ -37,6 +37,7 @@ import {
   DriverVehicleModel,
   DriverVehicleDocument,
 } from '../infrastructure/persistence/schemas/driver-vehicle.schema';
+import { SaveVehicleDto } from './dtos/write.dto';
 import {
   DriverDocumentModel,
   DriverDocumentDocument,
@@ -103,7 +104,7 @@ export class DriverController {
   @UseGuards(JwtAuthGuard)
   async saveVehicle(
     @CurrentUser('id') driverId: string,
-    @Body() body: { brand?: string; model?: string; year?: string; plate?: string; color?: string },
+    @Body() body: SaveVehicleDto,
   ) {
     if (!driverId) throw new BadRequestException('Sesión inválida');
     const plate = (body?.plate ?? '').trim().toUpperCase();

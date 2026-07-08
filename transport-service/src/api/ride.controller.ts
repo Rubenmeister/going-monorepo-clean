@@ -29,6 +29,7 @@ import {
   StartRideDto,
   CompleteRideDto,
 } from './dtos/request-ride.dto';
+import { RateDriverDto } from './dtos/write.dto';
 import {
   RequestRideUseCase,
   AcceptRideUseCase,
@@ -582,10 +583,18 @@ export class RideController {
     @Body() body: { currentLat?: number; currentLng?: number; message?: string } = {},
   ): Promise<{ rideId: string; alertId: string; received: true }> {
     const alertId = uuidv4();
+    // Fail-open (seguridad de vida): NUNCA bloqueamos un SOS. Pero marcamos si el
+    // emisor pertenece al viaje, para que ops priorice y detecte SOS falsos (#41).
+    let verified = false;
+    try {
+      const ride = await this.rideRepo.findById(rideId);
+      verified = !!ride && (ride.userId === user.id || ride.driverId === user.id);
+    } catch { /* best-effort — no bloquea el SOS */ }
     const payload = {
       alertId,
       rideId,
       userId: user.id,
+      verified,
       currentLat: body.currentLat,
       currentLng: body.currentLng,
       message: body.message,
@@ -1305,15 +1314,7 @@ export class RideController {
   async rateDriver(
     @Param('rideId')         rideId: string,
     @CurrentUser()           user: AuthUser,
-    @Body() body: {
-      driverId:      string;
-      rating:        number;
-      thumbsUp:      boolean;
-      tags?:         string[];
-      comment?:      string;
-      tip?:          number;
-      passengerName?: string;
-    },
+    @Body() body: RateDriverDto,
   ) {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);

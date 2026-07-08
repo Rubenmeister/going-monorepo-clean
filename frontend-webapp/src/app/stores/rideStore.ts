@@ -90,11 +90,12 @@ export const useRideStore = create<RideStore>((set) => ({
     set({ activeRide: ride }),
 
   updateRideStatus: (tripId: string, status: Ride['status']) =>
-    set((state) => ({
-      activeRide: state.activeRide
-        ? { ...state.activeRide, status }
-        : null,
-    })),
+    set((state) => {
+      // Solo muta si el evento corresponde al viaje activo: un evento WS rezagado
+      // de otro viaje (o de uno ya cerrado) no debe pisar el estado actual (#36).
+      if (!state.activeRide || state.activeRide.tripId !== tripId) return state;
+      return { activeRide: { ...state.activeRide, status } };
+    }),
 
   updateDriverLocation: (location: Location) =>
     set((state) => ({
