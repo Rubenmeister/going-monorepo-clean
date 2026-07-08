@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Result, ok, err } from 'neverthrow';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+import { CircuitBreaker } from '@going-monorepo-clean/shared-infrastructure';
 import { ExpoPushService } from '../services/expo-push.service';
 
 /**
@@ -19,6 +20,15 @@ export class RideDispatchGateway {
   private readonly logger = new Logger(RideDispatchGateway.name);
   private readonly notificationsUrl: string;
   private readonly internalToken?: string;
+  // Circuit breaker del S2S a notifications-service: si está caído, tras N fallos
+  // abre y falla-rápido (sin esperar el timeout de 5s por llamada) (auditoría #17).
+  private readonly notifBreaker = new CircuitBreaker({
+    name: 'notifications-s2s',
+    failureThreshold: 5,
+    successThreshold: 2,
+    timeout: 30_000,
+    volumeThreshold: 5,
+  });
 
   constructor(
     private readonly config: ConfigService,
@@ -41,14 +51,18 @@ export class RideDispatchGateway {
       return;
     }
     try {
-      await fetch(`${this.notificationsUrl}/notifications/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.internalToken}`,
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(5000),
+      await this.notifBreaker.execute(async () => {
+        const res = await fetch(`${this.notificationsUrl}/notifications/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.internalToken}`,
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(5000),
+        });
+        // El breaker solo cuenta como fallo si lanza → verificar res.ok.
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
       });
     } catch (e) {
       this.logger.warn(`push S2S falló: ${(e as Error)?.message ?? e}`);

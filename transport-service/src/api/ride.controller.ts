@@ -78,6 +78,12 @@ interface AuthUser {
 export class RideController {
   private readonly logger = new Logger(RideController.name);
 
+  // Cache TTL del nombre del conductor (going-users, cross-DB). /rides/mine/active
+  // lo sondea el banner cada 30s → sin cache era una consulta cross-DB por poll
+  // (acoplamiento + carga). TTL 10 min (auditoría #42).
+  private readonly driverNameCache = new Map<string, { name: string | null; at: number }>();
+  private static readonly DRIVER_NAME_TTL_MS = 10 * 60 * 1000;
+
   constructor(
     private readonly requestRideUseCase: RequestRideUseCase,
     private readonly acceptRideUseCase: AcceptRideUseCase,
@@ -480,8 +486,12 @@ export class RideController {
     }
   }
 
-  /** Nombre del conductor desde going-users.users (best-effort, cross-DB). */
+  /** Nombre del conductor desde going-users.users (best-effort, cross-DB + cache TTL). */
   private async lookupDriverName(driverId: string): Promise<string | null> {
+    const cached = this.driverNameCache.get(driverId);
+    if (cached && Date.now() - cached.at < RideController.DRIVER_NAME_TTL_MS) {
+      return cached.name;
+    }
     try {
       const usersDb = this.ratingModel.db.useDb('going-users', { useCache: true });
       const doc = await usersDb
@@ -490,12 +500,14 @@ export class RideController {
           { $or: [{ id: driverId }, { _id: driverId as any }] },
           { projection: { firstName: 1, lastName: 1 } },
         );
-      if (!doc) return null;
-      const n = [doc.firstName, doc.lastName].filter(Boolean).join(' ').trim();
-      return n || null;
+      const name = doc
+        ? [doc.firstName, doc.lastName].filter(Boolean).join(' ').trim() || null
+        : null;
+      this.driverNameCache.set(driverId, { name, at: Date.now() });
+      return name;
     } catch (e) {
       this.logger.warn(`lookupDriverName(${driverId}) falló: ${(e as Error).message}`);
-      return null; // best-effort: la tarjeta funciona sin nombre
+      return null; // best-effort: la tarjeta funciona sin nombre (no cachea el fallo)
     }
   }
 
