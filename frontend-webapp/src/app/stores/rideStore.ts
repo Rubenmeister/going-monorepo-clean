@@ -61,6 +61,9 @@ interface RideStore {
   resetForRetry: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  /** Estado del WebSocket (para mostrar "Reconectando…" en vivo, #25). */
+  wsConnected: boolean;
+  setWsConnected: (connected: boolean) => void;
 }
 
 export const useRideStore = create<RideStore>((set) => ({
@@ -72,6 +75,7 @@ export const useRideStore = create<RideStore>((set) => ({
   estimatedFare: null,
   loading: false,
   error: null,
+  wsConnected: true,
 
   // Actions
   setPickupLocation: (location: Location) =>
@@ -145,4 +149,7 @@ export const useRideStore = create<RideStore>((set) => ({
 
   setError: (error: string | null) =>
     set({ error }),
+
+  setWsConnected: (connected: boolean) =>
+    set({ wsConnected: connected }),
 }));

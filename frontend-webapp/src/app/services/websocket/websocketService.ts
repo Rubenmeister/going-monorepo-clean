@@ -50,6 +50,7 @@ class WebSocketService {
         this.socket.on('connect', () => {
           this.isConnecting = false;
           console.log('[WS] Connected (socket.io)', this.socket?.id);
+          useRideStore.getState().setWsConnected(true);
           if (!this.builtInBound) {
             this.bindBuiltInHandlers();
             this.builtInBound = true;
@@ -65,10 +66,12 @@ class WebSocketService {
 
         this.socket.on('disconnect', (reason) => {
           console.log('[WS] Disconnected:', reason);
+          useRideStore.getState().setWsConnected(false);
         });
 
         this.socket.on('reconnect_failed', () => {
           console.error('[WS] Max reconnect attempts reached');
+          useRideStore.getState().setWsConnected(false);
           useNotificationStore.getState().addNotification({
             type: 'error',
             title: 'Connection Lost',

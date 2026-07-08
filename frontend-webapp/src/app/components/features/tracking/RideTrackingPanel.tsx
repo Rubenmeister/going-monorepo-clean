@@ -41,7 +41,7 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwitchToShared }: RideTrackingPanelProps) {
-  const { activeRide, updateRideStatus, updateFinalFare, updateDriverInfo } = useRideStore();
+  const { activeRide, updateRideStatus, updateFinalFare, updateDriverInfo, wsConnected } = useRideStore();
 
   const [proxyNumber,   setProxyNumber]   = useState<string | null>(null);
   const [driverArrived, setDriverArrived] = useState(false);
@@ -383,6 +383,15 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
       {/* ══ NÚMERO PROXY (conductor asignado) ══ */}
       {proxyNumber && (status === 'accepted' || status === 'in_progress') && (
         <PhoneCard number={proxyNumber} />
+      )}
+
+      {/* ══ WEBSOCKET CAÍDO ══ */}
+      {!wsConnected && (status === 'accepted' || status === 'in_progress') && (
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold"
+             style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}>
+          <span className="animate-pulse">📡</span>
+          <span>Reconectando… el seguimiento en vivo puede tardar un momento.</span>
+        </div>
       )}
 
       {/* ══ PROXIMIDAD / ETA EN VIVO ══ */}
