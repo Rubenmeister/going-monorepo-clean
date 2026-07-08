@@ -78,6 +78,10 @@ export class BaseJwtStrategy extends PassportStrategy(Strategy) {
           const header = JSON.parse(
             Buffer.from(String(rawJwt).split('.')[0] ?? '', 'base64url').toString('utf8'),
           );
+          // DIAG #13 (temporal): confirmar qué camino toma en runtime.
+          const pubDiag = configService.get<string>('RS256_PUBLIC_KEY');
+          // eslint-disable-next-line no-console
+          console.log(`[JWT-DIAG] alg=${header?.alg} pubKeyPresent=${!!pubDiag} pubLen=${pubDiag?.length ?? 0} pubStart=${(pubDiag ?? '').slice(0, 27)}`);
           if (header?.alg === 'RS256') {
             const pub = configService.get<string>('RS256_PUBLIC_KEY');
             if (!pub) {
@@ -87,6 +91,8 @@ export class BaseJwtStrategy extends PassportStrategy(Strategy) {
           }
           return done(null, configService.getOrThrow<string>('JWT_SECRET'));
         } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(`[JWT-DIAG] provider ERROR: ${(e as Error).message}`);
           return done(e as Error);
         }
       },
