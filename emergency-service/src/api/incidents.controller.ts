@@ -16,6 +16,22 @@ import * as jwt from 'jsonwebtoken';
 import { IncidentRepository } from '../infrastructure/persistence/incident.repository';
 import { IncidentStatus } from '../infrastructure/schemas/incident.schema';
 
+/**
+ * Verifica un JWT aceptando HS256 (actual) y RS256 (futuro) — auditoría #13.
+ * Servicio standalone: lógica dual replicada sin importar la lib del monorepo.
+ */
+function dualVerifyJwt(token: string, hsSecret: string): jwt.JwtPayload | string {
+  const header = JSON.parse(
+    Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+  );
+  if (header?.alg === 'RS256') {
+    const pub = process.env.RS256_PUBLIC_KEY;
+    if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+    return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
+  }
+  return jwt.verify(token, hsSecret, { algorithms: ['HS256'] });
+}
+
 class UpdateIncidentDto {
   @IsOptional()
   @IsIn(['in_progress', 'resolved', 'false_alarm'])
@@ -159,7 +175,7 @@ export class IncidentsController {
 
     let decoded: any;
     try {
-      decoded = jwt.verify(m[1], this.jwtSecret);
+      decoded = dualVerifyJwt(m[1], this.jwtSecret);
     } catch (err) {
       throw new HttpException(`invalid JWT: ${(err as Error).message}`, HttpStatus.UNAUTHORIZED);
     }

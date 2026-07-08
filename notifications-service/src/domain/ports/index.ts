@@ -9,6 +9,23 @@ import { createParamDecorator } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
 /**
+ * Verifica un JWT aceptando HS256 (secreto compartido, actual) y RS256
+ * (clave pública, futuro) — auditoría #13. Servicio standalone: replica la
+ * lógica dual sin importar la lib del monorepo.
+ */
+function dualVerifyJwt(token: string, hsSecret: string): jwt.JwtPayload | string {
+  const header = JSON.parse(
+    Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+  );
+  if (header?.alg === 'RS256') {
+    const pub = process.env.RS256_PUBLIC_KEY;
+    if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+    return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
+  }
+  return jwt.verify(token, hsSecret, { algorithms: ['HS256'] });
+}
+
+/**
  * JWT Auth Guard — versión standalone con jsonwebtoken directo.
  *
  * Reemplaza la versión previa que extendía AuthGuard('jwt') de
@@ -43,7 +60,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const decoded = jwt.verify(token, secret) as Record<string, unknown>;
+      const decoded = dualVerifyJwt(token, secret) as Record<string, unknown>;
       const userId = (decoded.sub as string) || (decoded.userId as string);
       if (!userId) throw new Error('Token without sub/userId');
       const rolesRaw = decoded.roles ?? decoded.role;

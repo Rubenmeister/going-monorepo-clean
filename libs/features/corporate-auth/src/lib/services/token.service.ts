@@ -27,10 +27,23 @@ export class TokenService implements ITokenService {
   }
 
   /**
-   * Verify JWT token
+   * Verify JWT token — dual HS256/RS256 (auditoría #13). HS256 idéntico (secreto
+   * configurado); rama RS256 añadida con la clave pública para verificar tokens
+   * de usuario firmados por user-auth tras el flip.
    */
   verifyToken(token: string): any {
     try {
+      const header = JSON.parse(
+        Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+      );
+      if (header?.alg === 'RS256') {
+        const pub = process.env.RS256_PUBLIC_KEY;
+        if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+        return this.jwtService.verify(token, {
+          publicKey: pub.replace(/\\n/g, '\n'),
+          algorithms: ['RS256'],
+        } as any);
+      }
       return this.jwtService.verify(token);
     } catch (error) {
       this.logger.error(`Token verification failed:`, error);

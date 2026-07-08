@@ -89,12 +89,34 @@ export class JwtTokenService implements ITokenService {
   }
 
   /**
+   * Verifica un JWT aceptando HS256 (secreto compartido, actual) y RS256
+   * (clave pública, futuro) — auditoría #13. La rama HS256 queda idéntica
+   * (usa el secreto configurado en JwtModule); solo se añade la rama RS256
+   * para poder verificar los tokens que este mismo servicio empiece a firmar
+   * tras el flip.
+   */
+  private dualVerify(token: string): any {
+    const header = JSON.parse(
+      Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+    );
+    if (header?.alg === 'RS256') {
+      const pub = process.env.RS256_PUBLIC_KEY;
+      if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+      return this.jwtService.verify(token, {
+        publicKey: pub.replace(/\\n/g, '\n'),
+        algorithms: ['RS256'],
+      } as any);
+    }
+    return this.jwtService.verify(token);
+  }
+
+  /**
    * Verify and decode access token
    * Throws error if token is invalid or expired
    */
   verifyAccessToken(token: string): { sub: UUID; email: string; roles: string[] } {
     try {
-      const decoded = this.jwtService.verify(token);
+      const decoded = this.dualVerify(token);
 
       if (decoded.type !== 'access') {
         throw new Error('Invalid token type');

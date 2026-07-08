@@ -77,11 +77,26 @@ export class WebSocketJwtService {
         };
       }
 
-      // Verify and decode JWT
+      // Verify and decode JWT — dual HS256/RS256 (auditoría #13). HS256 idéntico
+      // (secreto compartido); rama RS256 con la clave pública para verificar
+      // tokens firmados por user-auth tras el flip.
       try {
-        const payload = this.jwtService.verify(token, {
-          secret: this.jwtSecret,
-        });
+        const header = JSON.parse(
+          Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+        );
+        const payload =
+          header?.alg === 'RS256'
+            ? (() => {
+                const pub = process.env.RS256_PUBLIC_KEY;
+                if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+                return this.jwtService.verify(token, {
+                  publicKey: pub.replace(/\\n/g, '\n'),
+                  algorithms: ['RS256'],
+                } as any);
+              })()
+            : this.jwtService.verify(token, {
+                secret: this.jwtSecret,
+              });
 
         // Validate token type
         if (payload.type && payload.type !== 'access') {

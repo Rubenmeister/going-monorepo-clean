@@ -1,0 +1,20 @@
+{
+  "name": "corporate-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "corporate-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/corporate-service",
+        "main": "corporate-service/src/main.ts",
+        "tsConfig": "corporate-service/tsconfig.app.json",
+        "webpackConfig": "corporate-service/webpack.config.js"
+      }
+    }
+  }
+}

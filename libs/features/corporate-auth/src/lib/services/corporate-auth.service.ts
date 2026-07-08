@@ -266,7 +266,21 @@ export class CorporateAuthService implements ICorporateAuthService {
     token: string
   ): Promise<{ valid: boolean; payload?: any }> {
     try {
-      const payload = this.jwtService.verify(token);
+      // Dual HS256/RS256 (auditoría #13): HS256 idéntico; RS256 con clave pública.
+      const header = JSON.parse(
+        Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+      );
+      const payload =
+        header?.alg === 'RS256'
+          ? (() => {
+              const pub = process.env.RS256_PUBLIC_KEY;
+              if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+              return this.jwtService.verify(token, {
+                publicKey: pub.replace(/\\n/g, '\n'),
+                algorithms: ['RS256'],
+              } as any);
+            })()
+          : this.jwtService.verify(token);
       return { valid: true, payload };
     } catch {
       return { valid: false };

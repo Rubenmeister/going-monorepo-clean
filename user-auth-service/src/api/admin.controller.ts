@@ -38,6 +38,25 @@ export class AdminController {
   // ────────────────────────────────────────────────
   // Security helper
   // ────────────────────────────────────────────────
+  /**
+   * Verifica un JWT aceptando HS256 (actual) y RS256 (futuro) — auditoría #13.
+   * HS256 queda idéntico; solo se añade la rama RS256 con la clave pública.
+   */
+  private dualVerify(token: string): Record<string, any> {
+    const header = JSON.parse(
+      Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+    );
+    if (header?.alg === 'RS256') {
+      const pub = process.env.RS256_PUBLIC_KEY;
+      if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+      return this.jwtService.verify(token, {
+        publicKey: pub.replace(/\\n/g, '\n'),
+        algorithms: ['RS256'],
+      } as any) as Record<string, any>;
+    }
+    return this.jwtService.verify(token) as Record<string, any>;
+  }
+
   private getAdminPayload(req: Request): Record<string, any> {
     const auth = req.headers['authorization'] ?? '';
     if (!auth.startsWith('Bearer ')) {
@@ -45,7 +64,7 @@ export class AdminController {
     }
     const token = auth.slice(7);
     try {
-      const payload = this.jwtService.verify(token) as Record<string, any>;
+      const payload = this.dualVerify(token);
       if (!Array.isArray(payload.roles) || !payload.roles.includes('admin')) {
         throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
       }

@@ -14,6 +14,22 @@ import { VoiceGatewayService, StartVoiceCallOpts } from '../agent/voice-gateway.
 import { SupportedLang } from '../knowledge-base/system-prompt';
 
 /**
+ * Verifica un JWT aceptando HS256 (actual) y RS256 (futuro) — auditoría #13.
+ * Servicio standalone: lógica dual replicada sin importar la lib del monorepo.
+ */
+function dualVerifyJwt(token: string, hsSecret: string): jwt.JwtPayload | string {
+  const header = JSON.parse(
+    Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+  );
+  if (header?.alg === 'RS256') {
+    const pub = process.env.RS256_PUBLIC_KEY;
+    if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+    return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
+  }
+  return jwt.verify(token, hsSecret, { algorithms: ['HS256'] });
+}
+
+/**
  * WebSocket endpoint para llamadas de voz in-app (mobile + web widget).
  *
  *   Endpoint: GET /voice/ws?token=<JWT>&userId=<id>&lang=es&channel=web
@@ -134,7 +150,7 @@ export class VoiceWsGateway implements OnApplicationBootstrap, OnApplicationShut
         return;
       }
       try {
-        const decoded = jwt.verify(token, this.jwtSecret) as { sub?: string; userId?: string };
+        const decoded = dualVerifyJwt(token, this.jwtSecret) as { sub?: string; userId?: string };
         authUserId = decoded.userId || decoded.sub || '';
         if (!authUserId) {
           this.rejectUpgrade(socket, 401, 'JWT sin sub/userId');

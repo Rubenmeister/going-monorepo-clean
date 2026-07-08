@@ -9,6 +9,23 @@ import {
 import * as jwt from 'jsonwebtoken';
 
 /**
+ * Verifica un JWT aceptando HS256 (secreto compartido, actual) y RS256
+ * (clave pública, futuro) — auditoría #13. Servicio standalone: replica la
+ * lógica dual sin importar la lib del monorepo.
+ */
+function dualVerifyJwt(token: string, hsSecret: string): jwt.JwtPayload | string {
+  const header = JSON.parse(
+    Buffer.from(String(token).split('.')[0] ?? '', 'base64url').toString('utf8'),
+  );
+  if (header?.alg === 'RS256') {
+    const pub = process.env.RS256_PUBLIC_KEY;
+    if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
+    return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
+  }
+  return jwt.verify(token, hsSecret, { algorithms: ['HS256'] });
+}
+
+/**
  * JWT Auth Guard — versión minimal sin passport.
  *
  * Customer-support-service no usa @nestjs/passport (heavyweight para lo
@@ -48,7 +65,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const decoded = jwt.verify(token, secret) as Record<string, unknown>;
+      const decoded = dualVerifyJwt(token, secret) as Record<string, unknown>;
       // Normalizamos: aceptamos `sub` o `userId`, `role` (string) o `roles` (array).
       const userId = (decoded.sub as string) || (decoded.userId as string);
       if (!userId) throw new Error('Token without sub/userId');
@@ -147,7 +164,7 @@ export class AdminOrInternalGuard implements CanActivate {
       const secret = process.env.JWT_SECRET;
       if (secret && token) {
         try {
-          const decoded = jwt.verify(token, secret) as Record<string, unknown>;
+          const decoded = dualVerifyJwt(token, secret) as Record<string, unknown>;
           const rolesRaw = decoded.roles ?? decoded.role;
           const roles = Array.isArray(rolesRaw)
             ? (rolesRaw as string[])
