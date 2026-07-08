@@ -105,6 +105,95 @@ export class ScheduledTripAssignmentCron {
     }
   }
 
+  /**
+   * Abre la COMUNICACIÓN pasajera/o↔conductora/or 90 min antes de la salida,
+   * para los viajes compartidos ya confirmados (simétrico al dispatcher de 90
+   * min de los `rides` privados). Cada 10 min: los que salen dentro de 90 min,
+   * con conductor confirmado y canal aún sin abrir → marca channelOpenedAt y
+   * avisa a AMBOS. El gate visual del cliente ya abre por tiempo; esto agrega
+   * el aviso push del momento.
+   */
+  @Cron(CronExpression.EVERY_10_MINUTES, { name: 'scheduled-trip-channel-open' })
+  async openUpcomingChannels(): Promise<void> {
+    if (!this.isEnabled()) return;
+
+    const now = new Date();
+    const in90 = new Date(now.getTime() + 90 * 60_000);
+
+    let trips: ScheduledTripDocument[];
+    try {
+      trips = await this.tripModel
+        .find({
+          departureAt: { $gt: now, $lte: in90 },
+          status: { $in: ['open', 'full'] },
+          seatsReserved: { $gt: 0 },
+          driverConfirmedAt: { $ne: null },
+          $or: [{ channelOpenedAt: { $exists: false } }, { channelOpenedAt: null }],
+        })
+        .limit(200)
+        .exec();
+    } catch (e) {
+      this.logger.error(`[assign-cron] query canal falló: ${(e as Error).message}`);
+      return;
+    }
+    if (!trips.length) return;
+
+    for (const trip of trips) {
+      try {
+        await this.tripModel
+          .updateOne({ _id: trip._id }, { $set: { channelOpenedAt: now } })
+          .exec();
+        const passengers = [
+          ...new Set(
+            (trip.reservations ?? []).map((r: SeatReservation) => r.userId).filter(Boolean),
+          ),
+        ];
+        // WS
+        try {
+          this.eventsGateway['server']?.to(`trip:${String(trip._id)}`).emit('trip:channel_opened', {
+            tripId: String(trip._id),
+            driverId: trip.driverId,
+            message: 'Ya puedes comunicarte con tu conductora o conductor para el viaje.',
+            departureAt: trip.departureAt,
+          });
+        } catch {
+          /* best-effort */
+        }
+        // Push S2S a ambos
+        const url = this.config.get<string>('NOTIFICATIONS_SERVICE_URL');
+        const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
+        if (url && token) {
+          const headers = { Authorization: `Bearer ${token}` };
+          const data = { tripId: String(trip._id), driverId: trip.driverId };
+          for (const userId of [...passengers, trip.driverId].filter(Boolean)) {
+            await axios
+              .post(
+                `${url}/notifications/send`,
+                {
+                  userId,
+                  type: 'trip_channel_opened',
+                  title: 'Comunicación disponible',
+                  body: 'Tu viaje compartido sale pronto. Ya puedes comunicarte en la app.',
+                  data,
+                },
+                { headers, timeout: 5000 },
+              )
+              .catch((err) =>
+                this.logger.warn(`[assign-cron] push canal ${userId}: ${err?.message ?? err}`),
+              );
+          }
+        }
+        this.logger.log(
+          `[assign-cron] trip=${String(trip._id).slice(0, 8)} canal abierto (${passengers.length} pasajero(s))`,
+        );
+      } catch (e) {
+        this.logger.error(
+          `[assign-cron] canal trip=${String(trip._id).slice(0, 8)} falló: ${(e as Error).message}`,
+        );
+      }
+    }
+  }
+
   private async confirmOne(trip: ScheduledTripDocument, now: Date): Promise<void> {
     // Decisión única (misma que expone el endpoint de verificación).
     const decision = await this.assignment.confirmDecision(

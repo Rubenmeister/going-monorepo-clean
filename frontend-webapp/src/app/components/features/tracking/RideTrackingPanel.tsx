@@ -328,12 +328,26 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
          conductor de inmediato. */}
       {status === 'reserved' && (
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-gray-700 space-y-1.5">
-          <p className="font-bold text-[#0033A0] flex items-center gap-1.5">📅 Tu viaje está reservado</p>
-          <p className="text-xs text-gray-600">
-            Te avisaremos <strong>1 hora antes</strong> y <strong>5 minutos antes</strong> de la salida.
-            Asignaremos a tu conductor cerca de esa hora; entonces verás aquí sus datos y podrás
-            contactarlo. El precio <strong>${currentFare.toFixed(2)}</strong> queda garantizado.
-          </p>
+          {activeRide.driverInfo ? (
+            <>
+              <p className="font-bold text-[#0033A0] flex items-center gap-1.5">📅 Conductora o conductor asignado</p>
+              <p className="text-xs text-gray-600">
+                Ya tienes conductor para tu viaje reservado (arriba sus datos). Podrás
+                <strong> contactarlo 90 minutos antes</strong> de la salida. Te avisaremos
+                <strong> 1 hora</strong> y <strong>5 minutos antes</strong>. Precio garantizado:
+                <strong> ${currentFare.toFixed(2)}</strong>.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-bold text-[#0033A0] flex items-center gap-1.5">📅 Tu viaje está reservado</p>
+              <p className="text-xs text-gray-600">
+                Confirmaremos a tu conductora o conductor <strong>el día anterior</strong> y verás
+                aquí sus datos. Te avisaremos <strong>1 hora antes</strong> y <strong>5 minutos antes</strong>
+                de la salida. El precio <strong>${currentFare.toFixed(2)}</strong> queda garantizado.
+              </p>
+            </>
+          )}
         </div>
       )}
 

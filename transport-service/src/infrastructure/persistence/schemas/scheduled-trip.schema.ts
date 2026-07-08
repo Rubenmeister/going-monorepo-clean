@@ -58,6 +58,11 @@ export class ScheduledTripModel {
   @Prop() reassignedAt: Date;
   /** driverId preliminar antes de una reasignación (traza). */
   @Prop() previousDriverId: string;
+  /**
+   * Instante en que se abrió la comunicación pasajera/o↔conductora/or (90 min
+   * antes de la salida). Idempotencia del cron de apertura de canal.
+   */
+  @Prop() channelOpenedAt: Date;
 
   @Prop({ type: [Object], default: [] }) reservations: SeatReservation[];
 
