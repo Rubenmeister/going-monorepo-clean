@@ -17,6 +17,10 @@ import { AccountLockoutService } from './application/account-lockout.service';
 import { LoyaltyPointsService } from './application/loyalty-points.service';
 import { MfaService } from './application/mfa.service';
 import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
+import {
+  LoyaltyTransaction,
+  LoyaltyTransactionSchema,
+} from './infrastructure/loyalty-transaction.schema';
 
 @Module({
   imports: [
@@ -37,6 +41,7 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
     }),
     MongooseModule.forFeature([
       { name: UserModelSchema.name, schema: UserSchema },
+      { name: LoyaltyTransaction.name, schema: LoyaltyTransactionSchema },
     ]),
     InfrastructureModule,
     AuditModule,

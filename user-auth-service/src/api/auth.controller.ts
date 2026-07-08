@@ -327,6 +327,35 @@ export class AuthController {
       }
       await this.accountLockoutService.recordSuccessfulLogin(ipKey);
 
+      // 5b. Gate MFA (auditoría B1 #11): si el user tiene MFA activado, NO se
+      // emiten los tokens de sesión aquí — se devuelve un mfaToken efímero (5min)
+      // que el frontend intercambia en POST /auth/mfa/verify-login con el código
+      // TOTP. Antes este carril (login normal) se SALTABA MFA por completo; solo
+      // el corporativo lo aplicaba → cualquier cuenta con MFA entraba sin 2º factor.
+      const userMfa = await this.userModel
+        .findOne({ id: result.user.id })
+        .select('mfaEnabled')
+        .lean();
+      if (userMfa?.mfaEnabled) {
+        const mfaToken = jwt.sign(
+          {
+            sub: result.user.id,
+            email: normalizedEmail,
+            purpose: 'mfa-challenge',
+            companyId: (result.user as any).companyId ?? null,
+            roles: result.user.roles ?? [],
+          },
+          process.env.JWT_SECRET ?? '',
+          { expiresIn: '5m' },
+        );
+        this.auditLogService.recordSuccess(
+          result.user.id, 'user-auth-service', ip, 'LOGIN',
+          'auth', result.user.id, Date.now() - startTime, undefined,
+          { email: normalizedEmail, mfaRequired: true }
+        );
+        return { mfaRequired: true, mfaToken };
+      }
+
       this.auditLogService.recordSuccess(
         result.user.id,
         'user-auth-service',
@@ -1391,7 +1420,16 @@ export class AuthController {
   @Post('reset-password')
   @HttpCode(200)
   async resetPassword(@Body() body: { token: string; password: string }): Promise<{ message: string }> {
-    if (!body?.token || !body?.password) {
+    // Inyección NoSQL (auditoría B1 #15): si token/password llegan como objeto
+    // (p.ej. {"$gt":""}), el findOne matchearía a CUALQUIER usuario con token de
+    // reset activo → toma de cuenta sin conocer el token. Se exige tipo string
+    // ANTES de tocar la query (fail-closed) — no basta el truthy check (un objeto
+    // es truthy). No se castea con String() para no convertir un objeto en
+    // "[object Object]" y enmascarar el ataque: se rechaza de plano.
+    if (typeof body?.token !== 'string' || typeof body?.password !== 'string') {
+      throw new BadRequestException('token and password must be strings');
+    }
+    if (!body.token || !body.password) {
       throw new BadRequestException('token and password are required');
     }
     if (body.password.length < 12) {

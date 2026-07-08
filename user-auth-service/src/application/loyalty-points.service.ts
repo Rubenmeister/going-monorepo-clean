@@ -2,6 +2,10 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument, UserModelSchema } from '../infrastructure/user.schema';
+import {
+  LoyaltyTransaction,
+  LoyaltyTransactionDocument,
+} from '../infrastructure/loyalty-transaction.schema';
 
 /**
  * LoyaltyPointsService — gestiona el saldo de puntos del Tipo B.
@@ -22,6 +26,8 @@ export class LoyaltyPointsService {
   constructor(
     @InjectModel(UserModelSchema.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(LoyaltyTransaction.name)
+    private readonly ledgerModel: Model<LoyaltyTransactionDocument>,
   ) {}
 
   async getBalance(userId: string): Promise<{
@@ -57,6 +63,26 @@ export class LoyaltyPointsService {
       throw new BadRequestException('points debe ser entero');
     }
 
+    // Idempotencia REAL (auditoría B1 #12/#16): si viene referenceId, se reclama
+    // primero en el ledger con índice único. Si ya existe (reintento del caller),
+    // el insert choca con duplicate-key (11000) → no se re-acredita. El ledger se
+    // inserta ANTES del $inc para que dos requests concurrentes no doble-acrediten;
+    // el segundo se corta aquí. (Sin referenceId no hay forma de deduplicar → se
+    // acredita como antes; los callers de dinero SÍ mandan referenceId.)
+    if (referenceId) {
+      try {
+        await this.ledgerModel.create({ userId, points, referenceId });
+      } catch (e: any) {
+        if (e?.code === 11000) {
+          this.logger.log(
+            `Award idempotente: ref=${referenceId} ya procesado, se ignora (+${points} a user ${userId})`,
+          );
+          return 0;
+        }
+        throw e;
+      }
+    }
+
     const res = await this.userModel
       .updateOne(
         { id: userId },
@@ -68,6 +94,11 @@ export class LoyaltyPointsService {
       .exec();
 
     if (res.matchedCount === 0) {
+      // El usuario no existe: revertir la reclamación del ledger para no dejar
+      // el referenceId "quemado" (permite reintento legítimo si el user aparece).
+      if (referenceId) {
+        await this.ledgerModel.deleteOne({ referenceId }).catch(() => undefined);
+      }
       throw new BadRequestException(`Usuario ${userId} no encontrado`);
     }
 
