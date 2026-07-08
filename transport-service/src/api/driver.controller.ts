@@ -206,7 +206,7 @@ export class DriverController {
 
   @Get('me/documents')
   @UseGuards(JwtAuthGuard)
-  async getDocuments(@CurrentUser('userId') driverId: string) {
+  async getDocuments(@CurrentUser('id') driverId: string) {
     const docs = await this.docModel
       .find({ driverId })
       .select(

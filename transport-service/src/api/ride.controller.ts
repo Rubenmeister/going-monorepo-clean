@@ -661,6 +661,13 @@ export class RideController {
     if (!clip?.buffer) {
       throw new BadRequestException('Se requiere el campo "clip" con el archivo');
     }
+    // Solo partes del viaje (o admin) suben evidencia a rides/{rideId}/ — antes
+    // cualquier usuario podía contaminar la evidencia de un viaje ajeno (#37).
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    if (ride.userId !== user.id && ride.driverId !== user.id && user.role !== 'admin') {
+      throw new ForbiddenException('No autorizado para este viaje');
+    }
     const trigger = ['sos', 'ridecheck', 'manual'].includes(body.trigger as string)
       ? body.trigger!
       : 'manual';

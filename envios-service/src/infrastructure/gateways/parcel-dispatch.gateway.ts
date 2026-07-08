@@ -15,11 +15,13 @@ import type { RankedDriver } from '../services/nearby-drivers.service';
 export class ParcelDispatchGateway {
   private readonly logger = new Logger(ParcelDispatchGateway.name);
   private readonly notificationsUrl: string;
+  private readonly internalToken?: string;
 
   constructor(private readonly config: ConfigService) {
-    this.notificationsUrl =
-      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') ||
-      'http://localhost:3008';
+    this.notificationsUrl = (
+      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') || 'http://localhost:3008'
+    ).replace(/\/$/, '');
+    this.internalToken = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
   }
 
   /**
@@ -93,10 +95,20 @@ export class ParcelDispatchGateway {
       `${parcelInfo.originAddress} → ${parcelInfo.destinationAddress}` +
       ` · $${parcelInfo.price.toFixed(2)}${distStr}${etaStr}`;
 
+    if (!this.internalToken) {
+      this.logger.warn('INTERNAL_SERVICE_TOKEN ausente — push de envío omitido');
+      return;
+    }
     try {
-      await fetch(`${this.notificationsUrl}/notifications/push`, {
+      // Ruta REAL /notifications/send (sin /push) + token S2S + timeout. Antes
+      // /notifications/push SIN token → 404/401 siempre (auditoría #11).
+      await fetch(`${this.notificationsUrl}/notifications/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.internalToken}`,
+        },
+        signal: AbortSignal.timeout(5000),
         body: JSON.stringify({
           userId: driverId,
           title: '📦 Nueva solicitud de envío',

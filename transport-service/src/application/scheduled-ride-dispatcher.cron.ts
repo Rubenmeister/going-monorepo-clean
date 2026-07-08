@@ -241,7 +241,9 @@ export class ScheduledRideDispatcherCron {
     if (typeof this.rideRepo.findUpcomingNeedingReminder !== 'function') return;
     // Ventanas sin solape: 1h → (now+5min, now+60min]; 5min → (now, now+5min].
     await this.remindBucket('reminder1hSentAt', 5, 60, 'Tu viaje reservado se acerca');
-    await this.remindBucket('reminder5mSentAt', 0, 5, 'Tu viaje está por salir');
+    // Límite inferior en el pasado reciente (−3 min): si un pod cayó y se saltó la
+    // ventana, se recupera; la marca de idempotencia evita duplicados (auditoría #5).
+    await this.remindBucket('reminder5mSentAt', -3, 5, 'Tu viaje está por salir');
   }
 
   private notificationsUrl(): string {

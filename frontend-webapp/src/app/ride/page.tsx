@@ -297,6 +297,9 @@ function RidePageInner() {
   const searchParams       = useSearchParams();
   const { auth }           = useMonorepoApp();
   const { activeRide, clearRide, resetForRetry, setActiveRide } = useRideStore();
+  // Estado del deep-link ?track= (antes fallaba en silencio, #53).
+  const [trackLoading, setTrackLoading] = useState(false);
+  const [trackError, setTrackError]     = useState(false);
 
   // Tipo de servicio inicial leído de la URL (?type=shared|van|city) para que
   // "Reservar/Cotizar" desde el home lleve DIRECTO al formulario, sin volver a
@@ -380,13 +383,16 @@ function RidePageInner() {
     const trackId = searchParams.get('track');
     if (!trackId || activeRide) return;
     let alive = true;
+    setTrackLoading(true);
+    setTrackError(false);
     (async () => {
       try {
         const API = process.env.NEXT_PUBLIC_API_URL || '';
         const res = await authFetch(`${API}/rides/mine/active`, { method: 'GET' });
-        if (!res.ok || !alive) return;
+        if (!alive) return;
+        if (!res.ok) { setTrackError(true); return; }
         const d = await res.json();
-        if (!d?.hasActive || !d.ride || !alive) return;
+        if (!d?.hasActive || !d.ride || !alive) { setTrackError(true); return; }
         const r = d.ride;
         const statusMap: Record<string, Ride['status']> = {
           accepted: 'accepted', arriving: 'accepted', started: 'in_progress',
@@ -424,7 +430,9 @@ function RidePageInner() {
         });
         setStep('tracking');
       } catch {
-        /* sin viaje activo o error → se queda en el formulario normal */
+        if (alive) setTrackError(true);
+      } finally {
+        if (alive) setTrackLoading(false);
       }
     })();
     return () => { alive = false; };
@@ -504,6 +512,18 @@ function RidePageInner() {
 
       {/* ── Contenido ── */}
       <div className="max-w-2xl mx-auto px-4 py-6">
+
+        {/* Deep-link ?track=: estado de carga/error (antes fallaba en silencio, #53) */}
+        {trackLoading && !activeRide && (
+          <div className="flex items-center gap-2 rounded-2xl px-4 py-3 mb-3 text-sm font-semibold bg-blue-50 text-[#0033A0]">
+            <span className="animate-spin">⏳</span> Cargando tu viaje…
+          </div>
+        )}
+        {trackError && !activeRide && (
+          <div className="flex items-center gap-2 rounded-2xl px-4 py-3 mb-3 text-sm font-semibold bg-amber-50 text-amber-800">
+            <span>⚠️</span> No pudimos cargar tu viaje. Reserva o cotiza abajo, o intenta de nuevo.
+          </div>
+        )}
 
         {/* Saludo al usuario logueado (sesión ya iniciada) */}
         {step === 'request' && firstName && (

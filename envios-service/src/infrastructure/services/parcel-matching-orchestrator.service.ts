@@ -66,6 +66,7 @@ export class ParcelMatchingOrchestrator implements OnModuleDestroy {
   private readonly logger = new Logger(ParcelMatchingOrchestrator.name);
   private readonly cycles = new Map<string, DispatchCycle>();
   private readonly notificationsUrl: string;
+  private readonly internalToken?: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -75,9 +76,10 @@ export class ParcelMatchingOrchestrator implements OnModuleDestroy {
     private readonly parcelRepo: IParcelRepository,
     private readonly cancelParcelUseCase: CancelParcelUseCase,
   ) {
-    this.notificationsUrl =
-      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') ||
-      NOTIFICATIONS_URL_DEFAULT;
+    this.notificationsUrl = (
+      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') || NOTIFICATIONS_URL_DEFAULT
+    ).replace(/\/$/, '');
+    this.internalToken = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
   }
 
   onModuleDestroy() {
@@ -256,10 +258,19 @@ export class ParcelMatchingOrchestrator implements OnModuleDestroy {
   }
 
   private async notifyUserNoDriverFound(cycle: DispatchCycle): Promise<void> {
+    if (!this.internalToken) {
+      this.logger.warn('INTERNAL_SERVICE_TOKEN ausente — notificación omitida');
+      return;
+    }
     try {
-      await fetch(`${this.notificationsUrl}/notifications/push`, {
+      // Ruta REAL /notifications/send + token S2S + timeout (auditoría #11).
+      await fetch(`${this.notificationsUrl}/notifications/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.internalToken}`,
+        },
+        signal: AbortSignal.timeout(5000),
         body: JSON.stringify({
           userId: cycle.userId,
           title: 'Sin conductor disponible',
