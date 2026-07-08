@@ -1,22 +1,30 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import wsService from '../services/websocketService'
 
+// Refcount a nivel de módulo: el socket es un singleton compartido por varios
+// consumidores (banner, panel de tracking, etc.). Antes cada uso desconectaba al
+// desmontar → el primero en desmontar mataba el socket de los demás y StrictMode
+// (mount→unmount→mount) lo cortaba (auditoría #44). Ahora se conecta con el primer
+// consumidor y se desconecta solo cuando se va el último.
+let refCount = 0
+
 export function useWebSocket(token?: string) {
-  const connected = useRef(false)
-
   useEffect(() => {
-    if (connected.current) return
-    connected.current = true
-
-    wsService.connect(token).catch((err) => {
-      console.warn('[useWebSocket] Failed to connect:', err)
-    })
+    refCount++
+    if (refCount === 1) {
+      wsService.connect(token).catch((err) => {
+        console.warn('[useWebSocket] Failed to connect:', err)
+      })
+    }
 
     return () => {
-      wsService.disconnect()
-      connected.current = false
+      refCount--
+      if (refCount <= 0) {
+        refCount = 0
+        wsService.disconnect()
+      }
     }
   }, [token])
 
