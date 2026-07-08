@@ -194,25 +194,19 @@ export class ScheduledRideDispatcherCron {
     const closeAfter = this.channelCloseAfterMinutes();
     const cutoff = new Date(Date.now() - closeAfter * 60_000);
 
-    let completed: any[];
+    if (typeof this.rideRepo.findChannelsToClose !== 'function') return; // mock parcial
+
+    // Filtro en la QUERY (no en memoria): antes traía 100 completados arbitrarios
+    // y filtraba en memoria → con >100 completados, los que debían cerrarse nunca
+    // entraban y el canal nunca cerraba (#15).
+    let toClose: any[];
     try {
-      completed = await this.rideRepo.findByStatus('completed', 100);
+      toClose = await this.rideRepo.findChannelsToClose(cutoff, 100);
     } catch (e) {
-      this.logger.error(`[channel-close] findByStatus falló: ${(e as Error).message}`);
+      this.logger.error(`[channel-close] findChannelsToClose falló: ${(e as Error).message}`);
       return;
     }
-    if (!completed || completed.length === 0) return;
-
-    // Solo los que tienen canal abierto, completados hace > closeAfter, y aún
-    // no cerrados.
-    const toClose = completed.filter(
-      (r: any) =>
-        r.channelOpenedAt &&
-        !r.channelClosedAt &&
-        r.completedAt &&
-        new Date(r.completedAt) < cutoff,
-    );
-    if (toClose.length === 0) return;
+    if (!toClose || toClose.length === 0) return;
 
     for (const ride of toClose) {
       try {

@@ -460,7 +460,8 @@ export class RideController {
         year: v.year ?? '',
         color: v.color ?? '',
       };
-    } catch {
+    } catch (e) {
+      this.logger.warn(`lookupDriverVehicle(${driverId}) falló: ${(e as Error).message}`);
       return null;
     }
   }
@@ -473,7 +474,8 @@ export class RideController {
         { $group: { _id: '$driverId', avg: { $avg: '$rating' } } },
       ])) as Array<{ avg: number }>;
       return rows[0]?.avg != null ? Math.round(rows[0].avg * 10) / 10 : null;
-    } catch {
+    } catch (e) {
+      this.logger.warn(`avgDriverRating(${driverId}) falló: ${(e as Error).message}`);
       return null;
     }
   }
@@ -491,7 +493,8 @@ export class RideController {
       if (!doc) return null;
       const n = [doc.firstName, doc.lastName].filter(Boolean).join(' ').trim();
       return n || null;
-    } catch {
+    } catch (e) {
+      this.logger.warn(`lookupDriverName(${driverId}) falló: ${(e as Error).message}`);
       return null; // best-effort: la tarjeta funciona sin nombre
     }
   }
@@ -510,7 +513,8 @@ export class RideController {
         .sort({ departureAt: 1 })
         .lean()
         .exec();
-    } catch {
+    } catch (e) {
+      this.logger.warn(`findUpcomingSharedTrip(${userId}) falló: ${(e as Error).message}`);
       return null;
     }
   }

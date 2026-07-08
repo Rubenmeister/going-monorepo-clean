@@ -561,6 +561,12 @@ export interface IRideRepository {
   findRecent(limit: number): Promise<any[]>;
   findByStatus(status: string, limit?: number, excludeDriverId?: string): Promise<any[]>;
   /**
+   * Viajes completados con canal abierto sin cerrar y completedAt < cutoff.
+   * Filtra en la QUERY (no en memoria) para que el cierre no se pierda cuando
+   * hay muchos completados (auditoría #15). Opcional en el port (mock parcial).
+   */
+  findChannelsToClose?(cutoff: Date, limit?: number): Promise<any[]>;
+  /**
    * Compare-and-swap atómico: asigna el conductor SOLO si el viaje sigue en
    * 'requested'. Devuelve el viaje actualizado, o null si otro conductor ya lo
    * tomó (evita doble-aceptación bajo concurrencia).

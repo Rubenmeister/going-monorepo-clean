@@ -64,6 +64,9 @@ export class BaseJwtStrategy extends PassportStrategy(Strategy) {
       ]),
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
+      // Fija el algoritmo aceptado: sin esto, un token forjado con otro alg podría
+      // colar (confusión de algoritmo). Interino hasta migrar a RS256 (auditoría #13).
+      algorithms: ['HS256'],
     });
   }
 

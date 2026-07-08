@@ -149,6 +149,20 @@ export class MongooseRideRepository implements IRideRepository {
     return docs.map((d) => this._toRideData(d));
   }
 
+  async findChannelsToClose(cutoff: Date, limit = 100): Promise<any[]> {
+    const docs = await this.model
+      .find({
+        status: 'completed',
+        channelOpenedAt: { $ne: null },
+        channelClosedAt: null,
+        completedAt: { $lt: cutoff },
+      })
+      .sort({ completedAt: 1 })
+      .limit(limit)
+      .lean();
+    return docs.map((d) => this._toRideData(d));
+  }
+
   /**
    * Idempotente: $addToSet evita duplicados si el conductor rechaza dos veces
    * (ej. clic doble o auto-reject + manual). No crea el documento si no existe.
