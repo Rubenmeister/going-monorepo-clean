@@ -86,7 +86,7 @@ steps:
         else
           ENV_VARS="$${BASE_ENV}"
         fi
-        BASE_SECRETS="JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,BOOKING_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest"
+        BASE_SECRETS="JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,BOOKING_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest,RS256_PUBLIC_KEY=RS256_PUBLIC_KEY:latest"
         if [ -n "${_EXTRA_SECRETS}" ]; then
           ALL_SECRETS="$${BASE_SECRETS},${_EXTRA_SECRETS}"
         else

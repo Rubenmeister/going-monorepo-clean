@@ -57,9 +57,20 @@ export class JwtTokenService implements ITokenService {
     };
     if (companyId) payload.companyId = companyId;
 
-    const token = this.jwtService.sign(payload, {
-      expiresIn: this.accessTokenExpiration as any,
-    });
+    // FLIP RS256 (auditoría #13): si RS256_PRIVATE_KEY está montada, el access
+    // token se firma con RS256 (los servicios lo verifican con la PÚBLICA, no
+    // pueden forjar). Si no está, se mantiene HS256 (actual) → rollout controlado
+    // por la presencia de la env, sin cambio de código para el flip.
+    const rs256Private = process.env.RS256_PRIVATE_KEY;
+    const token = rs256Private
+      ? this.jwtService.sign(payload, {
+          expiresIn: this.accessTokenExpiration as any,
+          algorithm: 'RS256',
+          privateKey: rs256Private.replace(/\\n/g, '\n'),
+        })
+      : this.jwtService.sign(payload, {
+          expiresIn: this.accessTokenExpiration as any,
+        });
 
     this.logger.debug(
       `Generated access token for user ${email} with jti ${jti}${companyId ? ` (company=${companyId})` : ''}`,
