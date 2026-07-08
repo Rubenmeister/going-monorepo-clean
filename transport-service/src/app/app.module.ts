@@ -85,7 +85,8 @@ import {
 } from '../application/use-cases';
 import { DriverHybridLifecycleService } from '@going-monorepo-clean/domains-transport-application';
 import { SearchController } from '../api/search.controller';
-import { ScheduledTripController } from '../api/scheduled-trip.controller';
+import { ScheduledTripController, ScheduledTripInternalController } from '../api/scheduled-trip.controller';
+import { InternalServiceGuard } from '../api/internal-service.guard';
 import { AdminStubsController } from '../api/admin-stubs.controller';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
 import { DriverAssignmentService } from '../application/driver-assignment.service';
@@ -179,6 +180,7 @@ import { MulterModule } from '@nestjs/platform-express';
     DriverPushTokenController,
     SearchController,
     ScheduledTripController,
+    ScheduledTripInternalController,
     AdminStubsController,
     DriverHybridController,
     DriverComplianceAdminController,
@@ -188,6 +190,7 @@ import { MulterModule } from '@nestjs/platform-express';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     AppService,
     JwtStrategy,
+    InternalServiceGuard,
     RequestTripUseCase,
     AcceptTripUseCase,
     MatchAvailableDriversUseCase,

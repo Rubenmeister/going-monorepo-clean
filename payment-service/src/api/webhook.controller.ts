@@ -309,8 +309,13 @@ export class WebhookController {
     const enviosUrl = process.env.ENVIOS_SERVICE_URL || 'http://localhost:3010';
     fetch(`${enviosUrl}/parcels/webhooks/payment-event`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        // S2S: el webhook de envíos exige este token (auditoría #7).
+        'x-internal-token': process.env.INTERNAL_SERVICE_TOKEN ?? '',
+      },
       body: JSON.stringify({ parcelId, status }),
+      signal: AbortSignal.timeout(5000),
     }).catch((e) =>
       this.logger.warn(`Envios payment notification failed: ${e.message}`),
     );

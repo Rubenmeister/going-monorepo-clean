@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { ParcelController } from './api/parcel.controller';
+import { InternalServiceGuard } from './api/internal-service.guard';
 import { HealthController } from './api/health.controller';
 import {
   CreateParcelUseCase,
@@ -67,6 +68,7 @@ import { PricingService } from 'pricing';
   ],
   controllers: [ParcelController, HealthController],
   providers: [
+    InternalServiceGuard,
     CreateParcelUseCase,
     FindParcelsByUserUseCase,
     TrackParcelUseCase,

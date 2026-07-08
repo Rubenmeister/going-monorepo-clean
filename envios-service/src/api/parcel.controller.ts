@@ -29,6 +29,8 @@ import {
 import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID, MoneyDto } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
+import { InternalServiceGuard } from './internal-service.guard';
+import { IsIn, IsString } from 'class-validator';
 import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-matching-orchestrator.service';
 import { PaymentIntentService } from '../infrastructure/services/payment-intent.service';
 import { SmsService } from '../infrastructure/services/sms.service';
@@ -72,6 +74,12 @@ export class QuoteEnvioDto {
   @IsOptional() @IsIn(['small', 'medium', 'large']) packageSize?: 'small' | 'medium' | 'large';
   @IsOptional() @IsNumber() @Min(0) weightKg?: number;
   @IsOptional() @IsBoolean() isOverVolume?: boolean;
+}
+
+/** Webhook de pago (S2S desde payment-service). Body validado (auditoría #7). */
+export class PaymentEventDto {
+  @IsString() parcelId!: string;
+  @IsIn(['succeeded', 'failed']) status!: 'succeeded' | 'failed';
 }
 
 @Controller('parcels')
@@ -339,10 +347,11 @@ export class ParcelController {
    * Por ahora confiamos en VPC + IAM del cluster.
    */
   @Post('webhooks/payment-event')
-  @Public()
+  @Public() // salta el JWT global…
+  @UseGuards(InternalServiceGuard) // …pero exige el token S2S (auditoría #7)
   @HttpCode(HttpStatus.OK)
   async paymentEventWebhook(
-    @Body() body: { parcelId: string; status: 'succeeded' | 'failed' },
+    @Body() body: PaymentEventDto,
   ): Promise<{ ok: true }> {
     const findRes = await this.parcelRepository.findById(body.parcelId as UUID);
     if (findRes.isErr() || !findRes.value) {

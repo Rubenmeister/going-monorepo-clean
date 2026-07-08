@@ -37,12 +37,17 @@ export class TransportClientService {
     try {
       const res = await fetch(`${this.transportUrl}/scheduled-trips/attach-parcel`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // S2S: el endpoint interno de transport exige este token (auditoría #20).
+          'x-internal-token': this.config.get<string>('INTERNAL_SERVICE_TOKEN') ?? '',
+        },
         body: JSON.stringify({
           originCity: input.originCity,
           destCity: input.destCity,
           isOverVolume: input.isOverVolume ?? false,
         }),
+        signal: AbortSignal.timeout(5000),
       });
       if (!res.ok) return { attached: false };
       return (await res.json()) as AttachParcelResult;

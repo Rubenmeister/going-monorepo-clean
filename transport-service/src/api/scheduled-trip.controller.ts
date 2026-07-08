@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
+import { InternalServiceGuard } from './internal-service.guard';
 
 export class ReserveSeatDto {
   /** Tramo del pasajero (claves FARES) — define el precio por asiento. */
@@ -55,23 +56,6 @@ export class AttachParcelDto {
 export class ScheduledTripController {
   constructor(private readonly service: ScheduledTripService) {}
 
-  /**
-   * Adjunta un envío interurbano a la salida programada más próxima con cupo.
-   * Llamado por envios-service (servicio a servicio). Si no hay salida con cupo,
-   * devuelve { attached: false } y envios-service hace fallback a on-demand.
-   * POST /scheduled-trips/attach-parcel
-   */
-  @Post('attach-parcel')
-  @HttpCode(HttpStatus.OK)
-  async attachParcel(@Body() dto: AttachParcelDto) {
-    return this.service.attachParcel({
-      originCity: dto.originCity,
-      destCity: dto.destCity,
-      requestedAt: dto.requestedAt ? new Date(dto.requestedAt) : new Date(),
-      isOverVolume: dto.isOverVolume,
-    });
-  }
-
   @Post(':id/reserve')
   @HttpCode(HttpStatus.OK)
   async reserve(
@@ -86,6 +70,34 @@ export class ScheduledTripController {
       seats: dto.seats,
       isGroup: dto.isGroup,
       wantsFrontExclusive: dto.wantsFrontExclusive,
+    });
+  }
+}
+
+/**
+ * Endpoints INTERNOS (servicio-a-servicio) de scheduled-trips. Protegidos con el
+ * InternalServiceGuard (x-internal-token), NO con JWT de usuario — antes
+ * attach-parcel vivía bajo el JWT de clase y cualquier usuario podía mutar el
+ * inventario de asientos (auditoría #20).
+ */
+@Controller('scheduled-trips')
+@UseGuards(InternalServiceGuard)
+export class ScheduledTripInternalController {
+  constructor(private readonly service: ScheduledTripService) {}
+
+  /**
+   * Adjunta un envío interurbano a la salida programada más próxima con cupo.
+   * Llamado por envios-service (S2S con x-internal-token). Sin cupo → { attached: false }.
+   * POST /scheduled-trips/attach-parcel
+   */
+  @Post('attach-parcel')
+  @HttpCode(HttpStatus.OK)
+  async attachParcel(@Body() dto: AttachParcelDto) {
+    return this.service.attachParcel({
+      originCity: dto.originCity,
+      destCity: dto.destCity,
+      requestedAt: dto.requestedAt ? new Date(dto.requestedAt) : new Date(),
+      isOverVolume: dto.isOverVolume,
     });
   }
 }
