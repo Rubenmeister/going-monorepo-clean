@@ -57,6 +57,21 @@ jobs:
       - name: Wire api-gateway service URLs
         run: bash scripts/update-gateway-urls.sh
 
+      - name: Wire catalog URLs (booking → tours/experiences/accommodations)
+        # booking-service valida el precio autoritativo de los ítems de catálogo
+        # por serviceId (auditoría B1 #9). Necesita las URLs de tours/experiencias/
+        # anfitriones. --update-env-vars (merge) → sobrevive a los deploys.
+        run: |
+          REGION=us-central1
+          TOURS=$(gcloud run services describe tours-service --region "$REGION" --platform managed --format 'value(status.url)' 2>/dev/null || echo "")
+          EXP=$(gcloud run services describe experiencias-service --region "$REGION" --platform managed --format 'value(status.url)' 2>/dev/null || echo "")
+          ACC=$(gcloud run services describe anfitriones-service --region "$REGION" --platform managed --format 'value(status.url)' 2>/dev/null || echo "")
+          if gcloud run services describe booking-service --region "$REGION" --platform managed >/dev/null 2>&1; then
+            gcloud run services update booking-service --region "$REGION" --platform managed \
+              --update-env-vars "^|^TOURS_SERVICE_URL=${TOURS}|EXPERIENCES_SERVICE_URL=${EXP}|ACCOMMODATIONS_SERVICE_URL=${ACC}" --quiet
+            echo "→ booking-service catalog URLs cableadas"
+          fi
+
       - name: Wire inter-service URLs (transport → payment)
         # transport-service llama a payment-service por HTTP para registrar la
         # ganancia/comisión del conductor al completar un viaje. Le inyecta
