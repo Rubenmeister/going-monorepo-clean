@@ -45,20 +45,14 @@ RUN node -e "\
   console.log('Stripped Nx plugins');\
 "
 
-# Patch webpack.config.js to add skipTypeChecking (avoids TS errors blocking build)
-RUN node -e "\
-  const fs = require('fs');\
-  const sn = '${SERVICE_NAME}';\
-  const f  = sn + '/webpack.config.js';\
-  try {\
-    let c = fs.readFileSync(f, 'utf8');\
-    if (!c.includes('skipTypeChecking')) {\
-      c = c.replace('generatePackageJson: true,', 'generatePackageJson: true, skipTypeChecking: true,');\
-      fs.writeFileSync(f, c);\
-      console.log('Patched webpack skipTypeChecking: ' + f);\
-    } else { console.log('Already patched: ' + f); }\
-  } catch(e) { console.log('No webpack patch needed: ' + e.message); }\
-"
+# NOTA (blindaje 9-jul): antes se parcheaba `skipTypeChecking: true` en el
+# webpack.config para que los errores de TIPO no rompieran el build manual. Eso
+# divergía del CD (que sí type-chequea) → un error de tipo llegaba a prod
+# "funcionando" pero dejaba el CD ROJO (caso: import duplicado de IsIn en envios,
+# semanas sin detectar). Se ELIMINA el parche: el deploy manual ahora type-chequea
+# igual que el CD (una sola fuente de verdad). Verificado que los 24 servicios
+# type-chequean limpio antes de aplicar esto. Si un futuro cambio introduce un
+# error de tipo, el build FALLA aquí y en el CD — que es lo correcto.
 
 # Build with Nx (project graph requires NX_DAEMON=false in CI)
 ENV NX_DAEMON=false
