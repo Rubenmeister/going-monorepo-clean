@@ -202,11 +202,24 @@ export class BookingController {
    */
   @Get()
   async listByCompany(
+    @CurrentUser() user: AuthUser,
     @Query('companyId') companyId?: string,
     @Query('status') status?: string,
     @Query('limit') limit?: string,
     @Query('page') page?: string,
   ): Promise<any[]> {
+    // BOLA (auditoría B1 #38): antes cualquier usuario listaba las reservas de
+    // CUALQUIER empresa pasando companyId en el query. Ahora un no-admin solo ve
+    // las de SU empresa (companyId del JWT, ignorando el query). corporate-service
+    // reenvía el JWT del usuario corporativo consultando su propia empresa, así que
+    // no se rompe la facturación/stats. Admin puede consultar cualquier companyId.
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    if (!isAdmin) {
+      if (!user.companyId) {
+        throw new ForbiddenException('Solo cuentas corporativas o admin');
+      }
+      companyId = user.companyId;
+    }
     if (!companyId) {
       throw new BadRequestException('companyId requerido');
     }
@@ -227,8 +240,39 @@ export class BookingController {
    * Returns bookings for a specific user (admin / internal use)
    */
   @Get('user/:userId')
-  async getBookingsByUser(@Param('userId') userId: UUID): Promise<any> {
+  async getBookingsByUser(
+    @CurrentUser() user: AuthUser,
+    @Param('userId') userId: UUID,
+  ): Promise<any> {
+    // IDOR (auditoría B1): antes cualquiera leía las reservas de cualquier user.
+    // Solo admin puede consultar por userId arbitrario; el resto, las suyas.
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    if (!isAdmin && userId !== (user.id as UUID)) {
+      throw new ForbiddenException('No autorizado');
+    }
     return this.findBookingsByUserUseCase.execute(userId);
+  }
+
+  /**
+   * Carga una reserva y verifica que el usuario autenticado tenga acceso
+   * (auditoría B1 #27-31/#35/#38 — racimo IDOR/BOLA). Acceso = admin, dueño
+   * (booking.userId === user.id), o miembro de la empresa dueña de la reserva
+   * (booking.companyId === user.companyId, para portales corporativos). Antes
+   * estos endpoints NO validaban nada → cualquier usuario leía/cancelaba/confirmaba
+   * reservas ajenas por ID.
+   */
+  private async loadOwnedBooking(user: AuthUser, bookingId: UUID): Promise<any> {
+    const result = await this.bookingRepo.findById(bookingId);
+    if (result.isErr()) throw result.error;
+    if (!result.value) throw new NotFoundException('Booking not found');
+    const b = result.value.toPrimitives();
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    const owns = b.userId && b.userId === user.id;
+    const sameCompany = b.companyId && user.companyId && b.companyId === user.companyId;
+    if (!isAdmin && !owns && !sameCompany) {
+      throw new ForbiddenException('No autorizado para esta reserva');
+    }
+    return b;
   }
 
   /**
@@ -236,18 +280,22 @@ export class BookingController {
    * Returns a single booking by ID
    */
   @Get(':bookingId')
-  async getBookingById(@Param('bookingId') bookingId: UUID): Promise<any> {
-    const result = await this.bookingRepo.findById(bookingId);
-    if (result.isErr()) throw result.error;
-    if (!result.value) throw new NotFoundException('Booking not found');
-    return result.value.toPrimitives();
+  async getBookingById(
+    @CurrentUser() user: AuthUser,
+    @Param('bookingId') bookingId: UUID,
+  ): Promise<any> {
+    return this.loadOwnedBooking(user, bookingId);
   }
 
   /**
    * PATCH /api/bookings/:bookingId/confirm
    */
   @Patch(':bookingId/confirm')
-  async confirmBooking(@Param('bookingId') bookingId: UUID): Promise<any> {
+  async confirmBooking(
+    @CurrentUser() user: AuthUser,
+    @Param('bookingId') bookingId: UUID,
+  ): Promise<any> {
+    await this.loadOwnedBooking(user, bookingId);
     return this.confirmBookingUseCase.execute(bookingId);
   }
 
@@ -255,7 +303,11 @@ export class BookingController {
    * PATCH /api/bookings/:bookingId/cancel
    */
   @Patch(':bookingId/cancel')
-  async cancelBooking(@Param('bookingId') bookingId: UUID): Promise<any> {
+  async cancelBooking(
+    @CurrentUser() user: AuthUser,
+    @Param('bookingId') bookingId: UUID,
+  ): Promise<any> {
+    await this.loadOwnedBooking(user, bookingId);
     return this.cancelBookingUseCase.execute(bookingId);
   }
 }
