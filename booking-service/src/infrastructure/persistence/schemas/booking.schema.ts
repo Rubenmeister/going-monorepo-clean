@@ -88,6 +88,23 @@ export class BookingModelSchema {
 
   @Prop()
   triggeredAt?: Date;
+
+  /**
+   * Lock de despacho (auditoría B1 #13). El BookingDispatcher lo reclama de forma
+   * ATÓMICA antes de crear el ride en transport, para que dos crones concurrentes
+   * (multi-pod) no disparen dos rides del mismo booking. Se libera al fallar; si el
+   * pod muere con el lock puesto, expira tras la ventana stale y otro pod reintenta.
+   */
+  @Prop()
+  dispatchLockAt?: Date;
+
+  /**
+   * Clave de idempotencia de expansión de recurrentes (auditoría B1 #12) =
+   * `${recurringTripId}:${startDateISO}`. Índice único sparse → re-expandir la
+   * misma ocurrencia no crea un booking duplicado.
+   */
+  @Prop({ sparse: true, unique: true })
+  recurrenceKey?: string;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(BookingModelSchema);

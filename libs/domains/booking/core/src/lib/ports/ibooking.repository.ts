@@ -4,6 +4,11 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 
 export interface IBookingRepository {
   save(booking: Booking): Promise<Result<void, Error>>;
+  /**
+   * Guarda una ocurrencia de recurrente con clave de idempotencia (auditoría #12).
+   * true = creado; false = ya existía (dedup por recurrenceKey).
+   */
+  saveExpanded(booking: Booking, recurrenceKey: string): Promise<Result<boolean, Error>>;
   update(booking: Booking): Promise<Result<void, Error>>;
   findById(id: UUID): Promise<Result<Booking | null, Error>>;
   findByUserId(userId: UUID): Promise<Result<Booking[], Error>>;
@@ -29,6 +34,13 @@ export interface IBookingRepository {
    * Ordenado por startDate asc para procesar primero los más urgentes.
    */
   findDispatchReady(beforeDate: Date, limit?: number): Promise<Result<Booking[], Error>>;
+  /**
+   * Claim atómico para despacho (auditoría B1 #13). true = este proceso ganó y
+   * debe despachar; false = otro pod ya lo tomó (saltar). Evita rides duplicados.
+   */
+  claimForDispatch(bookingId: UUID): Promise<Result<boolean, Error>>;
+  /** Libera el lock de despacho (al fallar) para permitir reintento. */
+  releaseDispatch(bookingId: UUID): Promise<Result<void, Error>>;
   /**
    * Listar TODAS las reservas (uso admin / panel). Filtro opcional por estado
    * y paginación. No filtra por empresa ni usuario — solo lo usa el admin.

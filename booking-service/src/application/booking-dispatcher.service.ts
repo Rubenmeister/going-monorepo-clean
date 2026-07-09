@@ -120,6 +120,21 @@ export class BookingDispatcherService {
   }
 
   private async dispatchOne(booking: Booking): Promise<void> {
+    // 0. Claim ATÓMICO (auditoría B1 #13): solo el pod que gana el lock crea el
+    //    ride. Antes se creaba el ride en transport y RECIÉN después se marcaba el
+    //    booking → dos crones concurrentes creaban dos rides. Ahora se reclama
+    //    primero; si otro pod ganó, se salta sin llamar a transport.
+    const claim = await this.bookingRepo.claimForDispatch(booking.id as any);
+    if (claim.isErr()) {
+      this.logger.error(`[dispatcher] claim ${booking.id} fallo: ${claim.error.message}`);
+      return;
+    }
+    if (!claim.value) {
+      this.logger.debug(`[dispatcher] booking ${booking.id} ya reclamado por otro pod — skip`);
+      return;
+    }
+
+    try {
     // 1. POST a transport-service /rides/request
     //    Genera un JWT temporal con el userId del booking. El backend
     //    transport acepta JWT firmado con JWT_SECRET (mismo secret).
@@ -201,5 +216,11 @@ export class BookingDispatcherService {
       `[dispatcher] booking ${booking.id} → ride ${payload.rideId} ` +
       `(company=${booking.companyId ?? 'b2c'}, startDate=${booking.startDate.toISOString()})`,
     );
+    } catch (err) {
+      // Falló el despacho (transport caído, etc.): liberar el lock para que el
+      // próximo tick lo reintente en vez de quedar bloqueado hasta el stale.
+      await this.bookingRepo.releaseDispatch(booking.id as any).catch(() => undefined);
+      throw err;
+    }
   }
 }

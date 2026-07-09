@@ -37,6 +37,24 @@ export class MongooseBookingRepository implements IBookingRepository {
     }
   }
 
+  /**
+   * Guarda una ocurrencia de un recurrente con clave de idempotencia
+   * `recurrenceKey` (auditoría B1 #12). El índice único sparse sobre recurrenceKey
+   * hace que re-expandir la misma (recurrente, fecha) no duplique: devuelve false
+   * (ya existía) en vez de crear otro booking/ride. true = creado.
+   */
+  async saveExpanded(booking: Booking, recurrenceKey: string): Promise<Result<boolean, Error>> {
+    try {
+      const primitives = booking.toPrimitives();
+      const newDoc = new this.model({ ...primitives, recurrenceKey });
+      await newDoc.save();
+      return ok(true);
+    } catch (error: any) {
+      if (error?.code === 11000) return ok(false); // dedup por recurrenceKey
+      return err(new Error(error.message));
+    }
+  }
+
   async update(booking: Booking): Promise<Result<void, Error>> {
     try {
       const primitives = booking.toPrimitives();
@@ -110,6 +128,10 @@ export class MongooseBookingRepository implements IBookingRepository {
     limit = 100,
   ): Promise<Result<Booking[], Error>> {
     try {
+      // Lock de despacho (auditoría B1 #13): se excluyen bookings reclamados
+      // recientemente por otro pod. Un lock más viejo que STALE se considera
+      // muerto (pod caído) y el booking vuelve a ser elegible.
+      const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
       const docs = await this.model
         .find({
           serviceType: 'transport',
@@ -122,11 +144,68 @@ export class MongooseBookingRepository implements IBookingRepository {
             { triggeredRideId: { $exists: false } },
             { triggeredRideId: null },
           ],
+          $and: [
+            {
+              $or: [
+                { dispatchLockAt: { $exists: false } },
+                { dispatchLockAt: null },
+                { dispatchLockAt: { $lt: staleThreshold } },
+              ],
+            },
+          ],
         })
         .sort({ startDate: 1 })  // primero los más urgentes
         .limit(limit)
         .exec();
       return ok(docs.map(this.toDomain));
+    } catch (error) {
+      return err(new Error((error as Error).message));
+    }
+  }
+
+  /**
+   * Reclama ATÓMICAMENTE un booking para despacho (auditoría B1 #13). Setea
+   * dispatchLockAt=now SOLO si no tiene ride disparado y no está lockeado
+   * recientemente. Devuelve true si ESTE proceso ganó el lock; false si otro
+   * pod lo tomó primero (→ el caller debe saltarlo, no crear un ride duplicado).
+   */
+  async claimForDispatch(bookingId: UUID): Promise<Result<boolean, Error>> {
+    try {
+      const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
+      const res = await this.model
+        .updateOne(
+          {
+            id: bookingId,
+            $or: [
+              { triggeredRideId: { $exists: false } },
+              { triggeredRideId: null },
+            ],
+            $and: [
+              {
+                $or: [
+                  { dispatchLockAt: { $exists: false } },
+                  { dispatchLockAt: null },
+                  { dispatchLockAt: { $lt: staleThreshold } },
+                ],
+              },
+            ],
+          },
+          { $set: { dispatchLockAt: new Date() } },
+        )
+        .exec();
+      return ok(res.modifiedCount === 1);
+    } catch (error) {
+      return err(new Error((error as Error).message));
+    }
+  }
+
+  /** Libera el lock de despacho (al fallar el POST a transport) para reintento. */
+  async releaseDispatch(bookingId: UUID): Promise<Result<void, Error>> {
+    try {
+      await this.model
+        .updateOne({ id: bookingId }, { $unset: { dispatchLockAt: '' } })
+        .exec();
+      return ok(undefined);
     } catch (error) {
       return err(new Error((error as Error).message));
     }

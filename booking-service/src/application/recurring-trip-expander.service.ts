@@ -155,14 +155,21 @@ export class RecurringTripExpanderService {
         );
         continue;
       }
-      const saveResult = await this.bookingRepo.save(bookingResult.value);
+      // Idempotencia por ocurrencia (auditoría B1 #12): clave natural
+      // recurringId:fecha. Si ya se expandió esa ocurrencia (re-run tras crash,
+      // o dos pods a la vez), saveExpanded devuelve false y no duplica.
+      const recurrenceKey = `${r.id}:${startDate.toISOString()}`;
+      const saveResult = await this.bookingRepo.saveExpanded(
+        bookingResult.value,
+        recurrenceKey,
+      );
       if (saveResult.isErr()) {
         this.logger.warn(
           `[recurring-expander] ${r.id} save fallo: ${saveResult.error.message}`,
         );
         continue;
       }
-      created++;
+      if (saveResult.value) created++;
     }
 
     await this.recurringRepo.updateExpansionState(r.id, horizonEnd);
