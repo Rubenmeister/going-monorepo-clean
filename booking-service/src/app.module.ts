@@ -16,6 +16,7 @@ import {
 } from '@going-monorepo-clean/domains-booking-application';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import { PricingService } from 'pricing';
+import { CatalogPriceClient } from './api/catalog-price-client.service';
 import { BookingDispatcherService } from './application/booking-dispatcher.service';
 import { RecurringTripExpanderService } from './application/recurring-trip-expander.service';
 
@@ -53,6 +54,7 @@ import { RecurringTripExpanderService } from './application/recurring-trip-expan
     CancelBookingUseCase,
     JwtStrategy,
     PricingService,
+    CatalogPriceClient,
     BookingDispatcherService,
     RecurringTripExpanderService,
   ],

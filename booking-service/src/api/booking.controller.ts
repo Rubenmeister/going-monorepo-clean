@@ -26,6 +26,7 @@ import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import { PricingService, getClientSurchargeRate, type ClientSegment } from 'pricing';
 import { EstimateFareDto } from './dtos/estimate-fare.dto';
 import { signPriceToken, verifyPriceToken } from './price-token';
+import { CatalogPriceClient } from './catalog-price-client.service';
 
 interface AuthUser {
   id: string;
@@ -49,6 +50,7 @@ export class BookingController {
     @Inject(IBookingRepository)
     private readonly bookingRepo: IBookingRepository,
     private readonly pricingService: PricingService,
+    private readonly catalogPriceClient: CatalogPriceClient,
   ) {}
 
   /**
@@ -185,27 +187,41 @@ export class BookingController {
     // y móvil lo envíen. Admin exento (correcciones manuales de ops).
     let totalPrice = dto.totalPrice;
     if (!isAdmin) {
-      const token = (dto as any).priceToken as string | undefined;
-      if (token) {
-        const verified = verifyPriceToken(token);
-        if (!verified) {
-          throw new BadRequestException('priceToken inválido o expirado — re-cotiza el precio');
-        }
-        if (verified.userId && verified.userId !== user.id) {
-          throw new ForbiddenException('priceToken emitido para otro usuario');
-        }
-        if (verified.serviceId && verified.serviceId !== dto.serviceId) {
-          throw new BadRequestException('priceToken no corresponde a este servicio');
-        }
-        // `total` está en dólares (misma unidad que MoneyDto.amount en este sistema).
-        totalPrice = {
-          amount: verified.total,
-          currency: (dto.totalPrice as any)?.currency ?? 'USD',
-        } as any;
-      } else {
-        this.logger.warn(
-          `Booking sin priceToken (Fase 1 #9) — user ${user.id}, service ${dto.serviceId}. Se acepta el precio del body por ahora.`,
+      if (this.catalogPriceClient.isCatalog(dto.serviceType)) {
+        // CATÁLOGO (tour/experiencia/alojamiento): precio AUTORITATIVO del ítem
+        // consultado por serviceId al servicio dueño (auditoría B1 #9). Fail-closed:
+        // si no se puede validar, se rechaza (no se confía en el precio del cliente).
+        const authoritative = await this.catalogPriceClient.getAuthoritativePrice(
+          dto.serviceType,
+          dto.serviceId,
         );
+        if (!authoritative) {
+          throw new BadRequestException(
+            'No se pudo validar el precio del ítem de catálogo. Reintenta.',
+          );
+        }
+        totalPrice = authoritative as any;
+      } else {
+        // NO catálogo (transport/parcel): si viene un priceToken firmado por
+        // /estimate, su total manda (Fase 1 opcional). Estos son solicitudes con
+        // precio dinámico/preliminar sujeto a aprobación.
+        const token = (dto as any).priceToken as string | undefined;
+        if (token) {
+          const verified = verifyPriceToken(token);
+          if (!verified) {
+            throw new BadRequestException('priceToken inválido o expirado — re-cotiza el precio');
+          }
+          if (verified.userId && verified.userId !== user.id) {
+            throw new ForbiddenException('priceToken emitido para otro usuario');
+          }
+          if (verified.serviceId && verified.serviceId !== dto.serviceId) {
+            throw new BadRequestException('priceToken no corresponde a este servicio');
+          }
+          totalPrice = {
+            amount: verified.total,
+            currency: (dto.totalPrice as any)?.currency ?? 'USD',
+          } as any;
+        }
       }
     }
 
