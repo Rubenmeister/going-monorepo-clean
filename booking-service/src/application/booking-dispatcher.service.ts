@@ -181,6 +181,9 @@ export class BookingDispatcherService {
         Authorization:   `Bearer ${token}`,
       },
       body: JSON.stringify(body),
+      // Timeout S2S (auditoría B1 resiliencia): no colgar el dispatcher si transport
+      // no responde; el lock se libera en el catch y reintenta el próximo tick.
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {

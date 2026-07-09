@@ -964,6 +964,9 @@ export class RideController {
           actualDuration: dto.durationSeconds,
           paymentMethod:  method,
         }),
+        // Timeout S2S (auditoría B1 resiliencia): si payment cuelga, no bloquear
+        // la finalización del viaje indefinidamente.
+        signal: AbortSignal.timeout(5000),
       });
       if (!res.ok) {
         this.logger.error(`Registro de ganancia ${rideId}: HTTP ${res.status}`);
