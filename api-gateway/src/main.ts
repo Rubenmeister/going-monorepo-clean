@@ -89,9 +89,33 @@ async function bootstrap() {
       if (typeof xff === 'string' && xff.length) return xff.split(',')[0].trim();
       return request.ip;
     };
+    // Store COMPARTIDO en Redis (auditoría B1 — follow-up de #21/#22): sin esto el
+    // contador es in-memory POR POD, así que con N pods el límite efectivo es N×.
+    // Con el store Redis el límite es global y exacto entre pods. Si REDIS_URL no
+    // está o ioredis falla, se degrada a in-memory (sigue protegiendo, por pod).
+    let rlRedis: unknown = undefined;
+    const rlRedisUrl = process.env.REDIS_URL;
+    if (rlRedisUrl) {
+      try {
+        const { default: Redis } = await import('ioredis');
+        rlRedis = new Redis(rlRedisUrl, {
+          connectTimeout: 5000,
+          maxRetriesPerRequest: 1,
+          enableOfflineQueue: false,
+          // @fastify/rate-limit recomienda un keyPrefix propio para no colisionar.
+          keyPrefix: 'rl:',
+        });
+      } catch (e) {
+        Logger.warn(
+          `Rate limit: ioredis no disponible (${(e as Error).message}) — store in-memory por pod`,
+          'Security',
+        );
+      }
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await app.register(fastifyRateLimit as any, {
       global: true,
+      ...(rlRedis ? { redis: rlRedis } : {}),
       max: (request: any) => {
         const b = bucketOf(request.url);
         return b === 'auth' ? AUTH_MAX : b === 'payments' ? PAYMENTS_MAX : GENERAL_MAX;
@@ -108,7 +132,8 @@ async function bootstrap() {
     });
 
     Logger.log(
-      `Rate limiting ACTIVO (global): ${GENERAL_MAX}/min general, ${AUTH_MAX}/min auth, ${PAYMENTS_MAX}/min pagos (por IP y bucket)`,
+      `Rate limiting ACTIVO (global, store=${rlRedis ? 'redis-compartido' : 'in-memory-por-pod'}): ` +
+      `${GENERAL_MAX}/min general, ${AUTH_MAX}/min auth, ${PAYMENTS_MAX}/min pagos (por IP y bucket)`,
       'Security'
     );
   }
