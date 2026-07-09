@@ -6,6 +6,7 @@ import {
   IsDate,
   ValidateNested,
   IsOptional,
+  IsString,
 } from 'class-validator';
 import { MoneyDto } from '@going-monorepo-clean/shared-domain';
 import { ServiceType } from '@going-monorepo-clean/domains-booking-core';
@@ -44,6 +45,16 @@ export class CreateBookingDto {
   @ValidateNested()
   @Type(() => MoneyDto)
   totalPrice: MoneyDto;
+
+  /**
+   * Token de precio firmado emitido por POST /bookings/estimate (auditoría B1 #9).
+   * Cuando viene, el booking-service usa su `total` como precio autoritativo e
+   * ignora totalPrice del body → el cliente no puede manipular el precio. Opcional
+   * en Fase 1 del rollout (webapp/móvil aún adoptándolo).
+   */
+  @IsOptional()
+  @IsString()
+  priceToken?: string;
 
   @IsNotEmpty()
   @IsDate()

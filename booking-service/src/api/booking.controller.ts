@@ -11,6 +11,7 @@ import {
   ForbiddenException,
   UseGuards,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import {
   CreateBookingDto,
@@ -24,6 +25,7 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import { PricingService, getClientSurchargeRate, type ClientSegment } from 'pricing';
 import { EstimateFareDto } from './dtos/estimate-fare.dto';
+import { signPriceToken, verifyPriceToken } from './price-token';
 
 interface AuthUser {
   id: string;
@@ -37,6 +39,8 @@ interface AuthUser {
 @Controller('bookings')
 @UseGuards(JwtAuthGuard)
 export class BookingController {
+  private readonly logger = new Logger(BookingController.name);
+
   constructor(
     private readonly createBookingUseCase: CreateBookingUseCase,
     private readonly findBookingsByUserUseCase: FindBookingsByUserUseCase,
@@ -104,10 +108,31 @@ export class BookingController {
           basePriceBeforeCorpSurcharge: base.subtotal,
           corpSurcharge: Math.round((adjusted - base.subtotal) * 100) / 100,
         },
+        // Precio firmado (auditoría B1 #9): create lo usa como precio autoritativo.
+        priceToken: signPriceToken({
+          serviceId: body.serviceId,
+          serviceType: body.serviceType,
+          total: adjusted,
+          userId: user.id,
+          companyId: user.companyId ?? null,
+          clientSegment,
+        }),
       };
     }
 
-    return { ...base, clientSegment, clientSurchargeRate: 0 };
+    return {
+      ...base,
+      clientSegment,
+      clientSurchargeRate: 0,
+      priceToken: signPriceToken({
+        serviceId: body.serviceId,
+        serviceType: body.serviceType,
+        total: base.total,
+        userId: user.id,
+        companyId: user.companyId ?? null,
+        clientSegment,
+      }),
+    };
   }
 
   /**
@@ -153,12 +178,44 @@ export class BookingController {
       }
     }
 
+    // Precio autoritativo (auditoría B1 #9): si viene un priceToken firmado por
+    // /estimate, su `total` MANDA e ignora el totalPrice del body → el cliente no
+    // puede manipular el precio (que alimenta la factura corporativa). Fase 1 del
+    // rollout: opcional (se valida cuando viene); la exigencia llega cuando webapp
+    // y móvil lo envíen. Admin exento (correcciones manuales de ops).
+    let totalPrice = dto.totalPrice;
+    if (!isAdmin) {
+      const token = (dto as any).priceToken as string | undefined;
+      if (token) {
+        const verified = verifyPriceToken(token);
+        if (!verified) {
+          throw new BadRequestException('priceToken inválido o expirado — re-cotiza el precio');
+        }
+        if (verified.userId && verified.userId !== user.id) {
+          throw new ForbiddenException('priceToken emitido para otro usuario');
+        }
+        if (verified.serviceId && verified.serviceId !== dto.serviceId) {
+          throw new BadRequestException('priceToken no corresponde a este servicio');
+        }
+        // `total` está en dólares (misma unidad que MoneyDto.amount en este sistema).
+        totalPrice = {
+          amount: verified.total,
+          currency: (dto.totalPrice as any)?.currency ?? 'USD',
+        } as any;
+      } else {
+        this.logger.warn(
+          `Booking sin priceToken (Fase 1 #9) — user ${user.id}, service ${dto.serviceId}. Se acepta el precio del body por ahora.`,
+        );
+      }
+    }
+
     return this.createBookingUseCase.execute({
       ...dto,
       userId: user.id,
       companyId,
       clientSegment,
       paymentMode,
+      totalPrice,
     });
   }
 

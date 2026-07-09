@@ -22,6 +22,15 @@ import {
  * o payment-service POST /payments/quote.
  */
 export class EstimateFareDto {
+  /**
+   * Servicio a cotizar (auditoría B1 #9). Opcional para no romper el preview
+   * genérico, pero si viene, el priceToken devuelto queda atado a este serviceId
+   * y create exige que coincida → el precio firmado no se puede reusar para otro
+   * servicio del mismo tipo.
+   */
+  @IsOptional() @IsString()
+  serviceId?: string;
+
   @IsEnum(['transport', 'shared', 'shared_route', 'envio', 'accommodation', 'tour', 'experience'])
   serviceType!:
     | 'transport'
