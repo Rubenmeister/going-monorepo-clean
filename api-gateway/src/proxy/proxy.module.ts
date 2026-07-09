@@ -98,6 +98,22 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
       host: hostname,
     };
 
+    // Sanitizar headers de confianza S2S (auditoría B1 #20): el gateway es la
+    // frontera PÚBLICA — NUNCA debe reenviar el x-internal-token ni las firmas
+    // HMAC internas que un cliente pudiera inyectar para suplantar una llamada
+    // servicio-a-servicio (InternalServiceGuard). Los servicios internos solo
+    // deben recibir estos headers de OTROS servicios por VPC, no vía el proxy.
+    for (const h of [
+      'x-internal-token',
+      'x-internal-caller',
+      'x-nonce',
+      'x-signature',
+      'x-timestamp',
+      'x-caller',
+    ]) {
+      delete headers[h];
+    }
+
     // Si pre-parseado, fijamos content-length y content-type; si no, dejamos
     // que Node reenvíe los headers originales + chunked transfer del stream.
     let bodyBuf: Buffer | null = null;

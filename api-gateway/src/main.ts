@@ -64,13 +64,42 @@ async function bootstrap() {
   // ── RATE LIMITING via @fastify/rate-limit ─────────────────
   const rateLimitEnabled = process.env.RATE_LIMIT_ENABLED !== 'false';
   if (rateLimitEnabled) {
+    // auditoría B1 #21/#22: antes se registraba con global:false y NUNCA se
+    // aplicaba per-route (las rutas van por el PROXY, no por handlers Nest con
+    // config), así que el rate-limit no protegía nada y el log mentía. Ahora es
+    // GLOBAL (el onRequest de fastify corre antes que el middleware del proxy) con
+    // `max` DINÁMICO por ruta y key por BUCKET (login/pagos tienen su propio
+    // contador por IP, no comparten presupuesto con el browse).
+    const GENERAL_MAX = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10);
+    const AUTH_MAX = parseInt(process.env.RATE_LIMIT_AUTH_MAX || '5', 10);
+    const PAYMENTS_MAX = parseInt(process.env.RATE_LIMIT_PAYMENTS_MAX || '10', 10);
+    const bucketOf = (url: string): 'auth' | 'payments' | 'general' => {
+      const u = (url || '').split('?')[0];
+      if (u.startsWith('/auth/login') || u.startsWith('/auth/corporate/login') ||
+          u.startsWith('/auth/register') || u.startsWith('/auth/reset-password') ||
+          u.startsWith('/auth/forgot-password')) return 'auth';
+      if (u.startsWith('/payments')) return 'payments';
+      return 'general';
+    };
+    // IP REAL del cliente: detrás del GLB, request.ip es la IP del balanceador
+    // (todos compartirían un contador y se bloquearían entre sí). El GLB pone la
+    // IP del cliente como primer valor de X-Forwarded-For.
+    const clientIp = (request: any): string => {
+      const xff = request.headers?.['x-forwarded-for'];
+      if (typeof xff === 'string' && xff.length) return xff.split(',')[0].trim();
+      return request.ip;
+    };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await app.register(fastifyRateLimit as any, {
-      global: false, // we apply per-route via config below
-      max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10),
+      global: true,
+      max: (request: any) => {
+        const b = bucketOf(request.url);
+        return b === 'auth' ? AUTH_MAX : b === 'payments' ? PAYMENTS_MAX : GENERAL_MAX;
+      },
       timeWindow: '1 minute',
-      keyGenerator: (request) => request.ip,
-      errorResponseBuilder: (_request, context) => ({
+      // Key por (ip-real + bucket) → cada bucket tiene su propio contador por cliente.
+      keyGenerator: (request: any) => `${clientIp(request)}:${bucketOf(request.url)}`,
+      errorResponseBuilder: (_request: any, context: any) => ({
         statusCode: 429,
         message: 'Too many requests, please try again later',
         retryAfter: context.after,
@@ -79,7 +108,7 @@ async function bootstrap() {
     });
 
     Logger.log(
-      'Rate limiting enabled: 1000 req/min (general), 5 req/min (auth), 10 req/min (payments)',
+      `Rate limiting ACTIVO (global): ${GENERAL_MAX}/min general, ${AUTH_MAX}/min auth, ${PAYMENTS_MAX}/min pagos (por IP y bucket)`,
       'Security'
     );
   }
