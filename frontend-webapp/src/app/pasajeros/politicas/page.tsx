@@ -80,7 +80,7 @@ export default function PoliticasUsuariosPage() {
         { label: 'Políticas' },
       ]}
       sections={secciones}
-      downloadHref="/guias/going-politicas-usuarios.docx"
+      downloadHref="/guias/going-politicas-usuarios.pdf"
       footerNote="Documento de Operaciones Going. Para el texto legal completo, visita el Centro Legal o escríbenos desde la sección Ayuda."
     />
   );

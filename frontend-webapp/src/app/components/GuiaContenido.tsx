@@ -87,7 +87,7 @@ export function GuiaContenido({
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 active:scale-95"
               style={{ backgroundColor: COLORS.brand.red }}
             >
-              <span aria-hidden>⬇️</span> Descargar guía (Word)
+              <span aria-hidden>⬇️</span> Descargar guía (PDF)
             </a>
           </div>
         )}

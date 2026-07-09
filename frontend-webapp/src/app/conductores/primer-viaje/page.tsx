@@ -85,7 +85,7 @@ export default function PrimerViajeConductoresPage() {
         { label: 'Primer viaje' },
       ]}
       sections={secciones}
-      downloadHref="/guias/going-conductores-primer-viaje.docx"
+      downloadHref="/guias/going-conductores-primer-viaje.pdf"
       footerNote="Documento de Operaciones Going. ¿Dudas? Escríbenos desde la sección Ayuda de la aplicación."
     />
   );
