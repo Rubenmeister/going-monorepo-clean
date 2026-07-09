@@ -29,6 +29,8 @@ export interface GuiaContenidoProps {
   breadcrumbs?: GuiaBreadcrumb[];
   /** Nota/aviso al pie (opcional). */
   footerNote?: string;
+  /** Ruta del documento descargable (.docx en /public). Opcional. */
+  downloadHref?: string;
 }
 
 export function GuiaContenido({
@@ -37,6 +39,7 @@ export function GuiaContenido({
   sections,
   breadcrumbs = [],
   footerNote,
+  downloadHref,
 }: GuiaContenidoProps) {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -74,6 +77,20 @@ export function GuiaContenido({
             <p className="text-base text-gray-600 leading-relaxed">{intro}</p>
           </div>
         </div>
+
+        {/* Descarga */}
+        {downloadHref && (
+          <div className="mb-6">
+            <a
+              href={downloadHref}
+              download
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 active:scale-95"
+              style={{ backgroundColor: COLORS.brand.red }}
+            >
+              <span aria-hidden>⬇️</span> Descargar guía (Word)
+            </a>
+          </div>
+        )}
 
         {/* Cuerpo */}
         <article className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-6">

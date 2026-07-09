@@ -83,6 +83,7 @@ export default function PrimerViajePasajerosPage() {
         { label: 'Primer viaje' },
       ]}
       sections={secciones}
+      downloadHref="/guias/going-usuario-primer-viaje.docx"
       footerNote="Documento de Operaciones Going. ¿Necesitas ayuda? Escríbenos desde la sección Ayuda de la aplicación."
     />
   );
