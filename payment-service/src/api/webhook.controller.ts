@@ -115,8 +115,9 @@ export class WebhookController {
         }
       }
     } else {
-      // No signature — log the event for debugging
-      this.logger.log(`MP webhook (no signature): ${JSON.stringify(req.body)}`);
+      // Sin firma: NO se loguea el payload (PII de tarjeta/cliente en Cloud
+      // Logging — auditoría B1). Solo se registra el evento de forma redactada.
+      this.logger.warn('MP webhook sin firma recibido — payload no logueado por PII.');
     }
 
     return { received: true };
@@ -142,7 +143,8 @@ export class WebhookController {
       }
 
       const event = eventResult.value;
-      this.logger.log(`Datafast evento: ${JSON.stringify(event)}`);
+      // Solo campos NO sensibles (auditoría B1 — no volcar PII al log).
+      this.logger.log(`Datafast evento: status=${event.status} tx=${event.transactionId ?? event.sessionId}`);
 
       // Manejar resultado del pago
       if (event.status === 'approved' || event.status === 'paid') {
@@ -153,7 +155,7 @@ export class WebhookController {
         await this.handleDatafastPaymentFailed(event);
       }
     } else {
-      this.logger.log(`Datafast webhook (sin firma): ${JSON.stringify(req.body)}`);
+      this.logger.warn('Datafast webhook sin firma recibido — payload no logueado por PII.');
     }
 
     return { received: true };
@@ -179,7 +181,7 @@ export class WebhookController {
       }
 
       const event = eventResult.value;
-      this.logger.log(`DeUna evento: ${JSON.stringify(event)}`);
+      this.logger.log(`DeUna evento: status=${event.status} order=${event.orderId}`);
 
       // Estados DeUna: pending | paid | expired | cancelled
       if (event.status === 'paid') {
@@ -190,7 +192,7 @@ export class WebhookController {
         await this.handleDeunaPaymentFailed(event);
       }
     } else {
-      this.logger.log(`DeUna webhook (sin firma): ${JSON.stringify(req.body)}`);
+      this.logger.warn('DeUna webhook sin firma recibido — payload no logueado por PII.');
     }
 
     return { received: true };
