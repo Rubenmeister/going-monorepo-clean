@@ -142,6 +142,30 @@ export default function HelpPage() {
           }
         </div>
 
+        {/* Guías (documentos de Operaciones) */}
+        {!search.trim() && (
+          <div className="mt-12">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Guías</h2>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {[
+                { href: '/pasajeros/primer-viaje', icon: '🚗', title: 'Tu primer viaje', desc: 'Guía para viajeras y viajeros' },
+                { href: '/pasajeros/politicas', icon: '📋', title: 'Políticas para usuarios', desc: 'Seguridad, pagos y cancelaciones' },
+                { href: '/conductores/primer-viaje', icon: '🧑‍✈️', title: 'Primer viaje (conductores)', desc: 'Para socias y socios conductores' },
+              ].map((g) => (
+                <Link
+                  key={g.href}
+                  href={g.href}
+                  className="block bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:border-gray-300 hover:shadow transition-all"
+                >
+                  <div className="text-2xl mb-2">{g.icon}</div>
+                  <div className="font-bold text-gray-900 text-sm mb-1">{g.title}</div>
+                  <div className="text-xs text-gray-500">{g.desc}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* CTA */}
         <div className="mt-12 bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
           <h2 className="text-xl font-bold text-gray-900 mb-2">¿No encontraste lo que buscabas?</h2>

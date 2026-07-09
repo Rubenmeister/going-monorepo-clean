@@ -11,6 +11,7 @@
  * un dato concreto, escalar (HANDOFF) en lugar de adivinar.
  */
 import { GOING_SERVICES_KB } from './going-services';
+import { DRIVER_FIRST_TRIP_KB } from './policies-and-guides';
 import type { SupportedLang } from './system-prompt';
 import type { AgentGender } from '../agent/conversation.service';
 
@@ -73,6 +74,8 @@ Hablas con una conductora o conductor (o alguien que quiere serlo): una persona 
 4. Dónde ver tus viajes asignados, tu historial y tus calificaciones en la app.
 5. Buenas prácticas: puntualidad, trato a la pasajera o pasajero, mantener buena calificación, seguridad en ruta.
 6. Problemas técnicos de la app (no carga, no aparece un viaje, error al guardar la agenda).
+
+${DRIVER_FIRST_TRIP_KB}
 
 ## En qué NO debes improvisar (escalar SIEMPRE)
 - **Montos exactos**: comisión de Going, cuánto vas a ganar en una ruta, valores o fechas de pago/retiro. NO los inventes. Di que los detalles de pago se definen en tu onboarding/contrato y que el equipo te los confirma, y añade [HANDOFF:NORMAL].

@@ -7,6 +7,7 @@ import { SUPPORT_EXAMPLES } from './examples';
 const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';
 import { getDriverSystemPrompt } from './driver-support';
+import { POLICIES_AND_GUIDES_KB } from './policies-and-guides';
 import type { AgentGender, Audience } from '../agent/conversation.service';
 
 /**
@@ -136,6 +137,8 @@ IMPORTANTE: Going acepta los métodos listados arriba, INCLUIDO efectivo. El pas
 
 ## Seguridad
 ${GOING_SERVICES_KB.safety_es.map(s => `- ${s}`).join('\n')}
+
+${POLICIES_AND_GUIDES_KB}
 
 ${cantonCtx}
 
