@@ -30,7 +30,7 @@ import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID, MoneyDto } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
 import { InternalServiceGuard } from './internal-service.guard';
-import { IsIn, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-matching-orchestrator.service';
 import { PaymentIntentService } from '../infrastructure/services/payment-intent.service';
 import { SmsService } from '../infrastructure/services/sms.service';
