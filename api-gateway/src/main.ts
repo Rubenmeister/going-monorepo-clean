@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { initSentry, registerSentryFastify } from './sentry.config';
 import { AllExceptionsFilter } from '@going-monorepo-clean/shared-infrastructure';
 import fastifyHelmet from '@fastify/helmet';
-import fastifyRateLimit from '@fastify/rate-limit';
 import * as net from 'net';
 import * as tls from 'tls';
 import { IncomingMessage } from 'http';
@@ -61,103 +60,86 @@ async function bootstrap() {
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   });
 
-  // ── RATE LIMITING via @fastify/rate-limit ─────────────────
+  // ── RATE LIMITING (manual, en el hook onRequest — ANTES del proxy) ──
+  // auditoría B1 #21/#22: @fastify/rate-limit (global) NO frena aquí — verificado
+  // en prod: 0 respuestas 429. Motivo: las rutas van por el MIDDLEWARE del proxy
+  // (middie), no por handlers Fastify, y el plugin aplica su límite por-ROUTE. La
+  // solución que SÍ funciona: contar manualmente (INCR+EXPIRE en Redis) dentro del
+  // hook onRequest de abajo, que corre ANTES de que middie reenvíe el request.
   const rateLimitEnabled = process.env.RATE_LIMIT_ENABLED !== 'false';
-  if (rateLimitEnabled) {
-    // auditoría B1 #21/#22: antes se registraba con global:false y NUNCA se
-    // aplicaba per-route (las rutas van por el PROXY, no por handlers Nest con
-    // config), así que el rate-limit no protegía nada y el log mentía. Ahora es
-    // GLOBAL (el onRequest de fastify corre antes que el middleware del proxy) con
-    // `max` DINÁMICO por ruta y key por BUCKET (login/pagos tienen su propio
-    // contador por IP, no comparten presupuesto con el browse).
-    const GENERAL_MAX = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10);
-    const AUTH_MAX = parseInt(process.env.RATE_LIMIT_AUTH_MAX || '5', 10);
-    const PAYMENTS_MAX = parseInt(process.env.RATE_LIMIT_PAYMENTS_MAX || '10', 10);
-    const bucketOf = (url: string): 'auth' | 'payments' | 'general' => {
-      const u = (url || '').split('?')[0];
-      if (u.startsWith('/auth/login') || u.startsWith('/auth/corporate/login') ||
-          u.startsWith('/auth/register') || u.startsWith('/auth/reset-password') ||
-          u.startsWith('/auth/forgot-password')) return 'auth';
-      if (u.startsWith('/payments')) return 'payments';
-      return 'general';
-    };
-    // IP REAL del cliente: detrás del GLB, request.ip es la IP del balanceador
-    // (todos compartirían un contador y se bloquearían entre sí). El GLB pone la
-    // IP del cliente como primer valor de X-Forwarded-For.
-    const clientIp = (request: any): string => {
-      const xff = request.headers?.['x-forwarded-for'];
-      if (typeof xff === 'string' && xff.length) return xff.split(',')[0].trim();
-      return request.ip;
-    };
-    // Store COMPARTIDO en Redis (auditoría B1 — follow-up de #21/#22): sin esto el
-    // contador es in-memory POR POD, así que con N pods el límite efectivo es N×.
-    // Con el store Redis el límite es global y exacto entre pods. Si REDIS_URL no
-    // está o ioredis falla, se degrada a in-memory (sigue protegiendo, por pod).
-    let rlRedis: unknown = undefined;
-    const rlRedisUrl = process.env.REDIS_URL;
-    if (rlRedisUrl) {
-      try {
-        const { default: Redis } = await import('ioredis');
-        rlRedis = new Redis(rlRedisUrl, {
-          connectTimeout: 5000,
-          maxRetriesPerRequest: 1,
-          enableOfflineQueue: false,
-          // @fastify/rate-limit recomienda un keyPrefix propio para no colisionar.
-          keyPrefix: 'rl:',
-        });
-      } catch (e) {
-        Logger.warn(
-          `Rate limit: ioredis no disponible (${(e as Error).message}) — store in-memory por pod`,
-          'Security',
-        );
-      }
+  const RL_GENERAL_MAX = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10);
+  const RL_AUTH_MAX = parseInt(process.env.RATE_LIMIT_AUTH_MAX || '5', 10);
+  const RL_PAYMENTS_MAX = parseInt(process.env.RATE_LIMIT_PAYMENTS_MAX || '10', 10);
+  const rlBucketOf = (url: string): 'auth' | 'payments' | 'general' => {
+    const u = (url || '').split('?')[0];
+    if (u.startsWith('/auth/login') || u.startsWith('/auth/corporate/login') ||
+        u.startsWith('/auth/register') || u.startsWith('/auth/reset-password') ||
+        u.startsWith('/auth/forgot-password')) return 'auth';
+    if (u.startsWith('/payments')) return 'payments';
+    return 'general';
+  };
+  const rlMaxFor = (b: string): number =>
+    b === 'auth' ? RL_AUTH_MAX : b === 'payments' ? RL_PAYMENTS_MAX : RL_GENERAL_MAX;
+  // IP real del cliente: detrás del GLB, request.ip es el balanceador (todos
+  // compartirían contador). El GLB pone la IP real como primer X-Forwarded-For.
+  const rlClientIp = (request: any): string => {
+    const xff = request.headers?.['x-forwarded-for'];
+    if (typeof xff === 'string' && xff.length) return xff.split(',')[0].trim();
+    return request.ip;
+  };
+  // Store: Redis COMPARTIDO (exacto multi-pod) si hay REDIS_URL; si no, in-memory por pod.
+  let rlRedis: any = undefined;
+  if (rateLimitEnabled && process.env.REDIS_URL) {
+    try {
+      const { default: Redis } = await import('ioredis');
+      rlRedis = new Redis(process.env.REDIS_URL, {
+        connectTimeout: 5000, maxRetriesPerRequest: 1, enableOfflineQueue: false, keyPrefix: 'rlgw:',
+      });
+    } catch (e) {
+      Logger.warn(`Rate limit: ioredis no disponible (${(e as Error).message}) — in-memory por pod`, 'Security');
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await app.register(fastifyRateLimit as any, {
-      global: true,
-      ...(rlRedis ? { redis: rlRedis } : {}),
-      max: (request: any) => {
-        const b = bucketOf(request.url);
-        return b === 'auth' ? AUTH_MAX : b === 'payments' ? PAYMENTS_MAX : GENERAL_MAX;
-      },
-      timeWindow: '1 minute',
-      // Key por (ip-real + bucket) → cada bucket tiene su propio contador por cliente.
-      keyGenerator: (request: any) => `${clientIp(request)}:${bucketOf(request.url)}`,
-      errorResponseBuilder: (_request: any, context: any) => ({
-        statusCode: 429,
-        message: 'Too many requests, please try again later',
-        retryAfter: context.after,
-      }),
-      skipOnError: false,
-    });
-
-    Logger.log(
-      `Rate limiting ACTIVO (global, store=${rlRedis ? 'redis-compartido' : 'in-memory-por-pod'}): ` +
-      `${GENERAL_MAX}/min general, ${AUTH_MAX}/min auth, ${PAYMENTS_MAX}/min pagos (por IP y bucket)`,
-      'Security'
-    );
   }
+  const rlMem = new Map<string, { count: number; resetAt: number }>();
+  // true = el request debe bloquearse (429). Fail-open ante error de Redis.
+  const rateLimitExceeded = async (url: string, ip: string): Promise<boolean> => {
+    if (!rateLimitEnabled) return false;
+    const bucket = rlBucketOf(url);
+    const max = rlMaxFor(bucket);
+    const key = `${ip}:${bucket}`;
+    try {
+      if (rlRedis) {
+        const n = await rlRedis.incr(key);
+        if (n === 1) await rlRedis.expire(key, 60);
+        return n > max;
+      }
+      const now = Date.now();
+      const e = rlMem.get(key);
+      if (!e || e.resetAt <= now) { rlMem.set(key, { count: 1, resetAt: now + 60000 }); return false; }
+      e.count += 1;
+      return e.count > max;
+    } catch {
+      return false; // fail-open: no bloquear si Redis falla
+    }
+  };
+  Logger.log(
+    `Rate limiting ${rateLimitEnabled ? 'ACTIVO' : 'OFF'} (store=${rlRedis ? 'redis-compartido' : 'in-memory-por-pod'}): ` +
+    `${RL_GENERAL_MAX}/min general, ${RL_AUTH_MAX}/min auth, ${RL_PAYMENTS_MAX}/min pagos (por IP y bucket)`,
+    'Security'
+  );
 
-  // ── AUDIT LOGGING HOOK ────────────────────────────────────
+  // ── AUDIT LOGGING + RATE LIMIT HOOK (corre ANTES de middie/proxy) ──
   app.useLogger(['error', 'warn', 'log']);
   const fastifyInstance = app.getHttpAdapter().getInstance();
   fastifyInstance.addHook(
     'onRequest',
-    (
-      request: {
-        id: string;
-        ip: string;
-        method: string;
-        url: string;
-        user?: { id: string };
-      },
-      _reply: unknown,
-      done: () => void
-    ) => {
+    async (request: any, reply: any) => {
       request.id = uuidv4();
       // Store original URL on raw IncomingMessage before middie strips it in middleware
       (request as any).raw.originalUrl = (request as any).url;
-      done();
+      // Rate limit ANTES de que el proxy reenvíe (auditoría B1 #21/#22).
+      if (await rateLimitExceeded((request as any).url, rlClientIp(request))) {
+        return reply.code(429).send({ statusCode: 429, message: 'Too many requests, please try again later' });
+      }
     }
   );
 
@@ -381,7 +363,7 @@ async function bootstrap() {
     'Bootstrap'
   );
   Logger.log(
-    `🔒 Security: @fastify/helmet + @fastify/rate-limit enabled`,
+    `🔒 Security: @fastify/helmet + rate-limit manual (Redis, pre-proxy) enabled`,
     'Security'
   );
   Logger.log(`🌐 CORS restricted to: ${corsOrigins.join(', ')}`, 'Bootstrap');
