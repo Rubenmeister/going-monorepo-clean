@@ -68,9 +68,25 @@ export class RedisTrackingRepository implements ITrackingRepository {
       const keys = driverIds.map((id) => `${DRIVER_KEY_PREFIX}${id}`);
       const results = await this.redisClient.mGet(keys);
 
-      const locations = results
-        .filter((res) => !!res)
-        .map((loc) => DriverLocation.fromPrimitives(JSON.parse(loc as string)));
+      // Poda self-healing (auditoría Bloque 2 #11): la clave driver:location:<id>
+      // expira por TTL pero el id nunca se quitaba de ACTIVE_DRIVERS_SET → el set
+      // crecía sin límite y degradaba este endpoint. Aquí quitamos del set los
+      // ids cuya clave ya expiró (mGet devolvió null).
+      const stale: string[] = [];
+      const locations: DriverLocation[] = [];
+      results.forEach((loc, i) => {
+        if (loc) {
+          locations.push(
+            DriverLocation.fromPrimitives(JSON.parse(loc as string))
+          );
+        } else {
+          stale.push(driverIds[i]);
+        }
+      });
+      if (stale.length > 0) {
+        // best-effort; no bloquear la respuesta si falla
+        redisClient.sRem(ACTIVE_DRIVERS_SET, stale).catch(() => undefined);
+      }
 
       return ok(locations);
     } catch (error) {

@@ -116,6 +116,16 @@ export class LocationTrackingGateway
       this.availabilityRepo.setOffline(driverId);
       this.logger.log(`Driver disconnected: ${driverId}`);
     }
+    // Fuga de memoria (auditoría Bloque 2 #13): antes NO se quitaba el socket de
+    // tripRooms al desconectar → los sets acumulaban socketIds muertos y las
+    // entradas de viaje nunca se liberaban. Limpiar el socket de todas las salas
+    // y borrar la sala (y su tripDriver) si queda vacía.
+    for (const [tripId, socketIds] of this.tripRooms.entries()) {
+      if (socketIds.delete(client.id) && socketIds.size === 0) {
+        this.tripRooms.delete(tripId);
+        this.tripDriver.delete(tripId);
+      }
+    }
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 

@@ -140,7 +140,10 @@ export class IncidentsController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() body: UpdateIncidentDto, @Req() req?: any) {
-    const operatorId = this.requireOperator(req) ?? body.operatorId ?? 'unknown';
+    // Identidad del operador SOLO desde el token autenticado (auditoría Bloque 2
+    // #16). Antes caía a body.operatorId → cualquiera falsificaba quién atendió
+    // el incidente SOS en la auditoría. El body ya no decide la identidad.
+    const operatorId = this.requireOperator(req) ?? 'unknown';
 
     let inc = await this.repo.findById(id);
     if (!inc) throw new HttpException('incident not found', HttpStatus.NOT_FOUND);

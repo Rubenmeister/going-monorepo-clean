@@ -16,6 +16,11 @@ interface ActiveDriversRepo {
     value: unknown[];
     error?: Error;
   }>;
+  findByDriverId(driverId: string): Promise<{
+    isErr(): boolean;
+    value: { toPrimitives?: () => any } | null;
+    error?: Error;
+  }>;
 }
 
 /** Roles con permiso para ver el panel operativo de conductores activos. */
@@ -82,24 +87,19 @@ export class ActiveDriversController {
     @Param('driverId') driverId: string,
   ): Promise<{ lat: number; lng: number; lastUpdated?: Date } | null> {
     try {
-      const result = await this.repo.findAllActive();
-      if (result.isErr()) return null;
-      const drivers = (result.value ?? []) as any[];
-      const match = drivers.find(
-        (d) =>
-          d.driverId === driverId ||
-          d.id === driverId ||
-          d.userId === driverId,
-      );
-      if (!match) return null;
-      const lat = match.lat ?? match.latitude ?? match.coords?.lat;
-      const lng = match.lng ?? match.longitude ?? match.coords?.lng;
+      // Lookup directo O(1) (auditoría Bloque 2 #14): antes traía TODOS los
+      // conductores activos (findAllActive) para filtrar uno → O(N) en un
+      // endpoint S2S caliente. Ahora GET directo por clave.
+      const result = await this.repo.findByDriverId(driverId);
+      if (result.isErr() || !result.value) return null;
+      const p =
+        typeof result.value.toPrimitives === 'function'
+          ? result.value.toPrimitives()
+          : (result.value as any);
+      const lat = p?.location?.latitude;
+      const lng = p?.location?.longitude;
       if (typeof lat !== 'number' || typeof lng !== 'number') return null;
-      return {
-        lat,
-        lng,
-        lastUpdated: match.lastUpdated ?? match.updatedAt ?? match.timestamp,
-      };
+      return { lat, lng, lastUpdated: p.updatedAt };
     } catch {
       return null;
     }

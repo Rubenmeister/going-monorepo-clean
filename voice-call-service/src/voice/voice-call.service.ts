@@ -140,4 +140,14 @@ export class VoiceCallService {
     }
     return false;
   }
+
+  /**
+   * Estado actual de una llamada por callId (auditoría Bloque 2 #18): usado para
+   * gate del handoff-twiml — solo servir el <Dial> al operador si la llamada
+   * está realmente en curso/escalada. Null si no existe.
+   */
+  async findStatus(callId: string): Promise<string | null> {
+    const call = await this.repo.findById(callId);
+    return (call?.status as string) ?? null;
+  }
 }

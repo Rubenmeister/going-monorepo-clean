@@ -259,15 +259,23 @@ export class TwilioController {
     this.logger.log(`[handoff-twiml] requested for callId=${callId.slice(0, 12)}`);
 
     // Sanity: solo servir TwiML si la call existe Y está en un estado
-    // donde el handoff tiene sentido. Filtra URLs adivinadas por atacantes.
-    // El handoff requested se setea en el bridge al recibir el tool_call;
-    // status='escalated_to_human' lo setea el repo al cerrar la session.
-    // En el momento del redirect la call típicamente sigue 'in_progress'
-    // (la session OpenAI se cierra DESPUÉS de que Twilio confirma el
-    // redirect, no antes). Aceptamos ambos estados.
-    // Nota: este check usa repo via VoiceCallService.findStatus en próxima
-    // iteración — por ahora confiamos en el callId opaco como suficiente
-    // (es un UUID-like de Twilio, difícil de adivinar).
+    // donde el handoff tiene sentido ('in_progress' o 'escalated_to_human').
+    // Gate por estado (auditoría Bloque 2 #18): filtra URLs adivinadas por
+    // atacantes que solo buscan exponer/marcar el número del operador. Si no
+    // califica, devolvemos el TwiML de callback (sin número del operador).
+    const status = await this.voice.findStatus(callId);
+    const handoffAllowed =
+      status === 'in_progress' || status === 'escalated_to_human';
+    if (!handoffAllowed) {
+      this.logger.warn(
+        `[handoff-twiml] callId=${callId.slice(0, 12)} estado=${status ?? 'none'} no habilita handoff → callback sin operador`
+      );
+      return buildHandoffTwiml({
+        operatorPhone: undefined,
+        spokenIntro:
+          'Gracias por llamar a Going App. Un agente te contactará en breve.',
+      });
+    }
 
     const operatorPhone = this.handoff.operatorPhone();
     const twiml = buildHandoffTwiml({
