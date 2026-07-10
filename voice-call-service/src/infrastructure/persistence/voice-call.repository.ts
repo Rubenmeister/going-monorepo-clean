@@ -107,7 +107,10 @@ export class VoiceCallRepository {
 
   /** Histórico paginado para /admin/cerebro/voice-calls. */
   async recent(limit = 50, status?: VoiceCallStatus): Promise<VoiceCallEntity[]> {
-    const filter = status ? { status } : {};
+    // Saneo anti NoSQL-injection (auditoría Bloque 2): solo un status string va
+    // al filtro; un objeto (?status[$ne]=) se descarta. El endpoint ya es
+    // admin-gated (#12), esto es defensa en profundidad.
+    const filter = typeof status === 'string' ? { status } : {};
     return this.model.find(filter).sort({ startedAt: -1 }).limit(limit).lean();
   }
 

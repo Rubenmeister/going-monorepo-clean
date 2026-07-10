@@ -60,9 +60,13 @@ export class MongooseExperienceRepository implements IExperienceRepository {
 
   async searchPublished(filters: ExperienceSearchFilters): Promise<Result<Experience[], Error>> {
     try {
+      // Saneo anti NoSQL-injection (auditoría Bloque 2): solo primitivos.
       const query: any = { status: 'published' };
-      if (filters.locationCity) query['location.city'] = filters.locationCity;
-      if (filters.maxPrice) query['price.amount'] = { $lte: filters.maxPrice };
+      if (typeof filters.locationCity === 'string') query['location.city'] = filters.locationCity;
+      const maxPrice = Number(filters.maxPrice);
+      if (filters.maxPrice != null && Number.isFinite(maxPrice)) {
+        query['price.amount'] = { $lte: maxPrice };
+      }
 
       const docs = await this.model.find(query).exec();
       return ok(docs.map(this.toDomain));

@@ -91,9 +91,13 @@ export class MongooseAccommodationRepository
   ): Promise<Result<Accommodation[], Error>> {
     try {
       const query: any = { status: 'published' };
-      if (filters.city) query['location.city'] = filters.city;
-      if (filters.country) query['location.country'] = filters.country;
-      if (filters.capacity) query.capacity = { $gte: filters.capacity };
+      // Saneo anti NoSQL-injection (auditoría Bloque 2): solo primitivos.
+      if (typeof filters.city === 'string') query['location.city'] = filters.city;
+      if (typeof filters.country === 'string') query['location.country'] = filters.country;
+      const capacity = Number(filters.capacity);
+      if (filters.capacity != null && Number.isFinite(capacity)) {
+        query.capacity = { $gte: capacity };
+      }
 
       const docs = await this.model.find(query).exec();
       return ok(docs.map(this.toDomain));
@@ -109,9 +113,13 @@ export class MongooseAccommodationRepository
     try {
       const { skip, limit } = getPaginationOptions(pagination);
       const query: any = { status: 'published' };
-      if (filters.city) query['location.city'] = filters.city;
-      if (filters.country) query['location.country'] = filters.country;
-      if (filters.capacity) query.capacity = { $gte: filters.capacity };
+      // Saneo anti NoSQL-injection (auditoría Bloque 2): solo primitivos.
+      if (typeof filters.city === 'string') query['location.city'] = filters.city;
+      if (typeof filters.country === 'string') query['location.country'] = filters.country;
+      const capacity = Number(filters.capacity);
+      if (filters.capacity != null && Number.isFinite(capacity)) {
+        query.capacity = { $gte: capacity };
+      }
 
       const [docs, total] = await Promise.all([
         this.model.find(query).skip(skip).limit(limit).exec(),

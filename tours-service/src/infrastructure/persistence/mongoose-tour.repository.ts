@@ -60,10 +60,17 @@ export class MongooseTourRepository implements ITourRepository {
 
   async searchPublished(filters: TourSearchFilters): Promise<Result<Tour[], Error>> {
     try {
+      // Saneo anti NoSQL-injection (auditoría Bloque 2): con Express+qs un
+      // `?city[$ne]=` llega como OBJETO y se inyectaría como operador Mongo,
+      // burlando el filtro (devolvía todo). Solo aceptamos primitivos: string
+      // para city/category, número finito para maxPrice. Un objeto se descarta.
       const query: any = { status: 'published' };
-      if (filters.locationCity) query['location.city'] = filters.locationCity;
-      if (filters.category) query.category = filters.category;
-      if (filters.maxPrice) query['price.amount'] = { $lte: filters.maxPrice };
+      if (typeof filters.locationCity === 'string') query['location.city'] = filters.locationCity;
+      if (typeof filters.category === 'string') query.category = filters.category;
+      const maxPrice = Number(filters.maxPrice);
+      if (filters.maxPrice != null && Number.isFinite(maxPrice)) {
+        query['price.amount'] = { $lte: maxPrice };
+      }
 
       const docs = await this.model.find(query).exec();
       return ok(docs.map(this.toDomain));
