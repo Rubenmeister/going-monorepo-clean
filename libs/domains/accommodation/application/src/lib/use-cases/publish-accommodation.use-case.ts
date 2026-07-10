@@ -1,4 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { IAccommodationRepository } from '@going-monorepo-clean/domains-accommodation-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
@@ -9,7 +15,16 @@ export class PublishAccommodationUseCase {
     private readonly repository: IAccommodationRepository,
   ) {}
 
-  async execute(id: UUID): Promise<void> {
+  /**
+   * Ownership (auditoría Bloque 2 #19, mismo patrón que tours): solo el host
+   * dueño (o admin) publica su alojamiento. Antes cualquier usuario autenticado
+   * publicaba el de otro host (BOLA).
+   */
+  async execute(
+    id: UUID,
+    requesterId?: string,
+    isAdmin = false,
+  ): Promise<void> {
     const result = await this.repository.findById(id);
 
     if (result.isErr()) {
@@ -17,6 +32,16 @@ export class PublishAccommodationUseCase {
     }
     if (!result.value) {
       throw new NotFoundException(`Accommodation with ID ${id} not found.`);
+    }
+
+    const accommodation = result.value as any;
+    if (
+      !isAdmin &&
+      (!requesterId || String(accommodation.hostId) !== String(requesterId))
+    ) {
+      throw new ForbiddenException(
+        'Solo el host dueño puede publicar este alojamiento',
+      );
     }
 
     // Lógica de negocio en la entidad

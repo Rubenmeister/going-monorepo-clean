@@ -61,10 +61,16 @@ export class TourController {
     return tour.toPrimitives();
   }
 
-  /** PATCH /tours/:id/publish — requires JWT */
+  /** PATCH /tours/:id/publish — requires JWT; solo el host dueño o admin (#19) */
   @Patch(':id/publish')
   @UseGuards(JwtAuthGuard)
-  async publishTour(@Param('id') id: string): Promise<any> {
-    return this.publishTourUseCase.execute(id);
+  async publishTour(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ): Promise<any> {
+    const isAdmin = ['admin', 'super_admin', 'ops', 'ADMIN', 'SUPER_ADMIN'].includes(
+      user.role,
+    );
+    return this.publishTourUseCase.execute(id, user.id, isAdmin);
   }
 }

@@ -52,11 +52,17 @@ export class AccommodationController {
     return acc.toPrimitives();
   }
 
-  /** PATCH /accommodations/:id/publish — requires JWT */
+  /** PATCH /accommodations/:id/publish — requires JWT; solo host dueño o admin (#19) */
   @Patch(':id/publish')
   @UseGuards(JwtAuthGuard)
-  async publishAccommodation(@Param('id') id: string): Promise<any> {
-    await this.publishAccommodationUseCase.execute(id);
+  async publishAccommodation(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ): Promise<any> {
+    const isAdmin = ['admin', 'super_admin', 'ops', 'ADMIN', 'SUPER_ADMIN'].includes(
+      user.role,
+    );
+    await this.publishAccommodationUseCase.execute(id, user.id, isAdmin);
     return { status: 'published', message: 'Accommodation published successfully' };
   }
 }

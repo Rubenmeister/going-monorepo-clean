@@ -40,7 +40,11 @@ export class CreateTourUseCase {
       throw new InternalServerErrorException(tourResult.error.message);
     }
     const tour = tourResult.value;
-    tour.publish();
+    // Auditoría Bloque 2 #20: NO auto-publicar al crear. Antes `tour.publish()`
+    // metía el listado directo al catálogo público → cualquier usuario
+    // autenticado inyectaba tours públicos con un solo POST. El tour queda sin
+    // publicar y requiere un PATCH /tours/:id/publish explícito (que ahora valida
+    // que quien publica sea el host dueño — #19).
 
     const saveResult = await this.tourRepo.save(tour);
     if (saveResult.isErr()) {

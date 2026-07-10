@@ -39,7 +39,10 @@ export class CreateAccommodationUseCase {
       throw new InternalServerErrorException(accommodationResult.error.message);
     }
     const accommodation = accommodationResult.value;
-    accommodation.publish();
+    // Auditoría Bloque 2 #20 (mismo patrón que tours): NO auto-publicar al crear.
+    // Antes cualquier usuario autenticado inyectaba un alojamiento al catálogo
+    // público con un solo POST. Queda sin publicar hasta un PATCH publish
+    // explícito del host dueño (#19).
 
     const saveResult = await this.accommodationRepo.save(accommodation);
     if (saveResult.isErr()) {
