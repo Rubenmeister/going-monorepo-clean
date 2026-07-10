@@ -24,9 +24,21 @@ export class CloudRunTool {
 
       return entries.map(e => {
         const payload = e.data as any;
-        const msg = typeof payload === 'string'
-          ? payload
-          : payload?.message || payload?.textPayload || JSON.stringify(payload).slice(0, 200);
+        // Guarda anti-crash: si el entry no trae payload (e.data === undefined),
+        // JSON.stringify(undefined) devuelve undefined (NO string) y .slice
+        // rompía con "Cannot read properties of undefined (reading 'slice')".
+        let msg: string;
+        if (typeof payload === 'string') {
+          msg = payload;
+        } else if (payload?.message) {
+          msg = String(payload.message);
+        } else if (payload?.textPayload) {
+          msg = String(payload.textPayload);
+        } else if (payload != null) {
+          msg = JSON.stringify(payload).slice(0, 200);
+        } else {
+          msg = '(entry sin payload)';
+        }
         return `[${e.metadata.timestamp}] ${msg}`;
       }).join('\n');
 
