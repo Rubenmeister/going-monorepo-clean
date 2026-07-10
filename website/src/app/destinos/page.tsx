@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const DESTINOS = [
   { name: 'Ibarra', region: 'Sierra Norte', tag: '🚂 Histórico', hours: '2.5h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=700&q=85', desc: 'Ciudad blanca del Ecuador. Helados de paila, tren de la libertad y Laguna de Yahuarcocha.' },
   { name: 'Santo Domingo', region: 'Trópico', tag: '🌿 Naturaleza', hours: '3h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85', desc: 'La puerta de entrada a la Costa. Clima cálido, naturaleza exuberante y la cultura Tsáchila.' },
-  { name: 'Riobamba', region: 'Sierra Centro', tag: '🏔️ Andes', hours: '4h', price: 'Desde $17', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=85', desc: 'La Sultana de los Andes. Puerta al volcán Chimborazo, el punto más cercano al sol del planeta.' },
+  { name: 'Riobamba', region: 'Sierra Centro', tag: '🏔️ Andes', hours: '4h', price: 'Desde $20', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=85', desc: 'La Sultana de los Andes. Puerta al volcán Chimborazo, el punto más cercano al sol del planeta.' },
 ];
 
 export default function DestinosPage() {

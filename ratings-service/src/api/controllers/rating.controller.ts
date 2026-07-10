@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Param,
+  Query,
   Body,
   HttpStatus,
   UseGuards,
@@ -49,6 +50,34 @@ export class RatingController {
     @Inject(IDriverProfileRepository)
     private driverProfileRepository: IDriverProfileRepository,
   ) {}
+
+  /**
+   * GET /ratings/public — reseñas recientes con comentario, PÚBLICO.
+   * Lo consume el componente ReviewsList (home / rutas) como testimonio social.
+   * Antes el front llamaba a /reviews/public (no ruteado) → auditoría webapp #4.
+   * Sin auth: solo expone reseñas ya públicas (estrellas + comentario), sin PII
+   * más allá del nombre de quien viaja.
+   */
+  @Get('public')
+  async getPublicReviews(@Query('limit') limitStr?: string) {
+    const n = parseInt(limitStr ?? '6', 10);
+    const limit = Number.isFinite(n) && n > 0 ? Math.min(n, 20) : 6;
+    // Pedimos de más porque filtramos a las que tienen comentario escrito.
+    const recent = await this.ratingRepository.findRecent(limit * 4);
+    const reviews = (recent ?? [])
+      .filter((r) => r?.review && String(r.review).trim())
+      .slice(0, limit)
+      .map((r) => ({
+        id: String(r.id ?? r._id ?? ''),
+        passengerName: r.raterName ?? r.passengerName ?? 'Viajera o viajero Going',
+        rating: r.stars ?? r.rating ?? 5,
+        comment: r.review,
+        route: r.route,
+        vehicleType: r.vehicleType,
+        createdAt: r.createdAt,
+      }));
+    return { reviews };
+  }
 
   /** POST /ratings/submit — JWT required, raterId from token */
   @UseGuards(JwtAuthGuard)

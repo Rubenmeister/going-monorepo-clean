@@ -299,7 +299,7 @@ export default function Home() {
                 { val: '3 rutas', label: 'Para empezar', sub: 'Riobamba, Sto. Domingo e Ibarra' },
                 { val: 'Verificados', label: 'Conductoras y conductores', sub: 'Antecedentes y vehículo al día' },
                 { val: 'Precio fijo', label: 'Sin sorpresas', sub: 'Lo ves antes de confirmar' },
-                { val: 'En vivo', label: 'Seguimiento', sub: 'Vos y tu familia' },
+                { val: 'En vivo', label: 'Seguimiento', sub: 'Tú y tu familia' },
               ].map((stat) => (
                 <div key={stat.label} className="bg-white border-[1.5px] border-gray-100 rounded-2xl p-5">
                   <div className="text-3xl font-black text-[#ff4c41] mb-1">{stat.val}</div>

@@ -30,11 +30,10 @@ export function ReviewsList() {
 
   const fetchReviews = async () => {
     try {
-      // El endpoint /reviews/public aún no está expuesto en el api-gateway.
-      // Pre-lanzamiento NO mostramos reseñas de ejemplo: si no hay
-      // valoraciones reales la sección se oculta sola (ver `return null` más
-      // abajo) y aparecerá automáticamente cuando el backend las exponga.
-      const res = await fetch(`${API_BASE}/reviews/public?limit=6`);
+      // Reseñas públicas reales desde ratings-service (auditoría webapp #4).
+      // NO mostramos reseñas de ejemplo: si no hay valoraciones reales la sección
+      // se oculta sola (ver `return null` más abajo).
+      const res = await fetch(`${API_BASE}/ratings/public?limit=6`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const list = Array.isArray(data) ? data : data?.reviews ?? [];

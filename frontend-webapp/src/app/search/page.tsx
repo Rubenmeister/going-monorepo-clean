@@ -4,7 +4,9 @@ import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com/api';
+// El gateway sirve en la raíz (/tours, /experiences, /accommodations), NO bajo
+// /api. El resto de la app usa esta misma base sin sufijo (ver push.ts).
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com';
 
 type Category = 'all' | 'transport' | 'tours' | 'experiences' | 'accommodation' | 'envios';
 
@@ -43,28 +45,67 @@ const CATEGORY_CONFIG: Record<Category, { label: string; icon: string; color: st
   envios:        { label: 'Envíos',  icon: '📦', color: '#f59e0b' },
 };
 
+/** Precio numérico desde las varias formas que devuelven los catálogos. */
+function priceOf(item: any): number | undefined {
+  const p = item?.price ?? item?.pricePerNight;
+  if (typeof p === 'number') return p;
+  if (p && typeof p.amount === 'number') return p.amount;
+  return item?.totalPrice?.amount;
+}
+
+/** Etiqueta legible desde un location (string u objeto {city,address,...}). */
+function locationLabel(loc: any): string {
+  if (!loc) return '';
+  if (typeof loc === 'string') return loc;
+  return loc.city ?? loc.address ?? loc.name ?? '';
+}
+
+/**
+ * Busca en los catálogos públicos REALES (tours / experiencias / hospedaje) por
+ * ciudad. Antes se llamaba GET /search (que en el backend es POST + con auth →
+ * 404/401), así que la búsqueda en vivo nunca traía nada y la página caía siempre
+ * al catálogo curado. Estos 3 endpoints SÍ son GET públicos vía el gateway.
+ * Los transporte/envíos se resuelven por el catálogo curado (no tienen búsqueda
+ * de texto). Si ninguno responde, runSearch cae al fallback curado.
+ */
 async function searchAPI(q: string): Promise<Result[]> {
-  if (!q.trim()) return [];
-  try {
-    const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q)}&limit=20`, {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    const items: any[] = data.results ?? data.data ?? data ?? [];
-    return items.map((item: any): Result => ({
-      id:         item.id ?? item._id,
-      category:   item.category ?? item.type ?? 'transport',
-      icon:       CATEGORY_CONFIG[item.category as Category]?.icon ?? '📌',
-      title:      item.name ?? item.title ?? '—',
-      subtitle:   item.description ?? item.location ?? item.detail ?? '',
-      price:      item.price ?? item.pricePerNight ?? item.totalPrice?.amount,
-      rating:     item.rating,
-      href:       item.href ?? `/${item.category ?? 'tours'}`,
-    }));
-  } catch {
-    return [];
+  const term = q.trim();
+  if (!term) return [];
+  const sources: { cat: Category; url: string }[] = [
+    { cat: 'tours',         url: `${API_URL}/tours/search?city=${encodeURIComponent(term)}` },
+    { cat: 'experiences',   url: `${API_URL}/experiences/search?city=${encodeURIComponent(term)}` },
+    { cat: 'accommodation', url: `${API_URL}/accommodations/search?city=${encodeURIComponent(term)}` },
+  ];
+
+  const settled = await Promise.allSettled(
+    sources.map((s) =>
+      fetch(s.url, { signal: AbortSignal.timeout(5000) })
+        .then((r) => (r.ok ? r.json() : []))
+        .then((data: any) => ({
+          cat: s.cat,
+          items: (data?.results ?? data?.data ?? data ?? []) as any[],
+        })),
+    ),
+  );
+
+  const out: Result[] = [];
+  for (const s of settled) {
+    if (s.status !== 'fulfilled') continue;
+    const { cat, items } = s.value;
+    for (const item of Array.isArray(items) ? items : []) {
+      out.push({
+        id:       item.id ?? item._id ?? `${cat}-${out.length}`,
+        category: cat,
+        icon:     CATEGORY_CONFIG[cat]?.icon ?? '📌',
+        title:    item.title ?? item.name ?? '—',
+        subtitle: item.description ?? locationLabel(item.location) ?? '',
+        price:    priceOf(item),
+        rating:   item.rating,
+        href:     `/${cat}`,
+      });
+    }
   }
+  return out;
 }
 
 function SearchInner() {
