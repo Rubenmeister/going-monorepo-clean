@@ -296,6 +296,16 @@ export class ProxyModule implements NestModule {
         .forRoutes({ path: 'snapshot', method: RequestMethod.GET });
     }
 
+    // /ratings/public — reseñas públicas (testimonios en la home/rutas) SIN login
+    // (auditoría webapp #4). El resto de /ratings/* sigue con guard (auth). Se
+    // registra ANTES que guard('ratings') para tener precedencia: el forward
+    // responde directo y el guard nunca corre para esta ruta.
+    if (svc.ratings) {
+      consumer
+        .apply(makeForwardMiddleware(svc.ratings, 'ratings'))
+        .forRoutes({ path: 'ratings/public', method: RequestMethod.GET });
+    }
+
     // /scheduled-trips/* — reserva de asientos en viajes compartidos (transport-service)
     guard('scheduled-trips', svc.transport);
     // /vehicles/* — admin: lista de vehículos derivada de drivers (transport-service AdminStubsController)
