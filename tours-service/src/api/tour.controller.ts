@@ -81,6 +81,18 @@ export class TourController {
     return this.createTourUseCase.execute({ ...dto, hostId: user.id });
   }
 
+  /**
+   * GET /tours — lista PÚBLICA de tours publicados (browse del catálogo).
+   * Faltaba: las páginas de browse (app + admin) llamaban a la colección y
+   * recibían 404 → caían a datos hardcodeados. Cierra el loop operador→publicar
+   * →aparece en el catálogo. Antes de @Get(':id').
+   */
+  @Get()
+  async listPublished(): Promise<any[]> {
+    const result = await this.searchToursUseCase.execute({} as TourSearchFilters);
+    return result;
+  }
+
   /** GET /tours/search — public */
   @Get('search')
   async searchTours(

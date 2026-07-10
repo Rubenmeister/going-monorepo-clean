@@ -78,6 +78,15 @@ export class ExperienceController {
     return this.createExperienceUseCase.execute({ ...dto, hostId: user.id });
   }
 
+  /**
+   * GET /experiences — lista PÚBLICA de experiencias publicadas (browse).
+   * Faltaba (404 → el browse caía a datos hardcodeados). Antes de @Get(':id').
+   */
+  @Get()
+  async listPublished(): Promise<any[]> {
+    return this.searchExperiencesUseCase.execute({} as ExperienceSearchFilters);
+  }
+
   /** GET /experiences/search — public */
   @Get('search')
   async searchExperiences(

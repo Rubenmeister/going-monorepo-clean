@@ -76,6 +76,15 @@ export class AccommodationController {
     return this.createAccommodationUseCase.execute({ ...dto, hostId: user.id });
   }
 
+  /**
+   * GET /accommodations — lista PÚBLICA de alojamientos publicados (browse).
+   * Faltaba (404 → el browse caía a datos hardcodeados). Antes de @Get(':id').
+   */
+  @Get()
+  async listPublished(): Promise<any> {
+    return this.searchAccommodationUseCase.execute({} as SearchAccommodationDto);
+  }
+
   /** GET /accommodations/search — public */
   @Get('search')
   async searchAccommodations(@Query() filters: SearchAccommodationDto): Promise<any> {
