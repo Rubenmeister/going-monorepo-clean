@@ -42,11 +42,6 @@ export class InvoiceService {
         throw new BadRequestException('Client and line items are required');
       }
 
-      // Generate invoice number
-      const year = new Date().getFullYear();
-      const invoiceNumber =
-        await this.invoiceRepository.generateNextInvoiceNumber(companyId, year);
-
       // Calculate totals and line item details
       const lineItems = dto.lineItems.map((item) => ({
         id: `ITEM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -66,37 +61,70 @@ export class InvoiceService {
       const issuedDate = new Date();
       const dueDate = this.calculateDueDate(issuedDate, dto.paymentTerms);
 
-      const invoice: Partial<Invoice> = {
-        invoiceNumber,
-        companyId,
-        clientId: dto.clientId,
-        company: dto.company as any,
-        client: dto.client as any,
-        issueDate: issuedDate,
-        dueDate,
-        lineItems: lineItems as any,
-        subtotal: calculations.subtotal,
-        taxAmount: calculations.taxAmount,
-        discountAmount: dto.discountAmount || 0,
-        total: calculations.total - (dto.discountAmount || 0),
-        amountDue: calculations.total - (dto.discountAmount || 0),
-        amountPaid: 0,
-        status: InvoiceStatus.DRAFT,
-        paymentStatus: PaymentStatus.NOT_PAID,
-        paymentTerms: dto.paymentTerms,
-        language: (dto.language || 'en') as InvoiceLanguage,
-        currency: dto.currency || 'EUR',
-        notes: dto.notes,
-        terms: dto.terms,
-        bankDetails: dto.bankDetails as any,
-      };
-
-      const created = await this.invoiceRepository.create(invoice);
-      this.logger.log(
-        `Invoice ${invoiceNumber} created for company ${companyId}`
+      // Descuento clampeado (auditoría Bloque 2 #3): nunca negativo ni mayor que
+      // la base, para no producir total negativo.
+      const discount = Math.min(
+        Math.max(dto.discountAmount || 0, 0),
+        calculations.total
       );
+      const year = new Date().getFullYear();
 
-      return created;
+      // Reintento acotado (auditoría Bloque 2 #8): generateNextInvoiceNumber es
+      // read-then-increment no atómico → dos creates concurrentes generan el
+      // mismo número y el índice único { invoiceNumber, companyId } rechaza uno.
+      // Antes fallaba sin reintento. Ahora regeneramos el número y reintentamos.
+      const MAX_RETRIES = 5;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        const invoiceNumber =
+          await this.invoiceRepository.generateNextInvoiceNumber(companyId, year);
+
+        const invoice: Partial<Invoice> = {
+          invoiceNumber,
+          companyId,
+          clientId: dto.clientId,
+          company: dto.company as any,
+          client: dto.client as any,
+          issueDate: issuedDate,
+          dueDate,
+          lineItems: lineItems as any,
+          subtotal: calculations.subtotal,
+          taxAmount: calculations.taxAmount,
+          discountAmount: discount,
+          total: calculations.total - discount,
+          amountDue: calculations.total - discount,
+          amountPaid: 0,
+          status: InvoiceStatus.DRAFT,
+          paymentStatus: PaymentStatus.NOT_PAID,
+          paymentTerms: dto.paymentTerms,
+          language: (dto.language || 'en') as InvoiceLanguage,
+          currency: dto.currency || 'EUR',
+          notes: dto.notes,
+          terms: dto.terms,
+          bankDetails: dto.bankDetails as any,
+        };
+
+        try {
+          const created = await this.invoiceRepository.create(invoice);
+          this.logger.log(
+            `Invoice ${invoiceNumber} created for company ${companyId}`
+          );
+          return created;
+        } catch (err: any) {
+          // 11000 = duplicate key (colisión de invoiceNumber). Reintentar con el
+          // siguiente número. Cualquier otro error se propaga.
+          const isDup =
+            err?.code === 11000 ||
+            /E11000|duplicate key/i.test(String(err?.message ?? err));
+          if (!isDup || attempt === MAX_RETRIES) {
+            throw err;
+          }
+          this.logger.warn(
+            `Invoice number ${invoiceNumber} colisionó (intento ${attempt}/${MAX_RETRIES}) — reintentando`
+          );
+        }
+      }
+      // Inalcanzable: el loop retorna o lanza. Satisface el tipo de retorno.
+      throw new Error('No se pudo generar un número de factura único');
     } catch (error) {
       this.logger.error(`Failed to create invoice: ${error}`);
       throw error;
@@ -164,6 +192,14 @@ export class InvoiceService {
       updates.client = dto.client as any;
     }
 
+    // Descuento efectivo (auditoría Bloque 2 #1/#3): el nuevo si viene en el DTO,
+    // si no el actual. Se clampa a [0, base] para que nunca produzca un total
+    // negativo ni un descuento negativo (que inflaría el total).
+    const rawDiscount =
+      dto.discountAmount !== undefined
+        ? dto.discountAmount
+        : invoice.discountAmount || 0;
+
     // Recalculate totals if line items changed
     if (dto.lineItems) {
       const lineItems = dto.lineItems.map((item) => ({
@@ -182,9 +218,10 @@ export class InvoiceService {
       updates.lineItems = lineItems as any;
       updates.subtotal = calculations.subtotal;
       updates.taxAmount = calculations.taxAmount;
-      updates.total =
-        calculations.total -
-        (dto.discountAmount || invoice.discountAmount || 0);
+      // Base = subtotal + impuestos (calculations.total ya la trae).
+      const discount = Math.min(Math.max(rawDiscount, 0), calculations.total);
+      updates.discountAmount = discount;
+      updates.total = calculations.total - discount; // descuento UNA sola vez
     }
 
     if (dto.paymentTerms) {
@@ -195,14 +232,14 @@ export class InvoiceService {
       );
     }
 
-    if (dto.discountAmount !== undefined) {
-      updates.discountAmount = dto.discountAmount;
-      if (updates.total) {
-        updates.total -= dto.discountAmount;
-      } else {
-        updates.total =
-          invoice.total - invoice.discountAmount + dto.discountAmount;
-      }
+    // Si cambió SOLO el descuento (sin nuevos line items), recomputar el total
+    // desde el subtotal+impuestos ACTUALES (no encadenar restas sobre el total
+    // previo, que arrastraba el descuento viejo → doble descuento).
+    if (dto.discountAmount !== undefined && updates.total === undefined) {
+      const base = (invoice.subtotal || 0) + (invoice.taxAmount || 0);
+      const discount = Math.min(Math.max(dto.discountAmount, 0), base);
+      updates.discountAmount = discount;
+      updates.total = base - discount;
     }
 
     if (dto.notes !== undefined) {

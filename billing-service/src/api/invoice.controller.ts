@@ -139,12 +139,23 @@ export class InvoiceController {
   ): Promise<InvoiceListResponseDto> {
     const companyId = req.user.companyId;
 
+    // Paginación con tope (auditoría Bloque 2 #4): sin cota máxima, un
+    // `limit` enorme agota memoria/DB. Clamp a [1, 200], default 50.
+    const parsedLimit = limit ? parseInt(limit, 10) : 50;
+    const safeLimit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 200)
+        : 50;
+    const parsedOffset = offset ? parseInt(offset, 10) : 0;
+    const safeOffset =
+      Number.isFinite(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0;
+
     const filters: any = {
       status,
       paymentStatus,
       clientId,
-      limit: limit ? parseInt(limit, 10) : 50,
-      offset: offset ? parseInt(offset, 10) : 0,
+      limit: safeLimit,
+      offset: safeOffset,
     };
 
     if (startDate) {

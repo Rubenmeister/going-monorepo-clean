@@ -10,6 +10,7 @@ import {
   IsArray,
   IsEnum,
   ValidateNested,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -79,6 +80,7 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(0) // auditoría Bloque 2 #3
   discountAmount?: number;
 
   @IsOptional()

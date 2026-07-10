@@ -247,18 +247,6 @@ export class InvoiceRepository {
         return invoice;
       }
 
-      const amountPaid = (invoice.amountPaid || 0) + payment.amount;
-      const amountDue = Math.max(0, invoice.total - amountPaid);
-
-      let paymentStatus = 'NOT_PAID';
-      if (amountPaid === 0) {
-        paymentStatus = 'NOT_PAID';
-      } else if (amountPaid < invoice.total) {
-        paymentStatus = 'PARTIALLY_PAID';
-      } else {
-        paymentStatus = 'PAID';
-      }
-
       const paymentRecord = {
         id: `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         amount: payment.amount,
@@ -267,42 +255,53 @@ export class InvoiceRepository {
         reference: payment.reference,
       };
 
-      const updateData: any = {
-        amountPaid,
-        amountDue,
-        paymentStatus,
-        $push: { payments: paymentRecord },
-      };
-
-      if (paymentStatus === 'PAID') {
-        updateData.paidAt = new Date();
-        if (invoice.status === 'OVERDUE') {
-          updateData.status = 'PAID';
-        }
-      }
-
-      // Guarda ATÓMICA para la carrera de dos retries concurrentes: el filtro
-      // exige que NO exista ya un pago con este reference. Si otro pod ganó, el
-      // update no matchea → devolvemos la factura actual (idempotente), sin
-      // sumar de nuevo.
+      // Mutación ATÓMICA del dinero (auditoría Bloque 2 #6): antes se leía
+      // amountPaid, se sumaba en JS y se escribía el valor ABSOLUTO → dos pagos
+      // concurrentes (distintos reference) leían el mismo valor y el last-write
+      // perdía uno. Ahora $inc suma en el propio documento (sin perder dinero) y
+      // $push agrega el registro. El filtro con 'payments.reference' $ne mantiene
+      // la idempotencia por retry.
       const filter: any = { _id: invoiceId, companyId };
       if (payment.reference) {
         filter['payments.reference'] = { $ne: payment.reference };
       }
 
-      const updated = (await this.invoiceModel
-        .findOneAndUpdate(filter, updateData, {
-          new: true,
-        })
+      const afterInc = (await this.invoiceModel
+        .findOneAndUpdate(
+          filter,
+          { $inc: { amountPaid: payment.amount }, $push: { payments: paymentRecord } },
+          { new: true }
+        )
+        .lean()
+        .exec()) as any;
+
+      if (!afterInc) {
+        // No matcheó: reference ya aplicado por otro retry → idempotente.
+        if (payment.reference) return await this.findById(invoiceId, companyId);
+        return null;
+      }
+
+      // Derivar estado/saldo del amountPaid YA incrementado atómicamente (fuente
+      // de verdad), no de la lectura previa. Los campos derivados son eventual-
+      // consistentes; el dinero (amountPaid) siempre es correcto.
+      const amountPaid = afterInc.amountPaid || 0;
+      const total = afterInc.total || 0;
+      const amountDue = Math.max(0, total - amountPaid);
+      const paymentStatus =
+        amountPaid <= 0 ? 'NOT_PAID' : amountPaid < total ? 'PARTIALLY_PAID' : 'PAID';
+
+      const derived: any = { amountDue, paymentStatus };
+      if (paymentStatus === 'PAID') {
+        derived.paidAt = new Date();
+        if (afterInc.status === 'OVERDUE') derived.status = 'PAID';
+      }
+
+      const final = (await this.invoiceModel
+        .findOneAndUpdate({ _id: invoiceId, companyId }, derived, { new: true })
         .lean()
         .exec()) as unknown as Invoice | null;
 
-      if (!updated && payment.reference) {
-        // No matcheó por la guarda de reference (otro retry lo aplicó primero).
-        return await this.findById(invoiceId, companyId);
-      }
-
-      return updated;
+      return final ?? (afterInc as unknown as Invoice);
     } catch (error) {
       this.logger.error(`Failed to record payment: ${error}`);
       return null;

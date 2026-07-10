@@ -190,3 +190,8 @@ InvoiceSchemaDefinition.index(
   { invoiceNumber: 1, companyId: 1 },
   { unique: true }
 );
+
+// Índice para findByTripId (auditoría Bloque 2 #7): el S2S /internal/payment-
+// completed busca por metadata.tripId en cada pago completado. Sin índice era un
+// full-scan de la colección. Sparse porque no todas las facturas tienen tripId.
+InvoiceSchemaDefinition.index({ 'metadata.tripId': 1 }, { sparse: true });

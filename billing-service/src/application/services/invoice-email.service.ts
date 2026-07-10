@@ -88,7 +88,8 @@ export class InvoiceEmailService {
       // Send email
       const info = await this.transporter.sendMail(mailOptions);
 
-      this.logger.log(`Invoice ${invoice.invoiceNumber} sent to ${email}`);
+      // No registrar el correo del destinatario (PII) — auditoría Bloque 2 #10.
+      this.logger.log(`Invoice ${invoice.invoiceNumber} sent (email OK)`);
       return true;
     } catch (error) {
       this.logger.error(`Failed to send invoice email: ${error}`);

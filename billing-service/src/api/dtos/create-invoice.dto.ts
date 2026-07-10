@@ -12,6 +12,7 @@ import {
   IsEnum,
   IsDefined,
   ValidateNested,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -155,5 +156,6 @@ export class CreateInvoiceDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(0) // auditoría Bloque 2 #3: sin cota, un descuento negativo inflaba el total
   discountAmount?: number;
 }
