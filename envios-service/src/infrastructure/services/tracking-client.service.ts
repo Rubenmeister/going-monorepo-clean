@@ -31,9 +31,17 @@ export class TrackingClientService {
 
   async getDriverLocation(driverId: string): Promise<DriverLocation | undefined> {
     try {
+      // S2S: tracking-service ahora exige X-Internal-Token (auditoría Bloque 2
+      // #6/#10). Sin él, la ubicación del conductor era pública.
+      const internalToken = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
       const response = await fetch(
         `${this.trackingUrl}/tracking/drivers/${driverId}/location`,
-        { method: 'GET' },
+        {
+          method: 'GET',
+          headers: internalToken
+            ? { 'X-Internal-Token': internalToken }
+            : undefined,
+        },
       );
       if (!response.ok) {
         return undefined;

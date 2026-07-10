@@ -1,5 +1,14 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
-import { ITrackingRepository } from '../domain/ports';
+import {
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Req,
+  ForbiddenException,
+  UseGuards,
+} from '@nestjs/common';
+import { ITrackingRepository, JwtAuthGuard } from '../domain/ports';
+import { InternalServiceGuard } from '../infrastructure/auth/internal-service.guard';
 
 interface ActiveDriversRepo {
   findAllActive(): Promise<{
@@ -8,6 +17,16 @@ interface ActiveDriversRepo {
     error?: Error;
   }>;
 }
+
+/** Roles con permiso para ver el panel operativo de conductores activos. */
+const ADMIN_ROLES = new Set([
+  'admin',
+  'super_admin',
+  'ops',
+  'ADMIN',
+  'SUPER_ADMIN',
+  'OPS',
+]);
 
 /**
  * Admin endpoint to get all active drivers.
@@ -21,8 +40,19 @@ export class ActiveDriversController {
     private readonly repo: ActiveDriversRepo
   ) {}
 
+  /**
+   * Volcado masivo de TODAS las posiciones GPS en vivo → solo operaciones/admin.
+   * Blindaje (auditoría Bloque 2 #7): antes SIN guard → cualquier usuario
+   * autenticado (o anónimo si el servicio es público) cosechaba la ubicación de
+   * toda la flota. Ahora exige JWT + rol admin/ops. Lo consume el admin-dashboard
+   * (use-monorepo-app.hook) con token de administración.
+   */
   @Get('active-drivers')
-  async getActiveDrivers(): Promise<unknown[]> {
+  @UseGuards(JwtAuthGuard)
+  async getActiveDrivers(@Req() req: any): Promise<unknown[]> {
+    if (!ADMIN_ROLES.has(req.user?.role)) {
+      throw new ForbiddenException('Admin/ops role required');
+    }
     try {
       const result = await this.repo.findAllActive();
       if (result.isErr()) return [];
@@ -39,11 +69,15 @@ export class ActiveDriversController {
    *
    * GET /tracking/drivers/:driverId/location
    *
-   * NOTA: Sin auth porque es internal-only (envios-service en mismo VPC).
-   * Privacy: el cliente público solo puede llegar a este endpoint vía
-   * /parcels/:id que SI valida ownership del paquete.
+   * Blindaje (auditoría Bloque 2 #6/#10): antes SIN auth con el supuesto de que
+   * era "internal-only por VPC" — falso, el servicio es alcanzable y cualquiera
+   * podía geolocalizar a un conductor por su id. Ahora exige X-Internal-Token
+   * (InternalServiceGuard). El único caller legítimo es envios-service, que
+   * manda el token; el cliente público sigue llegando vía /parcels/:id (que
+   * valida ownership) → envios → este endpoint con token.
    */
   @Get('drivers/:driverId/location')
+  @UseGuards(InternalServiceGuard)
   async getDriverLocation(
     @Param('driverId') driverId: string,
   ): Promise<{ lat: number; lng: number; lastUpdated?: Date } | null> {

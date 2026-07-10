@@ -46,6 +46,22 @@ export class LocationTrackingGateway
   private readonly logger = new Logger(LocationTrackingGateway.name);
   private driverConnections = new Map<string, string>(); // driverId -> socketId
   private tripRooms = new Map<string, Set<string>>(); // tripId -> Set<socketId>
+  private tripDriver = new Map<string, string>(); // tripId -> driverId (para broadcast dirigido)
+
+  /**
+   * Blindaje BOLA (auditoría Bloque 2 #5/#8): valida que el usuario autenticado
+   * en el socket sea el dueño del driverId que dice manipular. Antes, los
+   * handlers de update/status confiaban en `data.driverId` del cliente → un
+   * usuario autenticado podía falsear la ubicación de CUALQUIER conductor o
+   * forzarlo offline. Mismo criterio que driver:register.
+   */
+  private ownsDriver(client: Socket, claimedDriverId: string): boolean {
+    const authed = (client as any).authenticatedUser;
+    if (!authed || !claimedDriverId) return false;
+    return (
+      authed.driverId === claimedDriverId || authed.userId === claimedDriverId
+    );
+  }
 
   constructor(
     @Inject('IGeoLocationRepository')
@@ -174,6 +190,17 @@ export class LocationTrackingGateway
     }
   ) {
     try {
+      // BOLA (auditoría Bloque 2 #5/#8): solo el propio conductor actualiza su
+      // ubicación. Sin esto, cualquier usuario autenticado falseaba la posición
+      // de otro conductor.
+      if (!this.ownsDriver(client, data.driverId)) {
+        this.logger.warn(
+          `Location spoof bloqueado: user=${(client as any).authenticatedUser?.userId} intentó actualizar driver=${data.driverId}`
+        );
+        client.emit('error', { message: 'Unauthorized location update' });
+        return;
+      }
+
       const coordinates = new Coordinates(data.latitude, data.longitude);
       const location = new GeoLocation({
         driverId: data.driverId,
@@ -232,6 +259,12 @@ export class LocationTrackingGateway
       this.tripRooms.set(data.tripId, new Set());
     }
     this.tripRooms.get(data.tripId)!.add(client.id);
+    // Registra qué conductor corresponde a este viaje para dirigir el broadcast
+    // (auditoría Bloque 2 #9): sin esto, la ubicación de un conductor se emitía
+    // a TODAS las salas de viaje (fuga cross-trip + fan-out O(N×M)).
+    if (data.driverId) {
+      this.tripDriver.set(data.tripId, data.driverId);
+    }
 
     this.logger.log(`User ${data.userId} started tracking trip ${data.tripId}`);
 
@@ -270,6 +303,7 @@ export class LocationTrackingGateway
       });
       this.tripRooms.delete(data.tripId);
     }
+    this.tripDriver.delete(data.tripId);
 
     this.logger.log(`Trip tracking ended: ${data.tripId}`);
   }
@@ -283,6 +317,10 @@ export class LocationTrackingGateway
     @MessageBody()
     data: { driverId: string; latitude: number; longitude: number }
   ) {
+    if (!this.ownsDriver(client, data.driverId)) {
+      client.emit('error', { message: 'Unauthorized status change' });
+      return;
+    }
     await this.availabilityRepo.setOnline(data.driverId);
     this.logger.log(`Driver online: ${data.driverId}`);
   }
@@ -295,6 +333,10 @@ export class LocationTrackingGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { driverId: string }
   ) {
+    if (!this.ownsDriver(client, data.driverId)) {
+      client.emit('error', { message: 'Unauthorized status change' });
+      return;
+    }
     await this.availabilityRepo.setBusy(data.driverId);
     this.logger.log(`Driver busy: ${data.driverId}`);
   }
@@ -307,6 +349,10 @@ export class LocationTrackingGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { driverId: string }
   ) {
+    if (!this.ownsDriver(client, data.driverId)) {
+      client.emit('error', { message: 'Unauthorized status change' });
+      return;
+    }
     await this.availabilityRepo.setOffline(data.driverId);
     this.driverConnections.delete(data.driverId);
     this.logger.log(`Driver offline: ${data.driverId}`);
@@ -316,9 +362,12 @@ export class LocationTrackingGateway
    * Broadcast location update to all users in a trip
    */
   private broadcastLocationToTrips(driverId: string, locationData: any): void {
-    // Find all trips this driver is on
+    // Solo emitir a las salas de los viajes de ESTE conductor (auditoría
+    // Bloque 2 #9). Antes se emitía a todas las salas → cada pasajero recibía
+    // la ubicación de todos los conductores (fuga cross-trip) y el fan-out era
+    // O(conductores × viajes).
     for (const [tripId, socketIds] of this.tripRooms.entries()) {
-      if (socketIds.size > 0) {
+      if (socketIds.size > 0 && this.tripDriver.get(tripId) === driverId) {
         const room = `trip:${tripId}`;
         this.server.to(room).emit('driver:location:updated', locationData);
       }
