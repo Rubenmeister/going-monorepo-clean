@@ -7,6 +7,8 @@ import {
   Param,
   Query,
   UseGuards,
+  Inject,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   CreateExperienceDto,
@@ -15,7 +17,10 @@ import {
   SearchExperiencesUseCase,
   PublishExperienceUseCase,
 } from '@going-monorepo-clean/domains-experience-application';
-import { ExperienceSearchFilters } from '@going-monorepo-clean/domains-experience-core';
+import {
+  ExperienceSearchFilters,
+  IExperienceRepository,
+} from '@going-monorepo-clean/domains-experience-core';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 
 interface AuthUser { id: string; email: string; role: string; }
@@ -27,7 +32,23 @@ export class ExperienceController {
     private readonly getExperienceByIdUseCase: GetExperienceByIdUseCase,
     private readonly searchExperiencesUseCase: SearchExperiencesUseCase,
     private readonly publishExperienceUseCase: PublishExperienceUseCase,
+    @Inject(IExperienceRepository)
+    private readonly experienceRepo: IExperienceRepository,
   ) {}
+
+  /**
+   * GET /experiences/mine — experiencias del operador autenticado, INCLUIDOS
+   * borradores (panel de operador, auditoría webapp #8). Antes de @Get(':id').
+   */
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  async myExperiences(@CurrentUser() user: AuthUser): Promise<any[]> {
+    const result = await this.experienceRepo.findByHostId(user.id);
+    if (result.isErr()) {
+      throw new InternalServerErrorException(result.error.message);
+    }
+    return result.value.map((e) => e.toPrimitives());
+  }
 
   /** POST /experiences — requires JWT; hostId from token */
   @Post()

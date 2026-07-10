@@ -7,6 +7,8 @@ import {
   Patch,
   Query,
   UseGuards,
+  Inject,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   CreateAccommodationDto,
@@ -16,6 +18,7 @@ import {
   SearchAccommodationDto,
   SearchAccommodationUseCase,
 } from '@going-monorepo-clean/domains-accommodation-application';
+import { IAccommodationRepository } from '@going-monorepo-clean/domains-accommodation-core';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 
 interface AuthUser { id: string; email: string; role: string; }
@@ -27,7 +30,23 @@ export class AccommodationController {
     private readonly getAccommodationByIdUseCase: GetAccommodationByIdUseCase,
     private readonly publishAccommodationUseCase: PublishAccommodationUseCase,
     private readonly searchAccommodationUseCase: SearchAccommodationUseCase,
+    @Inject(IAccommodationRepository)
+    private readonly accommodationRepo: IAccommodationRepository,
   ) {}
+
+  /**
+   * GET /accommodations/mine — espacios del anfitrión autenticado, INCLUIDOS
+   * borradores (panel de operador, auditoría webapp #8). Antes de @Get(':id').
+   */
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  async myAccommodations(@CurrentUser() user: AuthUser): Promise<any[]> {
+    const result = await this.accommodationRepo.findByHostId(user.id);
+    if (result.isErr()) {
+      throw new InternalServerErrorException(result.error.message);
+    }
+    return result.value.map((a) => a.toPrimitives());
+  }
 
   /** POST /accommodations — requires JWT; hostId from token */
   @Post()

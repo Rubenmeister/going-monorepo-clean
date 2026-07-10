@@ -7,6 +7,8 @@ import {
   Patch,
   Query,
   UseGuards,
+  Inject,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   CreateTourDto,
@@ -15,7 +17,10 @@ import {
   PublishTourUseCase,
   SearchToursUseCase,
 } from '@going-monorepo-clean/domains-tour-application';
-import { TourSearchFilters } from '@going-monorepo-clean/domains-tour-core';
+import {
+  TourSearchFilters,
+  ITourRepository,
+} from '@going-monorepo-clean/domains-tour-core';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 
 interface AuthUser { id: string; email: string; role: string; }
@@ -27,7 +32,24 @@ export class TourController {
     private readonly getTourByIdUseCase: GetTourByIdUseCase,
     private readonly publishTourUseCase: PublishTourUseCase,
     private readonly searchToursUseCase: SearchToursUseCase,
+    @Inject(ITourRepository)
+    private readonly tourRepo: ITourRepository,
   ) {}
+
+  /**
+   * GET /tours/mine — listados del promotor autenticado, INCLUIDOS borradores.
+   * Alimenta el panel de operador (auditoría webapp #8). hostId del token.
+   * Debe declararse ANTES de @Get(':id') para no ser capturado por él.
+   */
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  async myTours(@CurrentUser() user: AuthUser): Promise<any[]> {
+    const result = await this.tourRepo.findByHostId(user.id);
+    if (result.isErr()) {
+      throw new InternalServerErrorException(result.error.message);
+    }
+    return result.value.map((t) => t.toPrimitives());
+  }
 
   /** POST /tours — requires JWT; hostId from token */
   @Post()
