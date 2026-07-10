@@ -113,7 +113,16 @@ export class ScheduledTripService {
     );
 
     for (const seed of seeds) {
-      const pricePerSeat = getFare(seed.originCity, seed.destinationCity) ?? 0;
+      // Precio desde el MOTOR autoritativo (listas/excel-fares) con fares.ts como
+      // fallback — mismo patrón que el path principal (evita que el seed grabe
+      // precios de la tabla vieja mientras el resto cotiza por el motor). Tulcán,
+      // que aún no está en el motor, cae al fallback (fares.ts) igual que antes.
+      const pricePerSeat =
+        (await this.pricingClient.sharedFare(
+          seed.originCity,
+          seed.destinationCity,
+          () => getFare(seed.originCity, seed.destinationCity),
+        )) ?? 0;
       try {
         await this.tripModel.updateOne(
           {
