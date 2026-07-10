@@ -30,6 +30,18 @@ export class OpsNotifierService {
     return raw.split(',').map(s => s.trim()).filter(Boolean);
   }
 
+  /**
+   * Saneo de campos controlados por el cliente antes de interpolarlos en el
+   * Markdown de Telegram (auditoría Bloque 2 #4). Quita los caracteres de
+   * control de Markdown legacy (` * _ [ ]) para que una descripción/rideId
+   * maliciosos no puedan inyectar formato, links falsos, ni romper el parseo
+   * (que suprimiría la alerta SOS). El TelegramService además reintenta en
+   * texto plano como segunda barrera.
+   */
+  private md(value: unknown): string {
+    return String(value ?? '').replace(/[`*_[\]]/g, '');
+  }
+
   async notify(incident: IncidentDocument): Promise<void> {
     const chatIds = this.operatorChatIds();
     if (chatIds.length === 0) {
@@ -45,8 +57,8 @@ export class OpsNotifierService {
     const lines: string[] = [
       `🔴🚨 *SOS — EMERGENCIA* ${typeEmoji}`,
       `Tipo: *${typeLabel}*`,
-      `Canal: ${incident.channel}`,
-      `Cliente: \`${incident.userId}\``,
+      `Canal: ${this.md(incident.channel)}`,
+      `Cliente: \`${this.md(incident.userId)}\``,
       ``,
       `📍 Ubicación: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
       `🗺️ [Abrir en Google Maps](${mapsUrl})`,
@@ -57,11 +69,11 @@ export class OpsNotifierService {
     }
 
     if (incident.rideId) {
-      lines.push('', `🚗 Viaje activo: \`${incident.rideId}\``);
+      lines.push('', `🚗 Viaje activo: \`${this.md(incident.rideId)}\``);
     }
 
     if (incident.description) {
-      lines.push('', `Descripción del cliente:`, `_${incident.description.slice(0, 500)}_`);
+      lines.push('', `Descripción del cliente:`, `_${this.md(incident.description).slice(0, 500)}_`);
     }
 
     if (incident.emergencyDialerTriggered) {

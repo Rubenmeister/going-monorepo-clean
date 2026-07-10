@@ -51,13 +51,43 @@ export class VoiceCommandController {
     this.internalToken = this.config.get<string>('INTERNAL_SERVICE_TOKEN') ?? '';
   }
 
+  /**
+   * Auth S2S (auditoría Bloque 2 #13): estos comandos (bloquear llamadas,
+   * override de prompt, force-handoff) los despacha SOLO el orchestrator vía
+   * agent-bridge, que envía `X-Internal-Token: <INTERNAL_SERVICE_TOKEN>` (ver
+   * http-service.client.ts). También aceptamos `Authorization: Bearer <token>`
+   * por consistencia con /voice/metrics/*. Fail-closed: si hay token
+   * configurado y ninguno coincide → 401. NUNCA público.
+   */
+  private assertInternalAuth(
+    internalTokenHeader?: string,
+    authHeader?: string,
+    ctx = 'command',
+  ): void {
+    if (!this.internalToken) {
+      this.logger.warn(`[${ctx}] INTERNAL_SERVICE_TOKEN no configurado — auth desactivada (solo dev)`);
+      return;
+    }
+    const viaHeader = internalTokenHeader === this.internalToken;
+    const viaBearer = authHeader === `Bearer ${this.internalToken}`;
+    if (!viaHeader && !viaBearer) {
+      this.logger.warn(`[${ctx}] auth S2S rechazada`);
+      throw new UnauthorizedException('Token inválido o ausente');
+    }
+  }
+
   @Post('command')
   @HttpCode(HttpStatus.OK)
-  async command(@Body() body: {
-    decisionId?: string;     // id de la Decision del orchestrator que generó este command
-    action:      string;     // ej. 'block_caller_temporarily'
-    payload?:    Record<string, unknown>;
-  }) {
+  async command(
+    @Body() body: {
+      decisionId?: string;     // id de la Decision del orchestrator que generó este command
+      action:      string;     // ej. 'block_caller_temporarily'
+      payload?:    Record<string, unknown>;
+    },
+    @Headers('x-internal-token') internalTokenHeader?: string,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    this.assertInternalAuth(internalTokenHeader, authHeader, 'command');
     const { decisionId, action, payload } = body ?? {};
     if (!action) {
       return { ok: false, error: 'action requerida' };
@@ -119,7 +149,11 @@ export class VoiceCommandController {
    * en RealtimeBridgeService.sessions y es ephemeral.
    */
   @Get('command/state')
-  state() {
+  state(
+    @Headers('x-internal-token') internalTokenHeader?: string,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    this.assertInternalAuth(internalTokenHeader, authHeader, 'command/state');
     return {
       activeBlocks:           this.commands.listActiveBlocks(),
       lastPromptOverrideMeta: this.commands.getLastPromptOverrideMeta(),

@@ -4,9 +4,11 @@ import {
   NotFoundException,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { VoiceCallRepository } from '../infrastructure/persistence/voice-call.repository';
 import type { VoiceCallStatus } from '../infrastructure/schemas/voice-call.schema';
+import { VoiceCallsAuthGuard } from './voice-calls-auth.guard';
 
 /**
  * VoiceCallsController — endpoints de auditoría / dashboard.
@@ -16,12 +18,13 @@ import type { VoiceCallStatus } from '../infrastructure/schemas/voice-call.schem
  *  GET /voice-calls/stats      — agregados por outcome últimas N horas
  *  GET /voice-calls/:id        — detalle de 1 llamada (transcript incluido)
  *
- * NOTA: estos endpoints exponen TRANSCRIPTS (PII). El api-gateway los
- * protege con JWT + verificará role admin/operator antes de routear.
- * Si el usuario es regular, debería rechazarlo en el gateway (no en este
- * service — keep el service simple).
+ * NOTA: estos endpoints exponen TRANSCRIPTS (PII). Protegidos con
+ * VoiceCallsAuthGuard (auditoría Bloque 2 #12): admin/operator JWT o
+ * X-Internal-Token. NO se confía solo en el gateway porque el servicio tiene
+ * ingress=all (público) y era directamente alcanzable.
  */
 @Controller('voice-calls')
+@UseGuards(VoiceCallsAuthGuard)
 export class VoiceCallsController {
   constructor(private readonly repo: VoiceCallRepository) {}
 
