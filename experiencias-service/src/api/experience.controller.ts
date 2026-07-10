@@ -50,6 +50,24 @@ export class ExperienceController {
     return result.value.map((e) => e.toPrimitives());
   }
 
+  /**
+   * GET /experiences/operator/stats — panel del operador (webapp #8 pulido C).
+   * Conteo REAL de actividades publicadas/borrador. Antes de @Get(':id').
+   */
+  @Get('operator/stats')
+  @UseGuards(JwtAuthGuard)
+  async operatorStats(@CurrentUser() user: AuthUser): Promise<any> {
+    const result = await this.experienceRepo.findByHostId(user.id);
+    if (result.isErr()) {
+      throw new InternalServerErrorException(result.error.message);
+    }
+    const mine = result.value.map((e) => e.toPrimitives());
+    const activeActivities = mine.filter(
+      (e: any) => String(e.status ?? '').toLowerCase() === 'published',
+    ).length;
+    return { activeActivities, draftActivities: mine.length - activeActivities };
+  }
+
   /** POST /experiences — requires JWT; hostId from token */
   @Post()
   @UseGuards(JwtAuthGuard)

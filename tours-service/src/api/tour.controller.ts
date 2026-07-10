@@ -51,6 +51,26 @@ export class TourController {
     return result.value.map((t) => t.toPrimitives());
   }
 
+  /**
+   * GET /tours/promoter/stats — panel del promotor (webapp #8 pulido C).
+   * Devuelve el conteo REAL de tours publicados/borrador. Ingresos/rating/
+   * reservas viven en otros servicios → se omiten (el dashboard muestra "—").
+   * Antes de @Get(':id').
+   */
+  @Get('promoter/stats')
+  @UseGuards(JwtAuthGuard)
+  async promoterStats(@CurrentUser() user: AuthUser): Promise<any> {
+    const result = await this.tourRepo.findByHostId(user.id);
+    if (result.isErr()) {
+      throw new InternalServerErrorException(result.error.message);
+    }
+    const mine = result.value.map((t) => t.toPrimitives());
+    const activeTours = mine.filter(
+      (t: any) => String(t.status ?? '').toLowerCase() === 'published',
+    ).length;
+    return { activeTours, draftTours: mine.length - activeTours };
+  }
+
   /** POST /tours — requires JWT; hostId from token */
   @Post()
   @UseGuards(JwtAuthGuard)

@@ -5,21 +5,17 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authFetch, getStoredToken, redirectToLogin } from '@/lib/providers/auth-client';
-
-// Coordenadas por defecto (centro de Quito) si el operador no las precisa aún.
-// La ubicación exacta en mapa se afina en una iteración posterior.
-const DEFAULT_LAT = -0.1807;
-const DEFAULT_LNG = -78.4678;
+import { LocationSelector } from '@/app/components/features/ride/LocationSelector';
+import type { Location } from '@/app/types/ride.types';
 
 export default function NuevoEspacioPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loc, setLoc] = useState<Location | null>(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
-    city: '',
-    address: '',
     pricePerNight: '',
     capacity: '',
     amenities: '',
@@ -40,8 +36,8 @@ export default function NuevoEspacioPage() {
 
     const price = parseFloat(form.pricePerNight);
     const capacity = parseInt(form.capacity, 10);
-    if (!form.title.trim() || !form.city.trim() || !Number.isFinite(price) || price <= 0) {
-      setError('Completa al menos título, ciudad y un precio por noche válido.');
+    if (!form.title.trim() || !loc || !Number.isFinite(price) || price <= 0) {
+      setError('Completa título, ubicación y un precio por noche válido.');
       return;
     }
 
@@ -52,11 +48,11 @@ export default function NuevoEspacioPage() {
         title: form.title.trim(),
         description: form.description.trim(),
         location: {
-          address: form.address.trim() || form.city.trim(),
-          city: form.city.trim(),
+          address: loc.address,
+          city: loc.city ?? loc.address,
           country: 'Ecuador',
-          latitude: DEFAULT_LAT,
-          longitude: DEFAULT_LNG,
+          latitude: loc.lat,
+          longitude: loc.lon,
         },
         pricePerNight: { amount: price, currency: 'USD' },
         capacity: Number.isFinite(capacity) && capacity > 0 ? capacity : 1,
@@ -102,15 +98,19 @@ export default function NuevoEspacioPage() {
             <label className="block text-xs font-bold text-gray-600 mb-1">Descripción</label>
             <textarea value={form.description} onChange={set('description')} rows={3} className={inputCls} placeholder="Qué ofrece tu espacio, qué lo hace único…" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Ciudad *</label>
-              <input value={form.city} onChange={set('city')} className={inputCls} placeholder="Quito" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Dirección</label>
-              <input value={form.address} onChange={set('address')} className={inputCls} placeholder="Barrio, calle…" />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Ubicación *</label>
+            <LocationSelector
+              type="pickup"
+              value={loc ?? undefined}
+              onChange={setLoc}
+              placeholder="Busca la ciudad y dirección del espacio…"
+            />
+            {loc && (
+              <p className="text-[11px] text-gray-400 mt-1">
+                📍 {loc.address} ({loc.lat.toFixed(4)}, {loc.lon.toFixed(4)})
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

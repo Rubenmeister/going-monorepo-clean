@@ -48,6 +48,24 @@ export class AccommodationController {
     return result.value.map((a) => a.toPrimitives());
   }
 
+  /**
+   * GET /accommodations/host/stats — panel del anfitrión (webapp #8 pulido C).
+   * Conteo REAL de espacios publicados/borrador. Antes de @Get(':id').
+   */
+  @Get('host/stats')
+  @UseGuards(JwtAuthGuard)
+  async hostStats(@CurrentUser() user: AuthUser): Promise<any> {
+    const result = await this.accommodationRepo.findByHostId(user.id);
+    if (result.isErr()) {
+      throw new InternalServerErrorException(result.error.message);
+    }
+    const mine = result.value.map((a) => a.toPrimitives());
+    const publishedSpaces = mine.filter(
+      (a: any) => String(a.status ?? '').toLowerCase() === 'published',
+    ).length;
+    return { publishedSpaces, draftSpaces: mine.length - publishedSpaces };
+  }
+
   /** POST /accommodations — requires JWT; hostId from token */
   @Post()
   @UseGuards(JwtAuthGuard)

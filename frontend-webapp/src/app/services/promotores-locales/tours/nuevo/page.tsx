@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authFetch, getStoredToken, redirectToLogin } from '@/lib/providers/auth-client';
+import { LocationSelector } from '@/app/components/features/ride/LocationSelector';
+import type { Location } from '@/app/types/ride.types';
 
-const DEFAULT_LAT = -0.1807;
-const DEFAULT_LNG = -78.4678;
 const CATEGORIES = [
   { value: 'ADVENTURE', label: 'Aventura' },
   { value: 'CULTURAL', label: 'Cultural' },
@@ -19,8 +19,9 @@ export default function NuevoTourPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loc, setLoc] = useState<Location | null>(null);
   const [form, setForm] = useState({
-    title: '', description: '', city: '', address: '',
+    title: '', description: '',
     price: '', durationHours: '', maxGuests: '', category: 'ADVENTURE',
   });
 
@@ -38,8 +39,8 @@ export default function NuevoTourPage() {
     const price = parseFloat(form.price);
     const durationHours = parseFloat(form.durationHours);
     const maxGuests = parseInt(form.maxGuests, 10);
-    if (!form.title.trim() || !form.city.trim() || !Number.isFinite(price) || price <= 0) {
-      setError('Completa al menos título, ciudad y un precio válido.');
+    if (!form.title.trim() || !loc || !Number.isFinite(price) || price <= 0) {
+      setError('Completa título, ubicación y un precio válido.');
       return;
     }
     setSaving(true); setError(null);
@@ -47,7 +48,7 @@ export default function NuevoTourPage() {
       const body = {
         title: form.title.trim(),
         description: form.description.trim(),
-        location: { address: form.address.trim() || form.city.trim(), city: form.city.trim(), country: 'Ecuador', latitude: DEFAULT_LAT, longitude: DEFAULT_LNG },
+        location: { address: loc.address, city: loc.city ?? loc.address, country: 'Ecuador', latitude: loc.lat, longitude: loc.lon },
         price: { amount: price, currency: 'USD' },
         durationHours: Number.isFinite(durationHours) && durationHours > 0 ? durationHours : 2,
         maxGuests: Number.isFinite(maxGuests) && maxGuests > 0 ? maxGuests : 10,
@@ -84,15 +85,19 @@ export default function NuevoTourPage() {
             <label className="block text-xs font-bold text-gray-600 mb-1">Descripción</label>
             <textarea value={form.description} onChange={set('description')} rows={3} className={inputCls} placeholder="Qué incluye el tour, qué lo hace único…" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Ciudad *</label>
-              <input value={form.city} onChange={set('city')} className={inputCls} placeholder="Latacunga" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Punto de encuentro</label>
-              <input value={form.address} onChange={set('address')} className={inputCls} placeholder="Dirección de inicio" />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Ubicación / punto de encuentro *</label>
+            <LocationSelector
+              type="pickup"
+              value={loc ?? undefined}
+              onChange={setLoc}
+              placeholder="Busca la ciudad y punto de inicio…"
+            />
+            {loc && (
+              <p className="text-[11px] text-gray-400 mt-1">
+                📍 {loc.address} ({loc.lat.toFixed(4)}, {loc.lon.toFixed(4)})
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
