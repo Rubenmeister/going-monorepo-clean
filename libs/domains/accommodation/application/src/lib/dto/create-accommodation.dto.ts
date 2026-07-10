@@ -47,9 +47,10 @@ class LocationDto {
 }
 
 export class CreateAccommodationDto {
-  @IsNotEmpty()
+  // Inyectado por el controlador desde el JWT (auditoría webapp #8).
+  @IsOptional()
   @IsUUID()
-  hostId: string;
+  hostId?: string;
 
   @IsNotEmpty()
   @IsString()

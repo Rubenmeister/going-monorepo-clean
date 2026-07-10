@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsNumber,
   Min,
@@ -47,9 +48,12 @@ class LocationDto {
 }
 
 export class CreateTourDto {
-  @IsNotEmpty()
+  // Inyectado por el controlador desde el JWT (hostId = user.id). Opcional en el
+  // body porque el cliente NO lo envía; validarlo como requerido daba 400 y
+  // rompía la creación (auditoría webapp #8).
+  @IsOptional()
   @IsUUID()
-  hostId: string;
+  hostId?: string;
 
   @IsNotEmpty()
   @IsString()

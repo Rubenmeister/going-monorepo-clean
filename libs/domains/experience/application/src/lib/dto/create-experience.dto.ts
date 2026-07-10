@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsNumber,
   Min,
@@ -14,9 +15,10 @@ import {
 import { MoneyDto, LocationDto } from '@going-monorepo-clean/shared-domain'; // Asumiendo DTOs compartidos
 
 export class CreateExperienceDto {
-  @IsNotEmpty()
+  // Inyectado por el controlador desde el JWT (auditoría webapp #8).
+  @IsOptional()
   @IsUUID()
-  hostId: string;
+  hostId?: string;
 
   @IsNotEmpty()
   @IsString()
