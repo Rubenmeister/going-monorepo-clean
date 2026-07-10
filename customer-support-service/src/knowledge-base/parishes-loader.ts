@@ -4,7 +4,31 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import type { ParishData } from '../../../scripts/ecuador-parishes/harvest-parishes';
+
+/**
+ * Forma de cada parroquia en el KB. Definida localmente a propósito: antes se
+ * importaba `import type` desde `scripts/ecuador-parishes/harvest-parishes`, pero
+ * el Dockerfile NO copia `scripts/` al contexto de build → tras quitar el parche
+ * skipTypeChecking, el type-check del Docker/CD fallaba con TS2307. El script
+ * generador mantiene su propia copia de esta interfaz; ambas deben coincidir.
+ */
+export interface ParishData {
+  id: string;
+  name: string;
+  canton: string;
+  province: string;
+  region: 'Costa' | 'Sierra' | 'Amazonía' | 'Galápagos';
+  geography: string;
+  climate: string;
+  history: string;
+  demographics: string;
+  attractions: string[];
+  gastronomy: string[];
+  activities: string[];
+  how_to_get_there: string;
+  best_months: string[];
+  curiosities: string;
+}
 
 const PARISHES_DIR = path.join(__dirname, 'parishes');
 
