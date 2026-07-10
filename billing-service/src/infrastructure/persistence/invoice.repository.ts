@@ -29,6 +29,21 @@ export class InvoiceRepository {
   ) {}
 
   /**
+   * Defensa en profundidad (auditoría Bloque 2 #1): NUNCA construir una query
+   * scoped con un `companyId` vacío/undefined. Mongoose descarta los `undefined`
+   * al castear, lo que colapsaría el filtro de tenant y cruzaría empresas. Si
+   * un scope inválido llega hasta acá, es un bug de guard/controlador → fallar
+   * ruidoso en vez de devolver datos de otra empresa.
+   */
+  private assertCompanyScope(companyId: string): void {
+    if (typeof companyId !== 'string' || companyId.trim() === '') {
+      throw new Error(
+        'InvoiceRepository: companyId requerido para operación scoped (posible fuga cross-tenant evitada)'
+      );
+    }
+  }
+
+  /**
    * Create a new invoice
    * @param invoice Invoice data to save
    * @returns Saved invoice
@@ -56,6 +71,7 @@ export class InvoiceRepository {
     companyId: string
   ): Promise<Invoice | null> {
     try {
+      this.assertCompanyScope(companyId);
       return (await this.invoiceModel
         .findOne({ _id: invoiceId, companyId })
         .lean()
@@ -98,6 +114,7 @@ export class InvoiceRepository {
     filters: ListFilters = {}
   ): Promise<{ invoices: Invoice[]; total: number }> {
     try {
+      this.assertCompanyScope(companyId);
       const query: any = { companyId };
 
       if (filters.status) {
@@ -157,6 +174,7 @@ export class InvoiceRepository {
     updateData: Partial<Invoice>
   ): Promise<Invoice | null> {
     try {
+      this.assertCompanyScope(companyId);
       return (await this.invoiceModel
         .findOneAndUpdate({ _id: invoiceId, companyId }, updateData, {
           new: true,
@@ -177,6 +195,7 @@ export class InvoiceRepository {
    */
   async delete(invoiceId: string, companyId: string): Promise<boolean> {
     try {
+      this.assertCompanyScope(companyId);
       const result = await this.invoiceModel.deleteOne({
         _id: invoiceId,
         companyId,
@@ -205,9 +224,27 @@ export class InvoiceRepository {
     }
   ): Promise<Invoice | null> {
     try {
+      this.assertCompanyScope(companyId);
       const invoice = await this.findById(invoiceId, companyId);
       if (!invoice) {
         return null;
+      }
+
+      // Idempotencia (auditoría Bloque 2 #3): si ya existe un pago con este
+      // `reference` (transactionId), NO volver a acreditar. Un retry S2S de
+      // payment-service (POST /internal/payment-completed) llegaba dos veces y
+      // doble-contaba amountPaid. Fast-path: ya aplicado → devolver la factura
+      // tal cual (éxito idempotente).
+      const existingPayments = (invoice as any).payments;
+      if (
+        payment.reference &&
+        Array.isArray(existingPayments) &&
+        existingPayments.some((p: any) => p?.reference === payment.reference)
+      ) {
+        this.logger.warn(
+          `recordPayment idempotente: reference ${payment.reference} ya aplicado en ${invoiceId} — sin doble crédito`
+        );
+        return invoice;
       }
 
       const amountPaid = (invoice.amountPaid || 0) + payment.amount;
@@ -244,12 +281,28 @@ export class InvoiceRepository {
         }
       }
 
-      return (await this.invoiceModel
-        .findOneAndUpdate({ _id: invoiceId, companyId }, updateData, {
+      // Guarda ATÓMICA para la carrera de dos retries concurrentes: el filtro
+      // exige que NO exista ya un pago con este reference. Si otro pod ganó, el
+      // update no matchea → devolvemos la factura actual (idempotente), sin
+      // sumar de nuevo.
+      const filter: any = { _id: invoiceId, companyId };
+      if (payment.reference) {
+        filter['payments.reference'] = { $ne: payment.reference };
+      }
+
+      const updated = (await this.invoiceModel
+        .findOneAndUpdate(filter, updateData, {
           new: true,
         })
         .lean()
         .exec()) as unknown as Invoice | null;
+
+      if (!updated && payment.reference) {
+        // No matcheó por la guarda de reference (otro retry lo aplicó primero).
+        return await this.findById(invoiceId, companyId);
+      }
+
+      return updated;
     } catch (error) {
       this.logger.error(`Failed to record payment: ${error}`);
       return null;
@@ -269,6 +322,7 @@ export class InvoiceRepository {
     status: string
   ): Promise<Invoice | null> {
     try {
+      this.assertCompanyScope(companyId);
       const updateData: any = { status };
 
       if (status === 'SENT') {
@@ -335,6 +389,7 @@ export class InvoiceRepository {
     dueAmount: number;
   }> {
     try {
+      this.assertCompanyScope(companyId);
       const [totals, status, payment] = await Promise.all([
         this.invoiceModel.aggregate([
           { $match: { companyId } },

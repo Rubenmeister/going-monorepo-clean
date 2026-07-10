@@ -325,6 +325,15 @@ export class InvoiceController {
   ): Promise<{ success: boolean; message: string }> {
     const companyId = req.user.companyId;
 
+    // RBAC (auditoría Bloque 2 #2): enviar una factura por correo mueve PII
+    // financiera (PDF con RUC, cuentas bancarias, montos) a una dirección del
+    // body y cambia el estado a SENT. Igualar el gate de create/update/issue.
+    if (!['MANAGER', 'SUPER_ADMIN'].includes(req.user.role)) {
+      throw new UnauthorizedException(
+        'Insufficient permissions to send invoices'
+      );
+    }
+
     const invoice = await this.invoiceRepository.findById(invoiceId, companyId);
     if (!invoice) {
       throw new NotFoundException('Invoice not found');
@@ -367,6 +376,13 @@ export class InvoiceController {
     @Req() req: any
   ): Promise<{ success: boolean; message: string }> {
     const companyId = req.user.companyId;
+
+    // RBAC (auditoría Bloque 2 #2): mismo gate que send-email.
+    if (!['MANAGER', 'SUPER_ADMIN'].includes(req.user.role)) {
+      throw new UnauthorizedException(
+        'Insufficient permissions to send reminders'
+      );
+    }
 
     const invoice = await this.invoiceRepository.findById(invoiceId, companyId);
     if (!invoice) {
