@@ -76,7 +76,7 @@ const AIRPORT_TIMES = hourlyRange(0, 23); // aeropuerto: 24h, cada hora 00:00 �
 //
 // Corredores de AEROPUERTO (`*_air`, ver libs/pricing/corridors.ts): mismo
 // trazado ciudad→…→Quito pero con destino final el aeropuerto; operan 24h.
-const CORRIDOR_PLANS = [
+let CORRIDOR_PLANS = [
   // Ciudad → Quito (04:00–20:00, ida y vuelta)
   { routeId: 'sierra_norte',     times: CITY_TIMES,    drivers: 3 }, // Tulcán·Ibarra·Otavalo → Quito
   { routeId: 'sierra_centro',    times: CITY_TIMES,    drivers: 3 }, // Riobamba·Ambato·Latacunga → Quito
@@ -86,6 +86,20 @@ const CORRIDOR_PLANS = [
   { routeId: 'sierra_centro_air', times: AIRPORT_TIMES, drivers: 4 },
   { routeId: 'costa_air',        times: AIRPORT_TIMES, drivers: 3 },
 ];
+
+// Overrides opcionales para pruebas puntuales (defaults intactos):
+//   SEED_ONLY_CITY=true  → solo las 3 rutas ciudad→Quito (excluye *_air).
+//   SEED_DRIVERS=4,3,3   → nº de conductores por plan (en orden), tras el filtro.
+if (process.env.SEED_ONLY_CITY === 'true') {
+  CORRIDOR_PLANS = CORRIDOR_PLANS.filter((p) => !p.routeId.endsWith('_air'));
+}
+if (process.env.SEED_DRIVERS) {
+  const counts = process.env.SEED_DRIVERS.split(',').map((n) => parseInt(n.trim(), 10));
+  CORRIDOR_PLANS = CORRIDOR_PLANS.map((p, i) => ({
+    ...p,
+    drivers: Number.isFinite(counts[i]) && counts[i] > 0 ? counts[i] : p.drivers,
+  }));
+}
 
 // Mayoría SUV (3 asientos); un SUV XL (4) para variar el inventario.
 const VEHICLES = ['suv', 'suv', 'suv_xl'];
