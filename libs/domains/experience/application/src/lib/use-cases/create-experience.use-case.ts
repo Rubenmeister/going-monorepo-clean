@@ -42,7 +42,11 @@ export class CreateExperienceUseCase {
       throw new InternalServerErrorException(experienceResult.error.message);
     }
     const experience = experienceResult.value;
-    experience.publish();
+    // Auditoría Bloque 2 #20 (mismo patrón que tours/anfitriones): NO auto-
+    // publicar al crear. El operador local crea la experiencia en 'draft' y la
+    // publica con un PATCH /experiences/:id/publish explícito (que valida que sea
+    // el dueño — #19). Antes cualquier usuario inyectaba una experiencia directa
+    // al catálogo público con un solo POST.
 
     const saveResult = await this.experienceRepo.save(experience);
     if (saveResult.isErr()) {

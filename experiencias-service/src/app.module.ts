@@ -10,6 +10,7 @@ import {
   CreateExperienceUseCase,
   GetExperienceByIdUseCase,
   SearchExperiencesUseCase,
+  PublishExperienceUseCase,
 } from '@going-monorepo-clean/domains-experience-application';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 
@@ -41,6 +42,7 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
     CreateExperienceUseCase,
     GetExperienceByIdUseCase,
     SearchExperiencesUseCase,
+    PublishExperienceUseCase,
     JwtStrategy,
   ],
 })

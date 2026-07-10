@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   Get,
   Param,
@@ -12,6 +13,7 @@ import {
   CreateExperienceUseCase,
   GetExperienceByIdUseCase,
   SearchExperiencesUseCase,
+  PublishExperienceUseCase,
 } from '@going-monorepo-clean/domains-experience-application';
 import { ExperienceSearchFilters } from '@going-monorepo-clean/domains-experience-core';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
@@ -24,6 +26,7 @@ export class ExperienceController {
     private readonly createExperienceUseCase: CreateExperienceUseCase,
     private readonly getExperienceByIdUseCase: GetExperienceByIdUseCase,
     private readonly searchExperiencesUseCase: SearchExperiencesUseCase,
+    private readonly publishExperienceUseCase: PublishExperienceUseCase,
   ) {}
 
   /** POST /experiences — requires JWT; hostId from token */
@@ -54,5 +57,18 @@ export class ExperienceController {
   async getExperienceById(@Param('id') id: string): Promise<any> {
     const exp = await this.getExperienceByIdUseCase.execute(id);
     return exp.toPrimitives();
+  }
+
+  /** PATCH /experiences/:id/publish — requires JWT; solo el operador dueño o admin (#19) */
+  @Patch(':id/publish')
+  @UseGuards(JwtAuthGuard)
+  async publishExperience(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ): Promise<any> {
+    const isAdmin = ['admin', 'super_admin', 'ops', 'ADMIN', 'SUPER_ADMIN'].includes(
+      user.role,
+    );
+    return this.publishExperienceUseCase.execute(id, user.id, isAdmin);
   }
 }
