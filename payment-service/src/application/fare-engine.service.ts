@@ -119,7 +119,7 @@ const FARE_RATES = {
     platformFeePct: 0.2,
   },
   envio: {
-    platformFeePct: 0.18,
+    platformFeePct: 0.2,
   },
 } as const;
 

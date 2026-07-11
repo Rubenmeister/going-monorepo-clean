@@ -145,7 +145,7 @@ export default function DriversPage() {
         totalTrips:   u.totalTrips,
         tripsThisMonth: u.tripsThisMonth,
         totalEarnings:  u.totalEarnings,
-        commissionRate: u.commissionRate ?? 15,
+        commissionRate: u.commissionRate ?? 20,
         pendingPayout:  u.pendingPayout,
         lastActive:     u.lastActive ?? u.updatedAt,
         vehiclePlate:   u.vehiclePlate,

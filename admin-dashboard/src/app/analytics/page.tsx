@@ -359,7 +359,7 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             <StatCard icon="💰" title="Ingresos Totales"  value={`$${globalRevenue.toLocaleString()}`} subtitle="todos los servicios" color="success" />
             <StatCard icon="📊" title="Operaciones"       value={globalOps.toLocaleString()} subtitle="viajes + envíos + reservas" color="primary" />
-            <StatCard icon="🏢" title="Comisión Going App"    value={`$${(globalRevenue*0.15).toLocaleString()}`} subtitle="15% promedio" color="info" />
+            <StatCard icon="🏢" title="Comisión Going App"    value={`$${(globalRevenue*0.20).toLocaleString()}`} subtitle="20% promedio" color="info" />
           </div>
 
           {/* Funnel */}
@@ -424,8 +424,8 @@ export default function AnalyticsPage() {
                 <tbody className="divide-y divide-gray-50">
                   {[
                     {label:'Ingresos brutos',     value:`$${sv.revenue.toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-gray-900'},
-                    {label:'Comisión Going App (15%)', value:`$${(sv.revenue*0.15).toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-red-600'},
-                    {label:'Neto proveedores',     value:`$${(sv.revenue*0.85).toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-green-700'},
+                    {label:'Comisión Going App (20%)', value:`$${(sv.revenue*0.20).toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-red-600'},
+                    {label:'Neto proveedores',     value:`$${(sv.revenue*0.80).toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-green-700'},
                     {label:'Ticket promedio',      value:`$${sv.total>0?(sv.revenue/sv.total).toFixed(2):'0.00'}`, color:'text-gray-700'},
                   ].map(row => (
                     <tr key={row.label}>

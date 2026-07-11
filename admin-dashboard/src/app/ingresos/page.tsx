@@ -137,8 +137,8 @@ export default function IngresosPage() {
   const totalRevenue   = filteredInv.filter(i=>i.status==='paid').reduce((s,i)=>s+i.amount,0);
   const pendingRevenue = filteredInv.filter(i=>i.status==='pending').reduce((s,i)=>s+i.amount,0);
   const overdueRev     = filteredInv.filter(i=>i.status==='overdue').reduce((s,i)=>s+i.amount,0);
-  const goingFee       = totalRevenue * 0.15;
-  const netProviders   = totalRevenue * 0.85;
+  const goingFee       = totalRevenue * 0.20;
+  const netProviders   = totalRevenue * 0.80;
   const payRevenue     = filteredPay.reduce((s,p)=>s+p.amount,0);
 
   /* ── Breakdown by service ── */
@@ -206,7 +206,7 @@ export default function IngresosPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           {label:'Total cobrado',   value:fmt(totalRevenue),   color:'text-green-600',  sub:`${filteredInv.filter(i=>i.status==='paid').length} facturas`},
-          {label:'Comisión Going App',  value:fmt(goingFee),       color:'text-red-600',    sub:'15% del cobrado'},
+          {label:'Comisión Going App',  value:fmt(goingFee),       color:'text-red-600',    sub:'20% del cobrado'},
           {label:'Neto proveedores',value:fmt(netProviders),   color:'text-blue-700',   sub:'85% del cobrado'},
           {label:'Por cobrar',      value:fmt(pendingRevenue), color:'text-amber-600',  sub:`${overdueRev>0?`+ ${fmt(overdueRev)} vencido`:'sin vencidos'}`},
         ].map(k => (

@@ -43,7 +43,7 @@ export const CurrentUser = createParamDecorator(
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PLATFORM_FEE_RATE = 0.15;   // 15 % comisión de plataforma
+const PLATFORM_FEE_RATE = 0.20;   // 20 % comisión de plataforma (regla canónica Going)
 
 @Controller('drivers')
 export class DriverEarningsController {
