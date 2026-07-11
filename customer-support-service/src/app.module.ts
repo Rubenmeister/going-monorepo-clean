@@ -12,6 +12,7 @@ import { CommandController } from './api/command.controller';
 import { ContentController } from './content/content.controller';
 import { ContentReviewController } from './content/content-review.controller';
 import { ContentService } from './content/content.service';
+import { SocialService } from './content/social.service';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
 import { BudgetService } from './infrastructure/budget.service';
@@ -67,6 +68,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
   ],
   providers: [
     ContentService,
+    SocialService,
     AgentService,
     ConversationService,
     BudgetService,

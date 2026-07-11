@@ -9,6 +9,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { runMarketingMonitor } from './monitors/metrics.monitor';
 import { driverBonusZone } from './actions/driver-bonus-zone';
+import type { SocialProposalSpec } from './social/social-loop';
 import {
   AgentRunEvent,
   parseCommandFromEnv,
@@ -47,6 +48,22 @@ async function main(): Promise<void> {
     process.exit(result.ok ? 0 : 1);
   }
 
+  // ─── Modos del social loop (Fase 1) ───────────────────────────
+  // SOCIAL_GENERATE=1 → genera propuestas multi-plataforma (status='review').
+  // SOCIAL_PUBLISH=1  → publica las aprobadas por el humano (status='approved').
+  if (process.env.SOCIAL_GENERATE === '1') {
+    const { generateSocialProposals } = await import('./social/social-loop');
+    const r = await generateSocialProposals(parseSocialSpecs());
+    console.log(`[social] generate done: ${r.created} propuesta(s) en revisión.`);
+    process.exit(0);
+  }
+  if (process.env.SOCIAL_PUBLISH === '1') {
+    const { publishApprovedPosts } = await import('./social/social-loop');
+    const r = await publishApprovedPosts();
+    console.log(`[social] publish done: ${r.published} publicada(s), ${r.failed} fallida(s).`);
+    process.exit(r.failed > 0 && r.published === 0 ? 1 : 0);
+  }
+
   const runId     = uuidv4();
   const startedAt = new Date();
   let runStatus: 'success' | 'partial_failure' | 'failure' = 'success';
@@ -54,6 +71,17 @@ async function main(): Promise<void> {
 
   try {
     runResult = await runMarketingMonitor();
+
+    // El loop social publica lo YA aprobado por el humano en cada corrida.
+    try {
+      const { publishApprovedPosts } = await import('./social/social-loop');
+      const sp = await publishApprovedPosts();
+      if (sp.published || sp.failed) {
+        console.log(`[social] auto-publish: ${sp.published} publicada(s), ${sp.failed} fallida(s).`);
+      }
+    } catch (e) {
+      console.error('[social] auto-publish falló (non-fatal):', (e as Error).message);
+    }
 
     if (runResult.collector.errors.length > 0) {
       runStatus = 'partial_failure';
@@ -92,6 +120,30 @@ async function main(): Promise<void> {
 
     process.exit(runStatus === 'failure' ? 1 : 0);
   }
+}
+
+/**
+ * Specs de generación social. Lee SOCIAL_SPECS_JSON (array de specs) o usa un
+ * default seguro (destacar una ruta en los canales de solo-texto).
+ */
+function parseSocialSpecs(): SocialProposalSpec[] {
+  const raw = process.env.SOCIAL_SPECS_JSON;
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed as SocialProposalSpec[];
+    } catch (e) {
+      console.error('[social] SOCIAL_SPECS_JSON inválido, uso default:', (e as Error).message);
+    }
+  }
+  return [
+    {
+      topic: 'route_highlight',
+      platforms: ['telegram_channel', 'facebook', 'x'],
+      contextData: { route: 'Quito → Riobamba', price: 20 },
+      tone: 'friendly',
+    },
+  ];
 }
 
 main();

@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ContentService } from './content.service';
+import { SocialService } from './social.service';
 import { JwtAuthGuard, AdminGuard, CurrentUser } from '../infrastructure/auth/jwt.guard';
 
 /**
@@ -25,13 +26,38 @@ import { JwtAuthGuard, AdminGuard, CurrentUser } from '../infrastructure/auth/jw
 @Controller('content-review')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class ContentReviewController {
-  constructor(private readonly content: ContentService) {}
+  constructor(
+    private readonly content: ContentService,
+    private readonly social: SocialService,
+  ) {}
 
   @Get('pending')
   async pending(@Query('limit') limit?: string): Promise<{ items: any[] }> {
     const n = parseInt(limit ?? '50', 10);
     const items = await this.content.listReview(Number.isFinite(n) && n > 0 ? n : 50);
     return { items };
+  }
+
+  // ─── Redes sociales (propuestas de Sumak) ───────────────────────────
+  @Get('social/pending')
+  async socialPending(@Query('limit') limit?: string): Promise<{ items: any[] }> {
+    const n = parseInt(limit ?? '50', 10);
+    const items = await this.social.listReview(Number.isFinite(n) && n > 0 ? n : 50);
+    return { items };
+  }
+
+  @Post('social/:id/approve')
+  async socialApprove(@Param('id') id: string, @CurrentUser() user: any): Promise<any> {
+    const item = await this.social.setStatus(id, 'approved', user?.email || user?.id, this.now());
+    if (!item) throw new NotFoundException('Propuesta no encontrada o ya resuelta');
+    return item;
+  }
+
+  @Post('social/:id/reject')
+  async socialReject(@Param('id') id: string, @CurrentUser() user: any): Promise<any> {
+    const item = await this.social.setStatus(id, 'rejected', user?.email || user?.id, this.now());
+    if (!item) throw new NotFoundException('Propuesta no encontrada o ya resuelta');
+    return item;
   }
 
   @Post(':id/publish')
