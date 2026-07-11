@@ -36,7 +36,7 @@ export class WorldSnapshotClient {
     try {
       res = await fetch(url, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' },
+        headers: { 'Accept': 'application/json', 'X-Internal-Token': process.env.INTERNAL_SERVICE_TOKEN || '' },
         // Timeout duro de 10s — si el cerebro está caído no queremos
         // bloquear el ciclo de razonamiento esperando.
         signal: AbortSignal.timeout(10000),

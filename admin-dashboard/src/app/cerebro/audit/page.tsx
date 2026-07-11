@@ -30,6 +30,11 @@ const FIELD_LABELS: Record<string, string> = {
   enabled:         'Enabled',
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function AuditPage() {
   const [data, setData]       = useState<AuditResponse | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -40,7 +45,7 @@ export default function AuditPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${MYCORTEX_URL}/mycortex/config/audit?limit=100`, { cache: 'no-store' });
+      const res = await fetch(`${MYCORTEX_URL}/mycortex/config/audit?limit=100`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`mycortex ${res.status}`);
       const json = (await res.json()) as AuditResponse;
       setData(json);

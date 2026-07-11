@@ -63,6 +63,11 @@ const SAFETY_STYLES: Record<number, { bg: string; text: string; label: string }>
 
 type Filter = 'all' | 'pending_approval' | 'executed' | 'ignored' | 'dormant';
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function DecisionsPage() {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [stats, setStats] = useState<Record<string, number>>({});
@@ -79,8 +84,8 @@ export default function DecisionsPage() {
           ? `${ORCH_URL}/orchestrator/decisions?limit=50`
           : `${ORCH_URL}/orchestrator/decisions?limit=50&status=${filter}`;
       const [decRes, statsRes] = await Promise.all([
-        fetch(url, { cache: 'no-store' }),
-        fetch(`${ORCH_URL}/orchestrator/stats?hours=168`, { cache: 'no-store' }),
+        fetch(url, { cache: 'no-store', headers: { ...authHeaders() } }),
+        fetch(`${ORCH_URL}/orchestrator/stats?hours=168`, { cache: 'no-store', headers: { ...authHeaders() } }),
       ]);
       if (!decRes.ok) throw new Error(`orchestrator ${decRes.status}`);
       const decJson = (await decRes.json()) as { decisions: Decision[] };
@@ -100,7 +105,7 @@ export default function DecisionsPage() {
     try {
       await fetch(`${ORCH_URL}/orchestrator/poll-now`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: '{}',
       });
       setTimeout(load, 2000);

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, BadRequestException, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AdminOrInternalGuard } from '../infrastructure/auth/jwt.guard';
 import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
 import { DispatcherService } from '../decision/dispatcher.service';
 import { MyCortexPollerService } from '../decision/mycortex-poller.service';
@@ -24,6 +25,7 @@ import { safetyMeta } from '../decision/safety-levels';
  *  POST /orchestrator/decisions/:id/reject     — rechaza Cat 3
  */
 @Controller('orchestrator')
+@UseGuards(AdminOrInternalGuard) // Bloque 3: admin JWT (panel) o X-Internal-Token (S2S)
 export class OrchestratorController {
   constructor(
     private readonly repo:       DecisionRepository,

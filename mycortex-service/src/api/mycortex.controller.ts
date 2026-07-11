@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { AdminOrInternalGuard } from '../infrastructure/auth/jwt.guard';
 import { IntentionRepository } from '../infrastructure/persistence/intention.repository';
 import { ReasoningLoopService } from '../reasoning/reasoning-loop.service';
 import { CortexConfigRepository } from '../infrastructure/persistence/cortex-config.repository';
@@ -20,6 +21,7 @@ import { ConfigAuditRepository } from '../infrastructure/persistence/config-audi
  *   - GET /mycortex/config/default → DEFAULT_SYSTEM_PROMPT (botón "restaurar default" en UI)
  */
 @Controller('mycortex')
+@UseGuards(AdminOrInternalGuard) // Bloque 3: admin JWT (panel) o X-Internal-Token (orchestrator poller)
 export class MyCortexController {
   constructor(
     private readonly repo:           IntentionRepository,

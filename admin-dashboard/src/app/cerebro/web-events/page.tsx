@@ -47,6 +47,11 @@ const ERROR_TYPE_STYLES: Record<string, { bg: string; text: string; label: strin
 type AppFilter = 'all' | 'frontend-webapp' | 'admin-dashboard' | 'corporate-portal';
 type HoursFilter = 1 | 6 | 24 | 168;
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function WebEventsPage() {
   const [data, setData]       = useState<WebEventsResponse | null>(null);
   const [appFilter, setAppFilter] = useState<AppFilter>('all');
@@ -61,7 +66,7 @@ export default function WebEventsPage() {
     try {
       const params = new URLSearchParams({ hours: String(hours), limit: '100' });
       if (appFilter !== 'all') params.set('app', appFilter);
-      const res = await fetch(`${CEREBRO_URL}/cerebro/web-events?${params}`, { cache: 'no-store' });
+      const res = await fetch(`${CEREBRO_URL}/cerebro/web-events?${params}`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`cerebro ${res.status}`);
       const json = (await res.json()) as WebEventsResponse;
       setData(json);

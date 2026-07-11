@@ -63,6 +63,11 @@ function costPerCycle(model: string): number {
   );
 }
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function CostsPage() {
   const [data, setData] = useState<CostStats | null>(null);
   const [days, setDays] = useState<7 | 30 | 90>(30);
@@ -73,7 +78,7 @@ export default function CostsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${MYCORTEX_URL}/mycortex/cost-stats?days=${days}`, { cache: 'no-store' });
+      const res = await fetch(`${MYCORTEX_URL}/mycortex/cost-stats?days=${days}`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`mycortex ${res.status}`);
       setData((await res.json()) as CostStats);
     } catch (e) {

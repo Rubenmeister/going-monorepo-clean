@@ -80,6 +80,11 @@ const SAFETY_BADGE: Record<number, { bg: string; text: string; label: string }> 
   3: { bg: 'bg-red-100',    text: 'text-red-700',    label: 'Cat 3 — irreversible, requiere ack' },
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function DecisionDetailPage() {
   const params = useParams();
   const id = String(params?.id || '');
@@ -95,7 +100,7 @@ export default function DecisionDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const decRes = await fetch(`${ORCH_URL}/orchestrator/decisions/${id}`, { cache: 'no-store' });
+      const decRes = await fetch(`${ORCH_URL}/orchestrator/decisions/${id}`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!decRes.ok) throw new Error(`orchestrator ${decRes.status}`);
       const decJson = (await decRes.json()) as Decision | { error: string };
       if ('error' in decJson) throw new Error(decJson.error);
@@ -103,7 +108,7 @@ export default function DecisionDetailPage() {
 
       // Side fetch: la intention madre (best-effort)
       if (decJson.intentionId) {
-        const intRes = await fetch(`${MYCORTEX_URL}/mycortex/intentions/${decJson.intentionId}`, { cache: 'no-store' }).catch(() => null);
+        const intRes = await fetch(`${MYCORTEX_URL}/mycortex/intentions/${decJson.intentionId}`, { cache: 'no-store', headers: { ...authHeaders() } }).catch(() => null);
         if (intRes && intRes.ok) {
           const intJson = (await intRes.json()) as Intention | { error: string };
           if (!('error' in intJson)) setIntention(intJson);
@@ -129,7 +134,7 @@ export default function DecisionDetailPage() {
     try {
       const res = await fetch(`${ORCH_URL}/orchestrator/decisions/${decision.decisionId}/approve`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ approvedBy: operator }),
       });
       const json = (await res.json()) as { ok?: boolean; error?: string; willExecute?: boolean };
@@ -156,7 +161,7 @@ export default function DecisionDetailPage() {
     try {
       const res = await fetch(`${ORCH_URL}/orchestrator/decisions/${decision.decisionId}/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ rejectedBy: operator, reason }),
       });
       const json = (await res.json()) as { ok?: boolean; error?: string };

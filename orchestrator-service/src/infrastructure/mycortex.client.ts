@@ -47,7 +47,7 @@ export class MycortexClient {
     try {
       const res = await fetch(url, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Internal-Token': process.env.INTERNAL_SERVICE_TOKEN || '' },
         body: JSON.stringify({
           outcome:        mappedOutcome,
           notes:          args.errorMessage,

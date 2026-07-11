@@ -47,33 +47,40 @@ export class WebEventController {
     if (!body?.appId || !VALID_APPS.has(body.appId)) {
       return { ok: false, error: 'invalid_appId' };
     }
-    if (!body.message || !body.url) {
+    // Bloque 3: solo aceptamos primitivos string — bloquea NoSQL operator
+    // injection (?dedupKey[$ne]=) y crashes por tipos raros que llegan a la query.
+    const str = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined);
+    const message = str(body.message);
+    const url = str(body.url);
+    if (!message || !url) {
       return { ok: false, error: 'missing_required_fields' };
     }
-    const errorType = (body.errorType && VALID_TYPES.includes(body.errorType))
+    const stack = str(body.stack);
+    const userAgent = str(body.userAgent);
+    const sessionId = str(body.sessionId);
+    const errorType = (typeof body.errorType === 'string' && VALID_TYPES.includes(body.errorType))
       ? body.errorType
       : 'other';
 
-    // Si el client no mandó dedupKey, lo derivamos del fingerprint server-side.
-    // Topframe del stack es lo que más nos importa para agrupar.
-    const dedupKey = body.dedupKey || computeDedupKey({
+    // Si el client no mandó dedupKey (string), lo derivamos del fingerprint server-side.
+    const dedupKey = str(body.dedupKey) || computeDedupKey({
       appId:     body.appId,
       errorType,
-      stack:     body.stack,
-      url:       body.url,
-      message:   body.message,
+      stack,
+      url,
+      message,
     });
 
     try {
       const doc = await this.events.upsert({
         appId:     body.appId,
         errorType,
-        message:   body.message,
-        stack:     body.stack,
-        url:       body.url,
-        userAgent: body.userAgent,
+        message,
+        stack,
+        url,
+        userAgent,
         dedupKey,
-        sessionId: body.sessionId,
+        sessionId,
       });
       return { ok: true, count: doc.count };
     } catch (e) {

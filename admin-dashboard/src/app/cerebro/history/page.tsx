@@ -67,6 +67,11 @@ const HEALTH_STYLES: Record<SystemHealth, { bg: string; text: string; emoji: str
 
 const LIMITS = [20, 50, 100, 200];
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function CerebroHistoryPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +85,7 @@ export default function CerebroHistoryPage() {
     try {
       const res = await fetch(`${CEREBRO_URL}/cerebro/state/history?limit=${limit}`, {
         cache: 'no-store',
+        headers: { ...authHeaders() },
       });
       if (!res.ok) throw new Error(`cerebro-service ${res.status}`);
       const json = (await res.json()) as { count: number; snapshots: Snapshot[] };

@@ -48,6 +48,11 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; emoji: string }>
   failure:         { bg: 'bg-red-100',    text: 'text-red-700',    emoji: '🚨' },
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function EventsPage() {
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [agentFilter, setAgentFilter] = useState<string>('all');
@@ -62,7 +67,7 @@ export default function EventsPage() {
         agentFilter === 'all'
           ? `${CEREBRO_URL}/cerebro/events?limit=50`
           : `${CEREBRO_URL}/cerebro/events/${agentFilter}?limit=50`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`cerebro-service ${res.status}`);
       const json = (await res.json()) as { events: AgentEvent[] };
       setEvents(json.events || []);

@@ -71,6 +71,7 @@ export class MyCortexPollerService {
       const url = `${this.baseUrl}/mycortex/intentions?limit=30`;
       const res = await fetch(url, {
         cache: 'no-store',
+        headers: { 'X-Internal-Token': process.env.INTERNAL_SERVICE_TOKEN || '' },
         signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) {

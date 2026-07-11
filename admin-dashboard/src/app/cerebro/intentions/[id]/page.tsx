@@ -60,6 +60,11 @@ const OUTCOME_BADGE: Record<string, { bg: string; text: string }> = {
   unknown:          { bg: 'bg-gray-100',   text: 'text-gray-600'   },
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function IntentionDetailPage() {
   const params = useParams();
   const id = String(params?.id || '');
@@ -73,14 +78,14 @@ export default function IntentionDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const intRes = await fetch(`${MYCORTEX_URL}/mycortex/intentions/${id}`, { cache: 'no-store' });
+      const intRes = await fetch(`${MYCORTEX_URL}/mycortex/intentions/${id}`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!intRes.ok) throw new Error(`mycortex ${intRes.status}`);
       const intJson = (await intRes.json()) as Intention | { error: string };
       if ('error' in intJson) throw new Error(intJson.error);
       setIntention(intJson);
 
       // Side fetch: ¿hay una decision asociada? Listamos recientes y filtramos.
-      const decsRes = await fetch(`${ORCH_URL}/orchestrator/decisions?limit=200`, { cache: 'no-store' }).catch(() => null);
+      const decsRes = await fetch(`${ORCH_URL}/orchestrator/decisions?limit=200`, { cache: 'no-store', headers: { ...authHeaders() } }).catch(() => null);
       if (decsRes && decsRes.ok) {
         const decsJson = (await decsRes.json()) as { decisions: DecisionLite[] };
         const match = decsJson.decisions.find(d => d.intentionId === id);

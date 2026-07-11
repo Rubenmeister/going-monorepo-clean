@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { AdminOrInternalGuard } from '../infrastructure/auth/jwt.guard';
 import { AGENT_IDS, AgentId } from '@going-platform/cerebro-contracts';
 import { AgentEventRepository } from '../infrastructure/persistence/agent-event.repository';
 import { WorldSnapshotRepository } from '../infrastructure/persistence/world-snapshot.repository';
@@ -11,6 +12,7 @@ import { WorldModelService } from '../world-model/world-model.service';
  * /state/history para auditoría. /events* siguen siendo el feed crudo.
  */
 @Controller('cerebro')
+@UseGuards(AdminOrInternalGuard) // Bloque 3: admin JWT (panel) o X-Internal-Token (mycortex S2S)
 export class CerebroController {
   constructor(
     private readonly events:    AgentEventRepository,

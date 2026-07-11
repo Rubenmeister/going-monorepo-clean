@@ -60,6 +60,11 @@ const OUTCOME_COLORS: Record<string, string> = {
   unknown:          'bg-gray-400',
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function MemoryPage() {
   const [data, setData]       = useState<RollupsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +75,7 @@ export default function MemoryPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${MYCORTEX_URL}/mycortex/rollups?limit=12`, { cache: 'no-store' });
+      const res = await fetch(`${MYCORTEX_URL}/mycortex/rollups?limit=12`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`mycortex ${res.status}`);
       const json = (await res.json()) as RollupsResponse;
       setData(json);
@@ -86,7 +91,7 @@ export default function MemoryPage() {
     try {
       await fetch(`${MYCORTEX_URL}/mycortex/rollups/regenerate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: '{}',
       });
       setTimeout(load, 1000);

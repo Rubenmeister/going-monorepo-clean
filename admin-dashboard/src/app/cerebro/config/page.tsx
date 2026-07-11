@@ -30,6 +30,11 @@ const SUPPORTED_MODELS = [
   { value: 'claude-haiku-4-5',      label: 'Claude Haiku 4.5 (más rápido, -$$)' },
 ];
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function ConfigPage() {
   const [config, setConfig]     = useState<ConfigResponse | null>(null);
   const [defaultPrompt, setDefaultPrompt] = useState<string>('');
@@ -52,8 +57,8 @@ export default function ConfigPage() {
     setError(null);
     try {
       const [cfgRes, defRes] = await Promise.all([
-        fetch(`${MYCORTEX_URL}/mycortex/config`, { cache: 'no-store' }),
-        fetch(`${MYCORTEX_URL}/mycortex/config/default`, { cache: 'no-store' }),
+        fetch(`${MYCORTEX_URL}/mycortex/config`, { cache: 'no-store', headers: { ...authHeaders() } }),
+        fetch(`${MYCORTEX_URL}/mycortex/config/default`, { cache: 'no-store', headers: { ...authHeaders() } }),
       ]);
       if (!cfgRes.ok) throw new Error(`mycortex ${cfgRes.status}`);
       const cfg = (await cfgRes.json()) as ConfigResponse;
@@ -81,7 +86,7 @@ export default function ConfigPage() {
     try {
       const res = await fetch(`${MYCORTEX_URL}/mycortex/config`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
           systemPrompt:    formPrompt,
           model:           formModel,

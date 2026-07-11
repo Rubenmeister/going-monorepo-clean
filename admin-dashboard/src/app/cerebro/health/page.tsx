@@ -89,6 +89,11 @@ const SYSTEM_HEALTH_BADGE: Record<WorldState['systemHealth'], { bg: string; text
   critical: { bg: 'bg-red-100',    text: 'text-red-700',    emoji: '🚨', label: 'Critical' },
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function HealthPage() {
   const [state, setState]   = useState<WorldState | null>(null);
   const [cortex, setCortex] = useState<CortexConfig | null>(null);
@@ -102,9 +107,9 @@ export default function HealthPage() {
     setError(null);
     try {
       const [stateRes, cortexRes, orchRes] = await Promise.all([
-        fetch(`${CEREBRO_URL}/cerebro/state`,    { cache: 'no-store' }),
-        fetch(`${MYCORTEX_URL}/mycortex/config`, { cache: 'no-store' }),
-        fetch(`${ORCH_URL}/orchestrator/status`, { cache: 'no-store' }),
+        fetch(`${CEREBRO_URL}/cerebro/state`,    { cache: 'no-store', headers: { ...authHeaders() } }),
+        fetch(`${MYCORTEX_URL}/mycortex/config`, { cache: 'no-store', headers: { ...authHeaders() } }),
+        fetch(`${ORCH_URL}/orchestrator/status`, { cache: 'no-store', headers: { ...authHeaders() } }),
       ]);
       if (!stateRes.ok)  throw new Error(`cerebro ${stateRes.status}`);
       if (!cortexRes.ok) throw new Error(`mycortex ${cortexRes.status}`);

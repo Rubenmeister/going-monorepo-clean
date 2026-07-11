@@ -66,6 +66,11 @@ const SEVERITY_STYLES: Record<string, { bg: string; text: string; emoji: string 
   critical: { bg: 'bg-red-50',    text: 'text-red-700',    emoji: '🚨' },
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function CerebroOverviewPage() {
   const [state, setState] = useState<WorldState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +80,7 @@ export default function CerebroOverviewPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${CEREBRO_URL}/cerebro/state`, { cache: 'no-store' });
+      const res = await fetch(`${CEREBRO_URL}/cerebro/state`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`cerebro-service ${res.status}`);
       const json = (await res.json()) as WorldState;
       setState(json);

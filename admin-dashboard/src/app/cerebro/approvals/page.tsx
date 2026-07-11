@@ -35,6 +35,11 @@ const ORCH_URL =
   process.env.NEXT_PUBLIC_ORCHESTRATOR_URL ||
   'https://orchestrator-service-780842550857.us-central1.run.app';
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function ApprovalsPage() {
   const [pending, setPending] = useState<PendingDecision[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +53,7 @@ export default function ApprovalsPage() {
     try {
       const res = await fetch(`${ORCH_URL}/orchestrator/pending-approvals`, {
         cache: 'no-store',
+        headers: { ...authHeaders() },
       });
       if (!res.ok) throw new Error(`orchestrator ${res.status}`);
       const json = (await res.json()) as { list?: PendingDecision[] };
@@ -65,7 +71,7 @@ export default function ApprovalsPage() {
     try {
       const res = await fetch(`${ORCH_URL}/orchestrator/decisions/${d.decisionId}/approve`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ approvedBy: 'admin-dashboard' }),
       });
       const json = await res.json().catch(() => ({}));
@@ -85,7 +91,7 @@ export default function ApprovalsPage() {
     try {
       const res = await fetch(`${ORCH_URL}/orchestrator/decisions/${d.decisionId}/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ rejectedBy: 'admin-dashboard', reason: reason || undefined }),
       });
       const json = await res.json().catch(() => ({}));

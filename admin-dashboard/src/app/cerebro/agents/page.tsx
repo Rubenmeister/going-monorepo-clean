@@ -81,6 +81,11 @@ function timeAgo(iso?: string): string {
   return `hace ${Math.floor(ms / 86_400_000)}d`;
 }
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function AgentsPage() {
   const [bridgeData, setBridgeData]       = useState<BridgeResponse | null>(null);
   const [overrideData, setOverrideData]   = useState<OverridesResponse | null>(null);
@@ -98,7 +103,7 @@ export default function AgentsPage() {
     try {
       const [bridgeRes, overrideRes] = await Promise.all([
         fetch(`${BRIDGE_URL}/agents`,                          { cache: 'no-store' }),
-        fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/overrides`, { cache: 'no-store' }),
+        fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/overrides`, { cache: 'no-store', headers: { ...authHeaders() } }),
       ]);
       if (!bridgeRes.ok)   throw new Error(`agent-bridge ${bridgeRes.status}`);
       if (!overrideRes.ok) throw new Error(`orchestrator ${overrideRes.status}`);
@@ -124,7 +129,7 @@ export default function AgentsPage() {
     try {
       const res = await fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/${pauseTarget}/pause`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ pausedBy: adminId, reason: pauseReason }),
       });
       if (!res.ok) throw new Error(`pause ${res.status}`);
@@ -144,7 +149,7 @@ export default function AgentsPage() {
     try {
       const res = await fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/${agentId}/unpause`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ unpausedBy: adminId }),
       });
       if (!res.ok) throw new Error(`unpause ${res.status}`);

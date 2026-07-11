@@ -35,6 +35,11 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; emoji: string }>
   expired:      { bg: 'bg-gray-100',   text: 'text-gray-500',   emoji: '⏰' },
 };
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function IntentionsPage() {
   const [intentions, setIntentions] = useState<Intention[]>([]);
   const [filter, setFilter] = useState<Filter>('pending');
@@ -47,7 +52,7 @@ export default function IntentionsPage() {
     setError(null);
     try {
       const path = filter === 'pending' ? 'intentions' : 'intentions/all';
-      const res = await fetch(`${MYCORTEX_URL}/mycortex/${path}?limit=50`, { cache: 'no-store' });
+      const res = await fetch(`${MYCORTEX_URL}/mycortex/${path}?limit=50`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`mycortex-service ${res.status}`);
       const json = (await res.json()) as { intentions: Intention[] };
       setIntentions(json.intentions || []);
@@ -63,7 +68,7 @@ export default function IntentionsPage() {
     try {
       await fetch(`${MYCORTEX_URL}/mycortex/run-now`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: '{}',
       });
       // dale 3 segundos para que persista y refresca

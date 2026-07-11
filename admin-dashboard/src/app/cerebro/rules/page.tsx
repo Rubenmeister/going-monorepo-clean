@@ -80,6 +80,11 @@ const SAFETY_STYLES = {
 
 type GroupKey = 1 | 2 | 3 | 'human_only';
 
+const authHeaders = (): Record<string, string> => ({
+  Authorization:
+    'Bearer ' + (typeof window !== 'undefined' ? (localStorage.getItem('authToken') || '') : ''),
+});
+
 export default function RulesPage() {
   const [data, setData]       = useState<RulesResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +94,7 @@ export default function RulesPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${ORCH_URL}/orchestrator/rules`, { cache: 'no-store' });
+      const res = await fetch(`${ORCH_URL}/orchestrator/rules`, { cache: 'no-store', headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`orchestrator ${res.status}`);
       const json = (await res.json()) as RulesResponse;
       setData(json);
