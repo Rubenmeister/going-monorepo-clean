@@ -25,8 +25,8 @@ export interface Ride {
   fareTotal: number;            // Precio pagado por el pasajero (incluye IVA)
   fareSubtotal: number;         // Sin IVA
   ivaAmount: number;            // IVA 15%
-  goingCommission: number;      // 20% del subtotal
-  driverEarnings: number;       // 80% del subtotal
+  goingCommission: number;      // 20% del BRUTO (fareTotal, con IVA)
+  driverEarnings: number;       // 80% del BRUTO (fareTotal, con IVA)
   platformFee: number;          // Tarifa fija plataforma si aplica
 
   // Pago
