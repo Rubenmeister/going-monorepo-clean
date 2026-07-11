@@ -53,6 +53,8 @@ const fsdb   = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1a
 // Modelo del tip semanal: override por env. Default Claude Sonnet 4.5 —
 // el tip es contenido público que representa la marca, conviene
 // pagar buena calidad de copywriting (volumen mínimo, ~52 tips/año).
+import { generateEditorialProposals, saveProposalsForReview } from '../editorial/editorial.generator';
+
 const AI_TIP_MODEL = process.env.AI_TIP_MODEL || 'claude-sonnet-4-5';
 
 // ── Directrices de marca y CALIDAD para Killa (content-agent) ──────────────
@@ -467,10 +469,31 @@ export async function runContentMonitor(): Promise<MonitorRunResult> {
     await safeRun(c, 'sendWeeklyContentReport', () => sendWeeklyContentReport(c));
   }
 
-  // Triggers manuales (testing) — útil sin esperar al lunes
+  // Motor editorial v2 (Noticias/Blog/Revista) — genera PROPUESTAS con fuentes
+  // reales (búsqueda web) para revisión editorial en Firestore (status='review').
+  // Diario a las 9am cuando el scheduler sea '0 9 * * *'. NO publica solo: espera
+  // aprobación humana. (Requiere créditos en la cuenta Anthropic.)
+  if (hour === 9 && isPrimaryRunOfHour()) {
+    await safeRun(c, 'generateEditorialProposals', async () => {
+      const proposals = await generateEditorialProposals({ noticias: 2, blog: 1, revista: 1 });
+      const saved = await saveProposalsForReview(proposals);
+      console.log(`[content-agent] ${saved} propuesta(s) editorial(es) guardada(s) para revisión`);
+      if (c) c.metrics.editorialProposalsSaved = saved;
+    });
+  }
+
+  // Triggers manuales (testing) — útil sin esperar al horario
   if (process.env.FORCE_WEEKLY_TIP === '1') {
     console.log('[content-agent] FORCE_WEEKLY_TIP=1 — disparando tip manual');
     await safeRun(c, 'forcedWeeklyTip', () => generateWeeklyTip(c));
+  }
+  if (process.env.FORCE_EDITORIAL === '1') {
+    console.log('[content-agent] FORCE_EDITORIAL=1 — generando propuestas editoriales');
+    await safeRun(c, 'forcedEditorial', async () => {
+      const proposals = await generateEditorialProposals({ noticias: 2, blog: 1, revista: 1 });
+      const saved = await saveProposalsForReview(proposals);
+      console.log(`[content-agent] ${saved} propuesta(s) editorial(es) guardada(s)`);
+    });
   }
 
   console.log('[content-agent] Ciclo completado ✅');
