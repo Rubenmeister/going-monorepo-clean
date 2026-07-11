@@ -23,6 +23,9 @@ export class ContentService {
   private readonly logger = new Logger(ContentService.name);
   private readonly db = new Firestore({
     projectId: process.env.GCP_PROJECT || 'going-5d1ae',
+    // Fijar la base '(default)' explícitamente: el proyecto tiene también una
+    // base nombrada (ai-studio-*) y el runtime podría resolver la equivocada.
+    databaseId: process.env.FIRESTORE_DATABASE_ID || '(default)',
   });
 
   /** Publicados por canal (o todos). Filtra/ordena en memoria (sin índice compuesto). */
@@ -34,6 +37,7 @@ export class ContentService {
         .limit(200)
         .get();
 
+      this.logger.log(`[content] listPublished snap.size=${snap.size} (channel=${channel ?? 'all'})`);
       let items = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
 
       if (channel) {

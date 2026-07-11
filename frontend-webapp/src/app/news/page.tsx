@@ -1,7 +1,28 @@
 import React from 'react';
 import Link from 'next/link';
 
-const newsPosts = [
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+
+async function getNews() {
+  try {
+    const res = await fetch(`${API_URL}/content?channel=noticias&limit=15`, { next: { revalidate: 300 } });
+    if (!res.ok) return FALLBACK_NEWS;
+    const data = await res.json();
+    const items: any[] = data?.items ?? [];
+    if (!items.length) return FALLBACK_NEWS;
+    return items.map((it) => ({
+      id: it.id,
+      title: it.title ?? 'Sin título',
+      date: (it.publishedAt ?? '').slice(0, 10),
+      category: it.category ?? 'Actualidad',
+      excerpt: it.summary ?? '',
+    }));
+  } catch {
+    return FALLBACK_NEWS;
+  }
+}
+
+const FALLBACK_NEWS = [
   {
     id: 1,
     title: 'Going App se prepara para transformar la movilidad en Ecuador',
@@ -33,7 +54,8 @@ export const metadata = {
   description: 'Mantente al día con las últimas noticias y anuncios de Going App Ecuador.',
 };
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const newsPosts = await getNews();
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900">
       {/* Hero */}
