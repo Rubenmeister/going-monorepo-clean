@@ -469,5 +469,18 @@ export class ProxyModule implements NestModule {
         .apply(makeForwardMiddleware(svc.support, 'support'))
         .forRoutes({ path: 'support/*path', method: RequestMethod.ALL });
     }
+
+    // --- PUBLIC (solo GET): /content, /content/* → sección Comunicación de la
+    // webapp (Noticias/Blog/Revista). Sirve content_items publicados desde
+    // customer-support-service (ContentController). Sin JWT: es contenido público. ---
+    if (svc.support) {
+      const contentRoutes = [
+        { path: 'content', method: RequestMethod.GET },
+        { path: 'content/*path', method: RequestMethod.GET },
+      ];
+      consumer
+        .apply(makeForwardMiddleware(svc.support, 'content'))
+        .forRoutes(...contentRoutes);
+    }
   }
 }

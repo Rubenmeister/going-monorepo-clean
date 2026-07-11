@@ -9,6 +9,8 @@ import { PublicChatController } from './api/public-chat.controller';
 import { HealthController } from './api/health.controller';
 import { MetricsController } from './api/metrics.controller';
 import { CommandController } from './api/command.controller';
+import { ContentController } from './content/content.controller';
+import { ContentService } from './content/content.service';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
 import { BudgetService } from './infrastructure/budget.service';
@@ -59,8 +61,10 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     HealthController,
     MetricsController,
     CommandController,
+    ContentController,
   ],
   providers: [
+    ContentService,
     AgentService,
     ConversationService,
     BudgetService,
