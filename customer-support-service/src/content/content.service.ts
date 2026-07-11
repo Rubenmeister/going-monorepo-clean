@@ -74,6 +74,75 @@ export class ContentService {
     }
   }
 
+  // ---- Panel de revisión del admin (status='review' → published|rejected) ----
+
+  /** Propuestas pendientes de revisión (Killa las deja en status='review'). */
+  async listReview(limit = 50): Promise<any[]> {
+    try {
+      const snap = await this.db
+        .collection('content_items')
+        .where('status', '==', 'review')
+        .limit(200)
+        .get();
+      const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+      items.sort((a, b) => {
+        const ta = new Date(a.createdAt ?? 0).getTime();
+        const tb = new Date(b.createdAt ?? 0).getTime();
+        return tb - ta;
+      });
+      return items.slice(0, Math.min(Math.max(limit, 1), 200)).map((it) => this.toReview(it));
+    } catch (e) {
+      this.logger.error(`listReview fallo: ${(e as Error).message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Cambia el estado de una propuesta. 'published' sella publishedAt.
+   * Devuelve el item actualizado o null si no existe / no estaba en revisión.
+   */
+  async setStatus(
+    id: string,
+    status: 'published' | 'rejected',
+    reviewer?: string,
+    isoNow?: string,
+  ): Promise<any | null> {
+    try {
+      const ref = this.db.collection('content_items').doc(id);
+      const doc = await ref.get();
+      if (!doc.exists) return null;
+      const data = doc.data() as any;
+      // Solo se decide sobre propuestas en revisión (idempotente/seguro).
+      if (data.status !== 'review') return null;
+
+      const patch: any = { status, reviewedAt: isoNow ?? null, reviewedBy: reviewer ?? null };
+      if (status === 'published') patch.publishedAt = data.publishedAt ?? isoNow ?? null;
+      await ref.update(patch);
+      return this.toReview({ id, ...data, ...patch });
+    } catch (e) {
+      this.logger.error(`setStatus(${id},${status}) fallo: ${(e as Error).message}`);
+      return null;
+    }
+  }
+
+  /** Proyección para el panel de revisión (incluye cuerpo y fuentes para decidir). */
+  private toReview(it: any) {
+    return {
+      id: it.id,
+      status: it.status,
+      channel: it.channel ?? this.channelForType(it.type),
+      title: it.title ?? it.titulo ?? '(sin título)',
+      summary: it.summary ?? it.lead ?? '',
+      body: it.body ?? '',
+      outline: it.outline ?? [],
+      category: it.category ?? it.pilar ?? '',
+      sources: it.fuentes ?? it.sources ?? [],
+      cta: it.cta ?? '',
+      author: it.author ?? 'Going Ecuador',
+      createdAt: it.createdAt ?? null,
+    };
+  }
+
   /** Proyección pública (no exponemos campos internos de revisión). */
   private toPublic(it: any) {
     return {

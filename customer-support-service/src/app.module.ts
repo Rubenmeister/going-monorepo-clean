@@ -10,6 +10,7 @@ import { HealthController } from './api/health.controller';
 import { MetricsController } from './api/metrics.controller';
 import { CommandController } from './api/command.controller';
 import { ContentController } from './content/content.controller';
+import { ContentReviewController } from './content/content-review.controller';
 import { ContentService } from './content/content.service';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
@@ -62,6 +63,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     MetricsController,
     CommandController,
     ContentController,
+    ContentReviewController,
   ],
   providers: [
     ContentService,

@@ -76,8 +76,9 @@ const NAV_SECTIONS = [
   {
     title: 'Comunicación',
     items: [
-      { label: 'Notif. Push', href: '/push',    icon: '📤' },
-      { label: 'Soporte',     href: '/support', icon: '🎫' },
+      { label: 'Notif. Push', href: '/push',         icon: '📤' },
+      { label: 'Soporte',     href: '/support',      icon: '🎫' },
+      { label: 'Contenido',   href: '/comunicacion', icon: '📝' },
     ],
   },
   {
