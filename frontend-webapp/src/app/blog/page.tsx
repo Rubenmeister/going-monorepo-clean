@@ -1,8 +1,36 @@
 import React from 'react';
 import Link from 'next/link';
 
-// Datos de blog — se reemplazarán con la API
-const blogPosts = [
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+
+// Trae los posts publicados del endpoint de Comunicación (content-agent → Firestore
+// → GET /content). Si no hay ninguno todavía, cae a los ejemplos de abajo.
+async function getBlogPosts() {
+  try {
+    const res = await fetch(`${API_URL}/content?channel=blog&limit=12`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    const items: any[] = data?.items ?? [];
+    if (!items.length) return FALLBACK_POSTS;
+    return items.map((it) => ({
+      id: it.id,
+      slug: it.id,
+      title: it.title ?? 'Sin título',
+      excerpt: it.summary ?? '',
+      author: it.author ?? 'Going Ecuador',
+      date: (it.publishedAt ?? '').slice(0, 10),
+      category: it.category ?? 'Blog',
+      readTime: Math.max(2, Math.round(String(it.body ?? '').split(/\s+/).length / 200)),
+    }));
+  } catch {
+    return FALLBACK_POSTS;
+  }
+}
+
+// Ejemplos de respaldo (mientras no haya posts publicados por el equipo editorial).
+const FALLBACK_POSTS = [
   {
     id: 1,
     slug: 'consejos-conduccion-segura',
@@ -44,7 +72,8 @@ export const metadata = {
     'Lee los últimos consejos, historias e ideas de la comunidad Going App Ecuador.',
 };
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const blogPosts = await getBlogPosts();
   const categories = ['Todos', 'Popular', 'Consejos', 'Noticias', 'Comunidad'];
 
   return (

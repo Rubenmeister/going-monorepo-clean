@@ -12,7 +12,49 @@ const teasers = [
   { emoji: '🎒', title: 'Viaje colaborativo', desc: 'Consejos para viajar compartido, más barato y con propósito.' },
 ];
 
-export default function RevistaPage() {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+
+async function getRevistaArticles() {
+  try {
+    const res = await fetch(`${API_URL}/content?channel=revista&limit=12`, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data?.items ?? []) as any[];
+  } catch {
+    return [];
+  }
+}
+
+export default async function RevistaPage() {
+  const articles = await getRevistaArticles();
+
+  // Ya hay ediciones publicadas → mostrarlas.
+  if (articles.length) {
+    return (
+      <main className="min-h-[72vh] bg-white">
+        <section className="mx-auto max-w-5xl px-6 py-14">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-2">
+            Revista <span style={{ color: '#FF4C41' }}>Going</span>
+          </h1>
+          <p className="text-gray-500 mb-10">Historias de viaje, destinos y cultura del Ecuador — contadas desde la carretera.</p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {articles.map((a) => (
+              <article key={a.id} className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <div className="h-40 bg-gradient-to-br from-[#FF4C41] to-[#FF8A3D] flex items-center justify-center text-white text-4xl">📖</div>
+                <div className="p-5">
+                  {a.category && <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF4C41]">{a.category}</span>}
+                  <h2 className="font-bold text-gray-900 mt-1 mb-2 line-clamp-2">{a.title}</h2>
+                  <p className="text-sm text-gray-500 line-clamp-4">{a.summary}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // Todavía sin ediciones → placeholder "Próximamente".
   return (
     <main className="min-h-[72vh] bg-white">
       {/* Hero */}
