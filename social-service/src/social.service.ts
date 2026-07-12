@@ -554,6 +554,7 @@ export class SocialService {
             referralStreak: 0,
           },
           tier: 'BRONZE',
+          badges: [],
         };
         this.gamificationStats.set(userId, stats);
       }

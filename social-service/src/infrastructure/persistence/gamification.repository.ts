@@ -49,7 +49,7 @@ export class GamificationRepository {
       // Recalculate level and tier
       stats.level = Math.floor(stats.totalPoints / 100) + 1;
       stats.currentLevelProgress = stats.totalPoints % 100;
-      stats.tier = this.calcTier(stats.totalPoints);
+      stats.tier = this.calcTier(stats.totalPoints) as any;
       await this.model.findOneAndUpdate({ userId }, { $set: { level: stats.level, currentLevelProgress: stats.currentLevelProgress, tier: stats.tier } }).exec();
       return stats;
     } catch (e) {

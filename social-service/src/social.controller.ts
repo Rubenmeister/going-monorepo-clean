@@ -7,38 +7,59 @@ import {
   Query,
   Logger,
   BadRequestException,
-  Headers,
+  ForbiddenException,
   UseGuards,
 } from '@nestjs/common';
 import { SocialService } from './social.service';
+import {
+  JwtAuthGuard,
+  AdminGuard,
+  InternalServiceGuard,
+  CurrentUser,
+} from './infrastructure/auth/jwt.guard';
 
-// Simple JWT extraction guard (extracts userId from token header)
-export class OptionalJwtGuard {
-  constructor() {}
-}
-
+/**
+ * SocialController — reseñas, referidos, gamificación, puntos.
+ *
+ * Bloque 3: la identidad SIEMPRE sale del JWT verificado (@CurrentUser), nunca
+ * del body/header/param controlado por el cliente. Las acciones de SISTEMA
+ * (otorgar puntos, desbloquear logros, completar referidos) exigen X-Internal-Token.
+ * Las lecturas por :userId solo se permiten a ese usuario o a un admin.
+ */
 @Controller('social')
 export class SocialController {
   private readonly logger = new Logger(SocialController.name);
   constructor(private readonly socialService: SocialService) {}
 
-  /** POST /social/reviews */
+  private assertSelfOrAdmin(user: any, userId: string): void {
+    const roles: string[] = user?.roles ?? [];
+    if (String(user?.id) !== String(userId) && !roles.includes('admin')) {
+      throw new ForbiddenException('No puedes acceder a datos de otro usuario');
+    }
+  }
+
+  // ── Reseñas ─────────────────────────────────────────────────────────
+  /** POST /social/reviews — autor = JWT; 'verified' solo lo fija el sistema. */
   @Post('reviews')
-  submitReview(@Body() body: {
-    userId: string; targetType: any; targetId: string;
-    rating: number; title: string; content: string; photos?: string[]; verified?: boolean;
-  }) {
-    if (!body.userId || !body.targetId || !body.rating) {
-      throw new BadRequestException('userId, targetId, rating, title and content required');
+  @UseGuards(JwtAuthGuard)
+  submitReview(
+    @CurrentUser() user: any,
+    @Body() body: {
+      targetType: any; targetId: string; rating: number;
+      title?: string; content?: string; photos?: string[];
+    },
+  ) {
+    if (!body.targetId || !body.rating) {
+      throw new BadRequestException('targetId and rating required');
     }
     return this.socialService.submitReview(
-      body.userId, body.targetType, body.targetId,
+      user.id, body.targetType, body.targetId,
       body.rating, body.title || '', body.content || '',
-      body.photos, body.verified || false,
+      body.photos, false,
     );
   }
 
-  /** GET /social/reviews/:targetId */
+  /** GET /social/reviews/:targetId — público (reseñas agregadas de un target). */
   @Get('reviews/:targetId')
   getReviews(
     @Param('targetId') targetId: string,
@@ -48,27 +69,30 @@ export class SocialController {
     return this.socialService.getReviews(targetId, targetType, limit ? parseInt(limit) : 20);
   }
 
-  /** GET /social/rating/:targetId */
+  /** GET /social/rating/:targetId — público. */
   @Get('rating/:targetId')
   getRating(@Param('targetId') targetId: string, @Query('targetType') targetType?: string) {
     return this.socialService.getRating(targetId, targetType || 'DELIVERY');
   }
 
-  /** POST /social/reviews/:reviewId/vote */
+  /** POST /social/reviews/:reviewId/vote — usuario autenticado. */
   @Post('reviews/:reviewId/vote')
+  @UseGuards(JwtAuthGuard)
   voteReview(@Param('reviewId') reviewId: string, @Body() body: { helpful: boolean }) {
     return this.socialService.voteReview(reviewId, body.helpful);
   }
 
-  /** POST /social/referrals */
+  // ── Referidos ───────────────────────────────────────────────────────
+  /** POST /social/referrals — referidor = JWT. */
   @Post('referrals')
-  createReferral(@Body() body: { referrerId: string }) {
-    if (!body.referrerId) throw new BadRequestException('referrerId required');
-    return this.socialService.createReferral(body.referrerId);
+  @UseGuards(JwtAuthGuard)
+  createReferral(@CurrentUser() user: any) {
+    return this.socialService.createReferral(user.id);
   }
 
-  /** POST /social/referrals/complete */
+  /** POST /social/referrals/complete — evento de SISTEMA (tras primer viaje). */
   @Post('referrals/complete')
+  @UseGuards(InternalServiceGuard)
   completeReferral(@Body() body: { referralCode: string; referredUserId: string }) {
     if (!body.referralCode || !body.referredUserId) {
       throw new BadRequestException('referralCode and referredUserId required');
@@ -76,21 +100,25 @@ export class SocialController {
     return this.socialService.completeReferral(body.referralCode, body.referredUserId);
   }
 
-  /** GET /social/referrals/stats */
+  /** GET /social/referrals/stats — del propio usuario (JWT). */
   @Get('referrals/stats')
-  getReferralStats(@Query('userId') userId: string) {
-    if (!userId) throw new BadRequestException('userId required');
-    return this.socialService.getReferralStats(userId);
+  @UseGuards(JwtAuthGuard)
+  getReferralStats(@CurrentUser() user: any) {
+    return this.socialService.getReferralStats(user.id);
   }
 
-  /** GET /social/gamification/:userId */
+  // ── Gamificación ────────────────────────────────────────────────────
+  /** GET /social/gamification/:userId — solo el propio usuario o admin. */
   @Get('gamification/:userId')
-  getGamificationStats(@Param('userId') userId: string) {
+  @UseGuards(JwtAuthGuard)
+  getGamificationStats(@Param('userId') userId: string, @CurrentUser() user: any) {
+    this.assertSelfOrAdmin(user, userId);
     return this.socialService.getGamificationStats(userId);
   }
 
-  /** POST /social/achievements/unlock */
+  /** POST /social/achievements/unlock — acción de SISTEMA. */
   @Post('achievements/unlock')
+  @UseGuards(InternalServiceGuard)
   unlockAchievement(@Body() body: { userId: string; achievementId: string }) {
     if (!body.userId || !body.achievementId) {
       throw new BadRequestException('userId and achievementId required');
@@ -98,18 +126,22 @@ export class SocialController {
     return this.socialService.unlockAchievement(body.userId, body.achievementId);
   }
 
-  /** GET /social/events */
+  // ── Eventos ─────────────────────────────────────────────────────────
+  /** GET /social/events — público (eventos activos). */
   @Get('events')
   getActiveEvents() {
     return this.socialService.getActiveEvents();
   }
 
-  /** POST /social/events */
+  /** POST /social/events — crear evento con premios = admin. */
   @Post('events')
-  createEvent(@Body() body: {
-    name: string; description: string; type: any;
-    startDate: string; endDate: string; prize: string; rules: string;
-  }) {
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  createEvent(
+    @Body() body: {
+      name: string; description: string; type: any;
+      startDate: string; endDate: string; prize: string; rules: string;
+    },
+  ) {
     return this.socialService.createEvent(
       body.name, body.description, body.type,
       new Date(body.startDate), new Date(body.endDate),
@@ -117,33 +149,32 @@ export class SocialController {
     );
   }
 
-  /** POST /social/events/:eventId/join */
+  /** POST /social/events/:eventId/join — se une el propio usuario (JWT). */
   @Post('events/:eventId/join')
-  joinEvent(@Param('eventId') eventId: string, @Body() body: { userId: string }) {
-    if (!body.userId) throw new BadRequestException('userId required');
-    return this.socialService.joinEvent(eventId, body.userId);
+  @UseGuards(JwtAuthGuard)
+  joinEvent(@Param('eventId') eventId: string, @CurrentUser() user: any) {
+    return this.socialService.joinEvent(eventId, user.id);
   }
 
-  /** GET /social/rewards/me - Fetch current user points (requires userId header or JWT) */
+  // ── Puntos / recompensas ────────────────────────────────────────────
+  /** GET /social/rewards/me — puntos del propio usuario (JWT). */
   @Get('rewards/me')
-  async getMyRewards(@Headers('x-user-id') userId?: string) {
-    if (!userId) {
-      throw new BadRequestException('userId required via x-user-id header or JWT');
-    }
-    return this.socialService.getRewards(userId);
+  @UseGuards(JwtAuthGuard)
+  async getMyRewards(@CurrentUser() user: any) {
+    return this.socialService.getRewards(user.id);
   }
 
-  /** GET /social/rewards/:userId - Fetch user points by ID */
+  /** GET /social/rewards/:userId — solo el propio usuario o admin. */
   @Get('rewards/:userId')
-  async getUserRewards(@Param('userId') userId: string) {
-    if (!userId) {
-      throw new BadRequestException('userId required');
-    }
+  @UseGuards(JwtAuthGuard)
+  async getUserRewards(@Param('userId') userId: string, @CurrentUser() user: any) {
+    this.assertSelfOrAdmin(user, userId);
     return this.socialService.getRewards(userId);
   }
 
-  /** POST /social/rewards/award - Internal endpoint to award points after ride completion */
+  /** POST /social/rewards/award — otorgar puntos tras viaje = SISTEMA. */
   @Post('rewards/award')
+  @UseGuards(InternalServiceGuard)
   async awardRidePoints(@Body() body: { userId: string; rideType: 'shared' | 'private' }) {
     if (!body.userId || !body.rideType) {
       throw new BadRequestException('userId and rideType required');
