@@ -112,16 +112,74 @@ export async function generateEditorialProposals(
   );
 }
 
+/**
+ * Busca una foto real en Pexels por keyword, la descarga y la sube al bucket
+ * público de contenido. Devuelve la URL pública (o null si falla / sin key).
+ * Sube vía JSON API de GCS con el token del metadata-server (sin SDK).
+ */
+async function fetchAndStoreCover(
+  query: string,
+  objId: string,
+): Promise<{ coverUrl: string; credit: string } | null> {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key) return null;
+  try {
+    const pr = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: key } },
+    );
+    if (!pr.ok) return null;
+    const pd: any = await pr.json();
+    const photo = pd?.photos?.[0];
+    const imgUrl: string | undefined = photo?.src?.large2x || photo?.src?.large || photo?.src?.original;
+    if (!imgUrl) return null;
+
+    const ir = await fetch(imgUrl);
+    if (!ir.ok) return null;
+    const buf = Buffer.from(await ir.arrayBuffer());
+
+    const tr = await fetch(
+      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+      { headers: { 'Metadata-Flavor': 'Google' } },
+    );
+    const token = ((await tr.json()) as any)?.access_token;
+    if (!token) return null;
+
+    const bucket = process.env.CONTENT_MEDIA_BUCKET || 'going-content-media';
+    const obj = `content/${objId}.jpg`;
+    const ur = await fetch(
+      `https://storage.googleapis.com/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(obj)}`,
+      { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'image/jpeg' }, body: buf },
+    );
+    if (!ur.ok) return null;
+    return {
+      coverUrl: `https://storage.googleapis.com/${bucket}/${obj}`,
+      credit: photo?.photographer ? `Foto: ${photo.photographer} (Pexels)` : 'Foto: Pexels',
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Deriva un buen keyword de búsqueda de imagen desde el título/pilar. */
+function coverQuery(p: EditorialProposal): string {
+  const subject = (p.titulo || '').split(/[:—–\-|(]/)[0].trim().slice(0, 40);
+  const base = subject.length > 4 ? subject : p.pilar || 'Ecuador turismo';
+  return /ecuador/i.test(base) ? base : `${base} Ecuador`;
+}
+
 /** Guarda las propuestas en Firestore como content_items status='review'. */
 export async function saveProposalsForReview(proposals: EditorialProposal[]): Promise<number> {
   let saved = 0;
+  const typeByChannel: Record<EditorialChannel, string> = {
+    noticias: 'news',
+    blog: 'blog_post',
+    revista: 'article',
+  };
   for (const p of proposals) {
-    const typeByChannel: Record<EditorialChannel, string> = {
-      noticias: 'news',
-      blog: 'blog_post',
-      revista: 'article',
-    };
-    await fsdb.collection('content_items').add({
+    const ref = fsdb.collection('content_items').doc();
+    const cover = await fetchAndStoreCover(coverQuery(p), ref.id).catch(() => null);
+    await ref.set({
       type: typeByChannel[p.channel] ?? 'article',
       channel: p.channel,
       title: p.titulo,
@@ -130,6 +188,8 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
       lead: p.lead ?? '',
       outline: p.outline ?? [],
       cta: p.cta ?? '',
+      coverUrl: cover?.coverUrl ?? null,
+      coverCredit: cover?.credit ?? null,
       status: 'review',      // pendiente de aprobación editorial
       lang: 'es',
       origin: 'content-agent-v2',
