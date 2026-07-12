@@ -332,6 +332,14 @@ export class CorporateService {
     const admins: string[] = settings?.adminUserIds ?? [];
     if (admins.includes(userId)) return;
 
+    // Auto-bootstrap: la empresa sin admins → el primer usuario que configura queda
+    // como admin (evita fricción de onboarding; suele ser quien monta la cuenta).
+    if (admins.length === 0 && userId) {
+      await this.settingsRepo.upsert(companyId, { companyId, adminUserIds: [userId] } as any);
+      this.logger.log(`[company-admin] auto-bootstrap: ${userId} es el 1er admin de ${companyId}`);
+      return;
+    }
+
     const enforced = process.env.COMPANY_ADMIN_ENFORCED === '1';
     const reason = admins.length === 0 ? 'empresa sin admins (no migrada)' : 'no es admin de empresa';
     if (enforced) {
