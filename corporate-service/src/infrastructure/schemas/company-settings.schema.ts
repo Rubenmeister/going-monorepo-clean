@@ -68,6 +68,14 @@ export class CompanySettingsSchema extends Document {
   @Prop({ required: true, unique: true, index: true })
   companyId: string;
 
+  /**
+   * Bloque 3 (#5): usuarios administradores de la empresa. Solo ellos pueden
+   * configurar políticas, límites, settings, invitar miembros y la cadena de
+   * aprobación. Vacío = empresa no migrada (fallback: solo staff Going).
+   */
+  @Prop({ type: [String], default: [] })
+  adminUserIds: string[];
+
   @Prop({ default: '' })
   companyName: string;
 

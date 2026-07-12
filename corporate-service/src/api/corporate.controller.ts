@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Put, Patch, Body, Param, Query,
+  Controller, Get, Post, Put, Patch, Delete, Body, Param, Query,
   Req, Logger, BadRequestException, NotFoundException,
   UnauthorizedException, ForbiddenException, UseGuards,
 } from '@nestjs/common';
@@ -53,7 +53,9 @@ export class CorporateController {
   /** POST /corporate/spending-limits — fija un límite (employee/department/company) */
   @Post('spending-limits')
   async setSpendingLimit(@Req() req: Request, @Body() body: any) {
-    return this.svc.setSpendingLimit(this.extractCompanyId(req), body);
+    const companyId = this.extractCompanyId(req);
+    await this.svc.assertCompanyAdmin(companyId, this.extractUserId(req), this.isPlatformAdmin(req), 'setSpendingLimit');
+    return this.svc.setSpendingLimit(companyId, body);
   }
 
   /** GET /corporate/spending-report?month=YYYY-MM — gasto por empleado + límites */
@@ -158,6 +160,7 @@ export class CorporateController {
   @Put('settings')
   async updateSettings(@Req() req: Request, @Body() body: any) {
     const companyId = this.extractCompanyId(req);
+    await this.svc.assertCompanyAdmin(companyId, this.extractUserId(req), this.isPlatformAdmin(req), 'updateSettings');
     return this.svc.updateSettings(companyId, body);
   }
 
@@ -180,7 +183,35 @@ export class CorporateController {
   async updateTravelPolicy(@Req() req: Request, @Body() body: any) {
     const companyId = this.extractCompanyId(req);
     const changedBy = this.extractUserId(req);
+    await this.svc.assertCompanyAdmin(companyId, changedBy, this.isPlatformAdmin(req), 'updatePolicy');
     return this.svc.updateTravelPolicy(companyId, changedBy, body);
+  }
+
+  // ── Admins de empresa (Bloque 3 #5, Opción B) ───────────────────────────
+  /** GET /corporate/admins — lista los admins de la empresa del que llama. */
+  @Get('admins')
+  async listAdmins(@Req() req: Request) {
+    return { adminUserIds: await this.svc.listCompanyAdmins(this.extractCompanyId(req)) };
+  }
+
+  /** POST /corporate/admins { userId } — agrega un admin (bootstrap si no hay ninguno). */
+  @Post('admins')
+  async addAdmin(@Req() req: Request, @Body() body: { userId: string }) {
+    const companyId = this.extractCompanyId(req);
+    const adminUserIds = await this.svc.addCompanyAdmin(
+      companyId, this.extractUserId(req), this.isPlatformAdmin(req), body?.userId,
+    );
+    return { adminUserIds };
+  }
+
+  /** DELETE /corporate/admins/:userId — quita un admin (nunca deja 0). */
+  @Delete('admins/:userId')
+  async removeAdmin(@Req() req: Request, @Param('userId') userId: string) {
+    const companyId = this.extractCompanyId(req);
+    const adminUserIds = await this.svc.removeCompanyAdmin(
+      companyId, this.extractUserId(req), this.isPlatformAdmin(req), userId,
+    );
+    return { adminUserIds };
   }
 
   /** GET /corporate/employees */
@@ -214,6 +245,7 @@ export class CorporateController {
     }
     const companyId = body.companyId || this.extractCompanyId(req);
     const invitedBy = this.extractUserId(req);
+    await this.svc.assertCompanyAdmin(companyId, invitedBy, this.isPlatformAdmin(req), 'inviteTeamMember');
     return this.svc.inviteTeamMember(companyId, invitedBy, {
       email: body.email,
       firstName: body.firstName,
@@ -435,6 +467,11 @@ export class CorporateController {
     if (!roles.includes('admin')) {
       throw new ForbiddenException('Se requiere rol admin');
     }
+  }
+
+  /** True si el JWT es de staff Going (rol admin de plataforma). */
+  private isPlatformAdmin(req: Request): boolean {
+    return ((req as any).user?.roles ?? []).includes('admin');
   }
 
   private extractUserId(req: Request): string {

@@ -309,7 +309,87 @@ export class CorporateService {
   }
 
   async updateSettings(companyId: string, data: any) {
-    return this.settingsRepo.upsert(companyId, { ...data, companyId });
+    // adminUserIds solo se gestiona por los endpoints dedicados, nunca por settings.
+    const { adminUserIds, ...safe } = data ?? {};
+    return this.settingsRepo.upsert(companyId, { ...safe, companyId });
+  }
+
+  // ── Bloque 3 (#5): admins de empresa (Opción B, rollout monitoreado) ────────
+  /**
+   * Exige que quien actúa sea admin de la empresa (o staff Going). Rollout
+   * monitoreado: en log-only (default) solo LOGUEA lo que bloquearía; con
+   * COMPANY_ADMIN_ENFORCED=1 bloquea de verdad. Empresa sin adminUserIds
+   * (no migrada) → fallback: solo staff Going pasa (y en log-only se permite).
+   */
+  async assertCompanyAdmin(
+    companyId: string,
+    userId: string,
+    isPlatformAdmin: boolean,
+    action: string,
+  ): Promise<void> {
+    if (isPlatformAdmin) return; // staff Going siempre puede
+    const settings: any = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
+    const admins: string[] = settings?.adminUserIds ?? [];
+    if (admins.includes(userId)) return;
+
+    const enforced = process.env.COMPANY_ADMIN_ENFORCED === '1';
+    const reason = admins.length === 0 ? 'empresa sin admins (no migrada)' : 'no es admin de empresa';
+    if (enforced) {
+      throw new ForbiddenException('Se requiere ser administrador de la empresa');
+    }
+    this.logger.warn(
+      `[company-admin] ${action}: user ${userId} @ ${companyId} BLOQUEARÍA (${reason}) — log-only`,
+    );
+  }
+
+  /** Lista los admins de la empresa. */
+  async listCompanyAdmins(companyId: string): Promise<string[]> {
+    const settings: any = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
+    return settings?.adminUserIds ?? [];
+  }
+
+  /**
+   * Agrega un admin. Bootstrap: si la empresa no tiene admins, cualquier miembro
+   * corporativo (o staff Going) puede nombrar al primero. Con admins ya presentes,
+   * solo un admin existente o staff Going puede agregar más.
+   */
+  async addCompanyAdmin(
+    companyId: string,
+    callerId: string,
+    isPlatformAdmin: boolean,
+    targetUserId: string,
+  ): Promise<string[]> {
+    if (!targetUserId) throw new BadRequestException('userId requerido');
+    const current: string[] = await this.listCompanyAdmins(companyId);
+    if (current.length > 0 && !isPlatformAdmin && !current.includes(callerId)) {
+      throw new ForbiddenException('Solo un admin de la empresa puede agregar administradores');
+    }
+    if (current.includes(targetUserId)) return current;
+    const next = [...current, targetUserId];
+    await this.settingsRepo.upsert(companyId, { companyId, adminUserIds: next } as any);
+    this.logger.log(`[company-admin] ${callerId} agregó admin ${targetUserId} @ ${companyId}`);
+    return next;
+  }
+
+  /** Quita un admin. Solo admin/staff; nunca deja la empresa sin admins. */
+  async removeCompanyAdmin(
+    companyId: string,
+    callerId: string,
+    isPlatformAdmin: boolean,
+    targetUserId: string,
+  ): Promise<string[]> {
+    const current: string[] = await this.listCompanyAdmins(companyId);
+    if (!isPlatformAdmin && !current.includes(callerId)) {
+      throw new ForbiddenException('Solo un admin de la empresa puede quitar administradores');
+    }
+    if (!current.includes(targetUserId)) return current;
+    const next = current.filter((id) => id !== targetUserId);
+    if (next.length === 0) {
+      throw new BadRequestException('La empresa debe tener al menos un administrador');
+    }
+    await this.settingsRepo.upsert(companyId, { companyId, adminUserIds: next } as any);
+    this.logger.log(`[company-admin] ${callerId} quitó admin ${targetUserId} @ ${companyId}`);
+    return next;
   }
 
   // ── Travel Policy (Gap #2) ─────────────────────────────────────────────
