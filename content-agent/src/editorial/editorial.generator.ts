@@ -117,10 +117,7 @@ export async function generateEditorialProposals(
  * público de contenido. Devuelve la URL pública (o null si falla / sin key).
  * Sube vía JSON API de GCS con el token del metadata-server (sin SDK).
  */
-async function fetchAndStoreCover(
-  query: string,
-  objId: string,
-): Promise<{ coverUrl: string; credit: string } | null> {
+async function pexelsSearch(query: string): Promise<any | null> {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return null;
   try {
@@ -130,10 +127,38 @@ async function fetchAndStoreCover(
     );
     if (!pr.ok) return null;
     const pd: any = await pr.json();
-    const photo = pd?.photos?.[0];
+    return pd?.photos?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * TODA noticia/artículo debe llevar foto (regla Rubén). Prueba varias queries de más
+ * específica a más genérica; si Pexels no da nada, usa la imagen por defecto
+ * (CONTENT_DEFAULT_COVER). Nunca devuelve null si hay key y bucket.
+ */
+async function fetchAndStoreCover(
+  queries: string[],
+  objId: string,
+): Promise<{ coverUrl: string; credit: string } | null> {
+  const bucket = process.env.CONTENT_MEDIA_BUCKET || 'going-content-media';
+  const fallbackQueries = ['Ecuador turismo paisaje', 'Ecuador landscape', 'travel nature'];
+  const all = [...queries, ...fallbackQueries];
+  try {
+    let photo: any = null;
+    for (const q of all) {
+      photo = await pexelsSearch(q);
+      if (photo) break;
+    }
+    // Último recurso: imagen por defecto (nunca dejar sin foto).
+    if (!photo) {
+      const def = process.env.CONTENT_DEFAULT_COVER;
+      return def ? { coverUrl: def, credit: 'Foto: Going Ecuador' } : null;
+    }
+
     const imgUrl: string | undefined = photo?.src?.large2x || photo?.src?.large || photo?.src?.original;
     if (!imgUrl) return null;
-
     const ir = await fetch(imgUrl);
     if (!ir.ok) return null;
     const buf = Buffer.from(await ir.arrayBuffer());
@@ -145,7 +170,6 @@ async function fetchAndStoreCover(
     const token = ((await tr.json()) as any)?.access_token;
     if (!token) return null;
 
-    const bucket = process.env.CONTENT_MEDIA_BUCKET || 'going-content-media';
     const obj = `content/${objId}.jpg`;
     const ur = await fetch(
       `https://storage.googleapis.com/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(obj)}`,
@@ -157,11 +181,21 @@ async function fetchAndStoreCover(
       credit: photo?.photographer ? `Foto: ${photo.photographer} (Pexels)` : 'Foto: Pexels',
     };
   } catch {
-    return null;
+    const def = process.env.CONTENT_DEFAULT_COVER;
+    return def ? { coverUrl: def, credit: 'Foto: Going Ecuador' } : null;
   }
 }
 
-/** Deriva un buen keyword de búsqueda de imagen desde el título/pilar. */
+/** Queries candidatas (específica → genérica) para la imagen. */
+function coverQueries(p: EditorialProposal): string[] {
+  const subject = (p.titulo || '').split(/[:—–\-|(]/)[0].trim().slice(0, 40);
+  const list: string[] = [];
+  if (subject.length > 4) list.push(/ecuador/i.test(subject) ? subject : `${subject} Ecuador`);
+  if (p.pilar && p.pilar.length > 3) list.push(`${p.pilar} Ecuador`);
+  return list.length ? list : ['Ecuador turismo'];
+}
+
+/** (legacy) keyword único desde el título/pilar. */
 function coverQuery(p: EditorialProposal): string {
   const subject = (p.titulo || '').split(/[:—–\-|(]/)[0].trim().slice(0, 40);
   const base = subject.length > 4 ? subject : p.pilar || 'Ecuador turismo';
@@ -178,7 +212,7 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
   };
   for (const p of proposals) {
     const ref = fsdb.collection('content_items').doc();
-    const cover = await fetchAndStoreCover(coverQuery(p), ref.id).catch(() => null);
+    const cover = await fetchAndStoreCover(coverQueries(p), ref.id).catch(() => null);
     await ref.set({
       type: typeByChannel[p.channel] ?? 'article',
       channel: p.channel,
@@ -188,7 +222,7 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
       lead: p.lead ?? '',
       outline: p.outline ?? [],
       cta: p.cta ?? '',
-      coverUrl: cover?.coverUrl ?? null,
+      coverUrl: cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null,
       coverCredit: cover?.credit ?? null,
       status: 'review',      // pendiente de aprobación editorial
       lang: 'es',
@@ -198,4 +232,35 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
     saved++;
   }
   return saved;
+}
+
+/**
+ * Backfill (regla: TODA noticia/artículo con foto): recorre content_items
+ * publicados/en revisión sin coverUrl (o con demo picsum) y les adjunta una foto real.
+ */
+export async function backfillMissingCovers(): Promise<{ processed: number; updated: number }> {
+  const snap = await fsdb
+    .collection('content_items')
+    .where('status', 'in', ['published', 'review'])
+    .get();
+  let processed = 0;
+  let updated = 0;
+  for (const d of snap.docs) {
+    const x: any = d.data();
+    if (x.coverUrl && !String(x.coverUrl).includes('picsum.photos')) continue;
+    processed++;
+    const queries = coverQueries({
+      titulo: x.title ?? x.titulo ?? '',
+      pilar: x.pilar ?? x.category ?? '',
+      channel: x.channel,
+    } as EditorialProposal);
+    const cover = await fetchAndStoreCover(queries, d.id).catch(() => null);
+    const url = cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null;
+    if (url) {
+      await d.ref.update({ coverUrl: url, coverCredit: cover?.credit ?? 'Foto: Going Ecuador' });
+      updated++;
+      console.log(`[content][backfill] ${d.id} (${x.channel}) → foto`);
+    }
+  }
+  return { processed, updated };
 }

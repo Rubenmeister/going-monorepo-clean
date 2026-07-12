@@ -38,6 +38,14 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  // Modo backfill: adjunta foto a los content_items sin coverUrl y sale.
+  if (process.env.BACKFILL_COVERS === '1') {
+    const { backfillMissingCovers } = await import('./editorial/editorial.generator');
+    const r = await backfillMissingCovers();
+    console.log(`[content] backfill covers: ${r.updated}/${r.processed} actualizados`);
+    process.exit(0);
+  }
+
   const runId     = uuidv4();
   const startedAt = new Date();
   let runStatus: 'success' | 'partial_failure' | 'failure' = 'success';
