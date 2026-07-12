@@ -80,11 +80,11 @@ export function ArticleView({
             ← {backLabel}
           </Link>
           {item.category && (
-            <span className="inline-block text-[11px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full mb-3 w-fit">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-white bg-white/25 backdrop-blur-sm px-2.5 py-1 rounded-full mb-3 w-fit">
               {item.category}
             </span>
           )}
-          <h1 className="text-3xl md:text-5xl font-bold mb-3 text-balance drop-shadow-lg">{item.title}</h1>
+          <h1 className="!text-white text-3xl md:text-5xl font-bold mb-3 text-balance drop-shadow-lg">{item.title}</h1>
           <div className="flex items-center gap-3 text-white/85 text-sm drop-shadow">
             <span>{item.author}</span>
             {date && (
