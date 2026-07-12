@@ -8,7 +8,7 @@
  */
 import { v4 as uuidv4 } from 'uuid';
 import { loadConfig } from './config';
-import { runFrontendMonitor } from './monitors/frontend.monitor';
+import { runFrontendMonitor, checkUptime } from './monitors/frontend.monitor';
 import {
   AgentRunEvent,
   parseCommandFromEnv,
@@ -65,6 +65,34 @@ async function main(): Promise<void> {
         };
         await publishAgentRunEvent(event).catch(e =>
           console.error('[frontend-agent force_check] publish failed:', e),
+        );
+      },
+      // Chequeo de uptime on-demand (más liviano que force_check completo).
+      // Útil para que Wayra confirme que las webs siguen vivas tras un deploy.
+      probe_uptime: async () => {
+        console.log('[command] probe_uptime — chequeando uptime público');
+        const startedAt = new Date();
+        const c = { metrics: {}, anomalies: [], actionsTaken: [], actionsProposed: [], errors: [] };
+        await checkUptime(c as any);
+        const finishedAt = new Date();
+        const event: AgentRunEvent = {
+          agentId:    'frontend-agent',
+          runId:      uuidv4(),
+          startedAt:  startedAt.toISOString(),
+          finishedAt: finishedAt.toISOString(),
+          durationMs: finishedAt.getTime() - startedAt.getTime(),
+          status:     'success',
+          metrics:        c.metrics,
+          anomalies:      c.anomalies,
+          actionsTaken:   c.actionsTaken,
+          actionsProposed: c.actionsProposed,
+          meta: {
+            gitSha: process.env.GIT_SHA,
+            runEnv: (process.env.NODE_ENV === 'production' ? 'production' : 'staging'),
+          },
+        };
+        await publishAgentRunEvent(event).catch(e =>
+          console.error('[frontend-agent probe_uptime] publish failed:', e),
         );
       },
     });

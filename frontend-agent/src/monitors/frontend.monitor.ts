@@ -33,10 +33,51 @@ function createCollector(): RunCollector {
  *
  * Si VERCEL_TOKEN no está, agent corre en modo idle (config_missing).
  */
+/**
+ * Uptime real de la cara pública (app.goingec.com, goingec.com). El header del
+ * agente lo prometía pero NO existía — solo se miraban estados de deploy en
+ * Vercel. Es un GET público con timeout: NO requiere token, por eso corre SIEMPRE
+ * (aún en modo idle sin VERCEL_TOKEN). Override por env UPTIME_URLS (coma-sep).
+ */
+export async function checkUptime(c: RunCollector): Promise<void> {
+  const urls = (process.env.UPTIME_URLS || 'https://app.goingec.com,https://goingec.com')
+    .split(',').map(u => u.trim()).filter(Boolean);
+  let down = 0;
+  for (const url of urls) {
+    const key = (() => { try { return new URL(url).hostname.replace(/\./g, '_'); } catch { return 'url'; } })();
+    const started = Date.now();
+    try {
+      const res = await fetch(url, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(15_000) });
+      const latencyMs = Date.now() - started;
+      c.metrics[`uptime_${key}_ms`] = latencyMs;
+      c.metrics[`uptime_${key}_status`] = res.status;
+      if (!res.ok) {
+        down++;
+        c.anomalies.push({ type: 'frontend_uptime_down', severity: 'critical', message: `${url} respondió HTTP ${res.status}`, data: { url, status: res.status, latencyMs } });
+      } else if (latencyMs > 5000) {
+        c.anomalies.push({ type: 'frontend_uptime_slow', severity: 'warning', message: `${url} respondió lento (${latencyMs}ms)`, data: { url, latencyMs } });
+      }
+    } catch (e) {
+      down++;
+      c.anomalies.push({ type: 'frontend_uptime_down', severity: 'critical', message: `${url} no responde: ${(e as Error).message.slice(0, 120)}`, data: { url } });
+    }
+  }
+  c.metrics.uptimeUrlsChecked = urls.length;
+  c.metrics.uptimeUrlsDown = down;
+  if (down > 0) {
+    // Deja constancia de que hubo seguimiento (antes actionsTaken iba siempre vacío).
+    c.actionsTaken.push({ type: 'alert_published', target: 'frontend_uptime', result: 'ok', data: { down } });
+  }
+  console.log(`[frontend-agent] uptime: ${urls.length} URLs, ${down} caídas`);
+}
+
 export async function runFrontendMonitor(
   config: FrontendAgentConfig,
 ): Promise<{ collector: RunCollector }> {
   const c = createCollector();
+
+  // Uptime público PRIMERO — no depende de VERCEL_TOKEN, debe correr siempre.
+  await checkUptime(c);
 
   if (!config.vercelToken) {
     console.warn('[frontend-agent] VERCEL_TOKEN no configurado — agent en modo idle');

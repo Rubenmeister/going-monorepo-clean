@@ -140,7 +140,9 @@ function parseSocialSpecs(): SocialProposalSpec[] {
     {
       topic: 'route_highlight',
       platforms: ['telegram_channel', 'facebook', 'x'],
-      contextData: { route: 'Quito → Riobamba', price: 20 },
+      // El template route_highlight lee ctx.origin/ctx.destination (no ctx.route);
+      // antes salía "Quito → Guayaquil" (fallback) ignorando la ruta pedida.
+      contextData: { origin: 'Quito', destination: 'Riobamba', price: 20 },
       tone: 'friendly',
     },
   ];

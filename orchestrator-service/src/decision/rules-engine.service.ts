@@ -51,8 +51,35 @@ export const RULES: Record<string, ActionRule | 'human_only'> = {
     action: 'force_check',
     safetyLevel: 1,
   },
+  // Sacha (going-agent): pulso del producto (rides/oferta) — solo lee KPIs vía
+  // S2S y publica al cerebro. Read-only puro → Cat 1.
+  'platform_pulse': {
+    agent: 'going-agent',
+    action: 'platform_pulse',
+    safetyLevel: 1,
+  },
+  // Kuntur: chequeo de uptime público on-demand (GET a las webs). Read-only → Cat 1.
+  'probe_uptime': {
+    agent: 'frontend-agent',
+    action: 'probe_uptime',
+    safetyLevel: 1,
+  },
+  // Inti (financial-agent): re-corre el monitor financiero (lee Atlas, reporta,
+  // publica al cerebro). NO mueve dinero ni factura → Cat 1.
+  'run_financial_monitor': {
+    agent: 'financial-agent',
+    action: 'run_financial_monitor',
+    safetyLevel: 1,
+  },
 
   // ── Cat 2 — operacionales reversibles ─────────────────────
+  // Conciliación bancaria de Inti: solo lee y persiste un reporte (no mueve
+  // dinero), pero toca estado financiero → Cat 2 (post-notify a ops, sin ack).
+  'force_reconciliation': {
+    agent: 'financial-agent',
+    action: 'force_reconciliation',
+    safetyLevel: 2,
+  },
   // Customer-support: abrir ticket es reversible (se puede cerrar).
   'open_ticket': {
     agent: 'customer-support-service',

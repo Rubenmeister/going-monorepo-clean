@@ -108,6 +108,18 @@ export async function runMobileMonitor(
   c.metrics.totalEvents       = totalEvents;
   c.metrics.lookbackHours     = config.lookbackHours;
 
+  // Deja constancia de seguimiento cuando hay algo crítico (antes actionsTaken
+  // iba SIEMPRE vacío → el cerebro no distinguía "solo detecté" de "notifiqué").
+  const criticals = c.anomalies.filter(a => a.severity === 'critical').length;
+  if (criticals > 0) {
+    c.actionsTaken.push({
+      type: 'alert_published',
+      target: 'cerebro',
+      result: 'ok',
+      data: { criticalAnomalies: criticals },
+    });
+  }
+
   return { collector: c };
 }
 
