@@ -68,10 +68,13 @@ export function derivePulseSignals(p: PlatformPulse): PulseSignals {
   const noDriverTotal = p.ridesNoDriver + p.ridesStuckNoDriver;
   const pct = Math.round(p.completionRate * 100);
 
-  // 1. Sin oferta: cero conductoras o conductores activos.
-  if (p.activeDrivers === 0) {
-    anomalies.push({ type: 'no_active_drivers', severity: 'critical', message: 'Cero conductoras o conductores activos en la plataforma' });
-    actionsProposed.push({ type: 'boost_driver_supply', reason: 'No hay oferta activa: ninguna conductora o conductor disponible', urgency: 0.9 });
+  // 1. Sin oferta CON demanda: cero conductores activos pero hay viajes pedidos o
+  //    programados próximos. Se condiciona a la demanda para no alertar cada 6h en
+  //    pre-lanzamiento (0 conductores activos de madrugada no es un incidente).
+  const hasDemand = p.ridesRequested > 0 || p.scheduledUpcoming24h > 0;
+  if (p.activeDrivers === 0 && hasDemand) {
+    anomalies.push({ type: 'no_active_drivers', severity: 'critical', message: 'Cero conductoras o conductores activos habiendo demanda' });
+    actionsProposed.push({ type: 'boost_driver_supply', reason: 'Hay demanda pero ninguna conductora o conductor activo', urgency: 0.9 });
   }
 
   // 2. Demanda no atendida: viajes sin conductor.

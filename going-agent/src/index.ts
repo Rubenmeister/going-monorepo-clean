@@ -60,19 +60,28 @@ async function sendTelegramReport(text: string): Promise<void> {
   }
   // Telegram tope: 4096 chars. Cortamos con margen.
   const body = text.length > 3800 ? text.slice(0, 3800) + '\n\n…(truncado)' : text;
-  try {
+  const send = async (useMarkdown: boolean) => {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
         text: body,
-        parse_mode: 'Markdown',
+        ...(useMarkdown ? { parse_mode: 'Markdown' } : {}),
         disable_web_page_preview: true,
       }),
     });
-    const data = await res.json() as { ok: boolean; description?: string };
-    if (!data.ok) console.error('[going-agent] Telegram error:', data.description);
+    return (await res.json()) as { ok: boolean; description?: string };
+  };
+  try {
+    const data = await send(true);
+    if (!data.ok) {
+      // Markdown roto por algún carácter dinámico (·, %, _, *…). Reintento en
+      // texto plano para no perder el reporte — mejor sin formato que sin aviso.
+      console.warn('[going-agent] Telegram Markdown falló, reintento texto plano:', data.description);
+      const plain = await send(false);
+      if (!plain.ok) console.error('[going-agent] Telegram error (plano):', plain.description);
+    }
   } catch (e) {
     console.error('[going-agent] Excepción Telegram:', (e as Error).message);
   }
