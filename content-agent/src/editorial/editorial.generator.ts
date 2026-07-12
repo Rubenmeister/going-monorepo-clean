@@ -31,9 +31,21 @@ export interface EditorialProposal {
   titulo: string;
   pilar: string;           // categoría (ej. Destinos, Consejos de viaje, Actualidad)
   fuentes: EditorialSource[];
-  lead: string;            // gancho, máx 3 líneas
-  outline: string[];       // esqueleto (subtítulos / puntos clave)
+  lead: string;            // resumen/gancho, 2-3 líneas
+  cuerpo: string;          // ARTÍCULO COMPLETO en prosa (obligatorio, cumple mínimo por canal)
+  outline?: string[];      // opcional (subtítulos) — el cuerpo ya los incluye como ## ...
   cta: string;
+}
+
+/** Mínimo de palabras del cuerpo por canal (norma de contenido). */
+const MIN_WORDS: Record<EditorialChannel, number> = {
+  noticias: 300,
+  blog: 500,
+  revista: 700,
+};
+
+function wordCount(s?: string): number {
+  return (s || '').trim().split(/\s+/).filter(Boolean).length;
 }
 
 // ── System prompt: rol + segmentación por canal + reglas de salida (spec Rubén) ──
@@ -47,15 +59,20 @@ VOZ Y ESTILO
 - Español NEUTRO de Ecuador. PROHIBIDO el voseo/rioplatense (usa "tú", "carga/envía/revisa", "tienes/puedes"). Lenguaje inclusivo ("conductora o conductor", "viajeras y viajeros"). Nada corporativo ni clichés.
 
 REGLA CRÍTICA ANTI-ALUCINACIÓN
-- Usa la búsqueda web para basarte en fuentes REALES y verificables. Cada propuesta DEBE citar sus fuentes reales (nombre del medio + URL). Si no encuentras información verídica para una propuesta, NO la inventes: omítela.
+- Usa la búsqueda web para basarte en fuentes REALES y verificables. Cada artículo DEBE citar sus fuentes reales (nombre del medio + URL) y estar SINTETIZADO a partir de AL MENOS 2-3 fuentes distintas (contrasta datos, no copies una sola). Si no encuentras información verídica suficiente, NO la inventes: omite ese artículo.
 
-TRABAJO EN ESQUELETO (outline-first)
-- Entregas PROPUESTAS, no artículos completos: título, pilar/categoría, fuentes, un lead (gancho, máx 3 líneas), un outline (3-6 puntos clave/subtítulos) y un CTA. El artículo largo se desarrolla después, ya aprobado.
+ARTÍCULO COMPLETO — REDACCIÓN PROPIA (no esqueletos)
+- Entregas ARTÍCULOS TERMINADOS y publicables, redactados con TUS PALABRAS (prosa original que sintetiza y contrasta varias fuentes; nunca copiar/pegar).
+- LARGO MÍNIMO OBLIGATORIO por canal (si no llegas, sigue desarrollando):
+  · noticias: mínimo 300 palabras.
+  · blog: mínimo 500 palabras.
+  · revista: mínimo 700 palabras.
+- Estructura del cuerpo: un gancho de apertura, desarrollo en 3-5 párrafos con subtítulos (usa líneas con "## Subtítulo"), y un cierre. Datos concretos, verificables y atribuidos. Nada de relleno.
 
 FORMATO DE SALIDA (obligatorio)
 - Responde ÚNICAMENTE con un objeto JSON válido de la forma:
-  { "proposals": [ { "channel": "noticias|blog|revista", "titulo": "...", "pilar": "...", "fuentes": [{"nombre":"...","url":"..."}], "lead": "...", "outline": ["...","..."], "cta": "..." } ] }
-- Sin texto fuera del JSON, sin bloques Markdown. Si no hay nada verídico que proponer, devuelve { "proposals": [] }.`;
+  { "proposals": [ { "channel": "noticias|blog|revista", "titulo": "...", "pilar": "...", "fuentes": [{"nombre":"...","url":"..."}], "lead": "resumen/gancho de 2-3 líneas", "cuerpo": "ARTÍCULO COMPLETO en prosa, cumpliendo el mínimo de palabras del canal, con subtítulos ## ...", "cta": "..." } ] }
+- El campo "cuerpo" es OBLIGATORIO y es el artículo real (no un outline). Sin texto fuera del JSON, sin bloques Markdown envolventes. Si no hay nada verídico que proponer, devuelve { "proposals": [] }.`;
 
 /** Construye el pedido según cuántas propuestas por canal. */
 function buildTaskPrompt(req: Record<EditorialChannel, number>): string {
@@ -84,7 +101,7 @@ export async function generateEditorialProposals(
 ): Promise<EditorialProposal[]> {
   const response = await client.messages.create({
     model: EDITORIAL_MODEL,
-    max_tokens: 4000,
+    max_tokens: 16000,
     system: EDITORIAL_SYSTEM_PROMPT,
     // Búsqueda web nativa de Anthropic (fuentes reales, sin API key externa).
     // Se pasa como param aunque el SDK 0.24 no lo tipe — el API lo procesa.
@@ -106,10 +123,21 @@ export async function generateEditorialProposals(
     parsed = JSON.parse(m[0]);
   }
   const proposals = Array.isArray(parsed?.proposals) ? parsed.proposals : [];
-  // Solo propuestas con fuentes (respeta la regla anti-alucinación).
-  return proposals.filter(
-    (p) => p?.titulo && p?.channel && Array.isArray(p?.fuentes) && p.fuentes.length > 0,
-  );
+  // Norma: fuentes reales (≥1) + CUERPO que cumpla el mínimo de palabras del canal.
+  return proposals.filter((p) => {
+    const ok =
+      p?.titulo &&
+      p?.channel &&
+      Array.isArray(p?.fuentes) &&
+      p.fuentes.length > 0 &&
+      wordCount(p?.cuerpo) >= (MIN_WORDS[p.channel] ?? 300);
+    if (!ok && p?.titulo) {
+      console.warn(
+        `[content] descartada "${p.titulo}" (${p?.channel}): ${wordCount(p?.cuerpo)} palabras < mínimo o sin fuentes`,
+      );
+    }
+    return ok;
+  });
 }
 
 /**
@@ -187,7 +215,7 @@ async function fetchAndStoreCover(
 }
 
 /** Queries candidatas (específica → genérica) para la imagen. */
-function coverQueries(p: EditorialProposal): string[] {
+function coverQueries(p: { titulo?: string; pilar?: string }): string[] {
   const subject = (p.titulo || '').split(/[:—–\-|(]/)[0].trim().slice(0, 40);
   const list: string[] = [];
   if (subject.length > 4) list.push(/ecuador/i.test(subject) ? subject : `${subject} Ecuador`);
@@ -220,6 +248,7 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
       pilar: p.pilar ?? '',
       fuentes: p.fuentes ?? [],
       lead: p.lead ?? '',
+      body: p.cuerpo ?? '',
       outline: p.outline ?? [],
       cta: p.cta ?? '',
       coverUrl: cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null,
@@ -252,8 +281,7 @@ export async function backfillMissingCovers(): Promise<{ processed: number; upda
     const queries = coverQueries({
       titulo: x.title ?? x.titulo ?? '',
       pilar: x.pilar ?? x.category ?? '',
-      channel: x.channel,
-    } as EditorialProposal);
+    });
     const cover = await fetchAndStoreCover(queries, d.id).catch(() => null);
     const url = cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null;
     if (url) {
