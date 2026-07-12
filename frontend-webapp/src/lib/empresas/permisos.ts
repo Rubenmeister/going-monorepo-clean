@@ -24,6 +24,7 @@ const NAV_VIAJES:       NavItem = { href: "/empresas/panel/viajes",       label:
 const NAV_SOLICITAR:    NavItem = { href: "/empresas/panel/solicitar",    label: "Solicitar Viaje" };
 const NAV_APROBACIONES: NavItem = { href: "/empresas/panel/aprobaciones", label: "Aprobaciones" };
 const NAV_EQUIPO:       NavItem = { href: "/empresas/panel/equipo",       label: "Equipo" };
+const NAV_ADMINS:       NavItem = { href: "/empresas/panel/administradores", label: "Administradores" };
 const NAV_FACTURACION:  NavItem = { href: "/empresas/panel/facturacion",  label: "Facturación" };
 const NAV_REPORTES:     NavItem = { href: "/empresas/panel/reportes",     label: "Reportes" };
 const NAV_CONFIG:       NavItem = { href: "/empresas/panel/configuracion", label: "Configuración" };
@@ -48,6 +49,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_RECURRENTES,
     NAV_APROBACIONES,   // ✅ aprobaciones multinivel
     NAV_EQUIPO,
+    NAV_ADMINS,
     NAV_PRESUPUESTO,    // ✅ control de gasto por área
     NAV_FACTURACION,
     NAV_REPORTES,
@@ -69,6 +71,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_RECURRENTES,
     // ❌ sin aprobaciones — pago inmediato
     NAV_EQUIPO,
+    NAV_ADMINS,
     NAV_PRESUPUESTO,
     NAV_FACTURACION,
     NAV_REPORTES,
@@ -90,6 +93,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_RECURRENTES,
     // ❌ sin aprobaciones
     NAV_EQUIPO,
+    NAV_ADMINS,
     { href: "/empresas/panel/facturacion", label: "Comisiones" }, // mismo endpoint, label distinto
     NAV_REPORTES,
     NAV_TRACKING,
@@ -107,7 +111,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
 /** Nav por defecto si tipoCuenta no está definido (muestra todo) */
 export const NAV_DEFAULT: NavItem[] = [
   NAV_PANEL, NAV_VIAJES, NAV_SOLICITAR, NAV_FAVORITOS, NAV_RECURRENTES,
-  NAV_APROBACIONES, NAV_EQUIPO, NAV_PRESUPUESTO, NAV_FACTURACION,
+  NAV_APROBACIONES, NAV_EQUIPO, NAV_ADMINS, NAV_PRESUPUESTO, NAV_FACTURACION,
   NAV_REPORTES, NAV_TRACKING, NAV_MAPA, NAV_SEGURIDAD, NAV_POLITICA, NAV_SOSTENIB, NAV_COTIZACION, NAV_CONDICIONES, NAV_LEGAL, NAV_CONFIG,
 ];
 

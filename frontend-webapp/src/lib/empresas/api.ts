@@ -246,6 +246,29 @@ export async function updateUserStatus(
   });
 }
 
+// ── Administradores de empresa (Bloque 3 #5) ──────────────────────────────
+export async function fetchCompanyAdmins(token: string): Promise<string[]> {
+  const res = await corpFetch<{ adminUserIds: string[] }>("/corporate/admins", token);
+  return res.adminUserIds ?? [];
+}
+
+export async function addCompanyAdmin(token: string, userId: string): Promise<string[]> {
+  const res = await corpFetch<{ adminUserIds: string[] }>("/corporate/admins", token, {
+    method: "POST",
+    body: JSON.stringify({ userId }),
+  });
+  return res.adminUserIds ?? [];
+}
+
+export async function removeCompanyAdmin(token: string, userId: string): Promise<string[]> {
+  const res = await corpFetch<{ adminUserIds: string[] }>(
+    `/corporate/admins/${encodeURIComponent(userId)}`,
+    token,
+    { method: "DELETE" }
+  );
+  return res.adminUserIds ?? [];
+}
+
 /**
  * Invita a un nuevo miembro al equipo corporativo.
  * POST /corporate/invite
