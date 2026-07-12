@@ -94,7 +94,9 @@ export default async function NewsPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 {post.excerpt}
               </p>
-              <span className="text-primary-400 text-sm italic">Próximamente más detalles</span>
+              <Link href={`/news/${post.id}`} className="text-primary-500 hover:text-primary-600 text-sm font-semibold">
+                Leer más →
+              </Link>
             </article>
           ))}
         </div>

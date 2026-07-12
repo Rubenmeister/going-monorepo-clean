@@ -153,6 +153,7 @@ export class ContentService {
       body: it.body ?? '',
       outline: it.outline ?? [],
       category: it.category ?? it.pilar ?? '',
+      sources: it.fuentes ?? it.sources ?? [],
       author: it.author ?? 'Going Ecuador',
       coverUrl: it.coverUrl ?? null,
       publishedAt: it.publishedAt ?? it.createdAt ?? null,

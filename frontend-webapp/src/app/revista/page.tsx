@@ -39,14 +39,18 @@ export default async function RevistaPage() {
           <p className="text-gray-500 mb-10">Historias de viaje, destinos y cultura del Ecuador — contadas desde la carretera.</p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((a) => (
-              <article key={a.id} className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+              <Link
+                key={a.id}
+                href={`/revista/${a.id}`}
+                className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm block hover:shadow-md transition-shadow"
+              >
                 <div className="h-40 bg-gradient-to-br from-[#FF4C41] to-[#FF8A3D] flex items-center justify-center text-white text-4xl">📖</div>
                 <div className="p-5">
                   {a.category && <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF4C41]">{a.category}</span>}
                   <h2 className="font-bold text-gray-900 mt-1 mb-2 line-clamp-2">{a.title}</h2>
                   <p className="text-sm text-gray-500 line-clamp-4">{a.summary}</p>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>
