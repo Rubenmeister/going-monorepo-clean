@@ -9,6 +9,7 @@ import {
   UseGuards,
   Inject,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   CreateExperienceDto,
@@ -104,7 +105,12 @@ export class ExperienceController {
   @Get(':id')
   async getExperienceById(@Param('id') id: string): Promise<any> {
     const exp = await this.getExperienceByIdUseCase.execute(id);
-    return exp.toPrimitives();
+    const primitive = exp.toPrimitives();
+    // Bloque 3: el GET público solo expone publicadas (no draft/archived).
+    if (String(primitive.status ?? '').toLowerCase() !== 'published') {
+      throw new NotFoundException('Experiencia no encontrada');
+    }
+    return primitive;
   }
 
   /** PATCH /experiences/:id/publish — requires JWT; solo el operador dueño o admin (#19) */

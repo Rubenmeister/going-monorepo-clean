@@ -101,6 +101,9 @@ export class CorporateController {
   /** PATCH /corporate/billing/invoices/:id/pay — marca la factura como pagada */
   @Patch('billing/invoices/:id/pay')
   async payCorporateInvoice(@Param('id') id: string, @Req() req: Request) {
+    // Bloque 3: conciliar el pago de una factura es acción de staff Going, no de
+    // la propia empresa (conflicto de interés) → exige rol admin de plataforma.
+    this.requireAdmin(req);
     const invoice = await this.svc.markInvoicePaid(this.extractCompanyId(req), id);
     if (!invoice) throw new NotFoundException(`Factura ${id} no encontrada`);
     return invoice;

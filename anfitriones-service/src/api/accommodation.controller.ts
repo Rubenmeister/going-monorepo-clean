@@ -9,6 +9,7 @@ import {
   UseGuards,
   Inject,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   CreateAccommodationDto,
@@ -95,7 +96,12 @@ export class AccommodationController {
   @Get(':id')
   async getAccommodationById(@Param('id') id: string): Promise<any> {
     const acc = await this.getAccommodationByIdUseCase.execute(id);
-    return acc.toPrimitives();
+    const primitive = acc.toPrimitives();
+    // Bloque 3: el GET público solo expone publicados (no draft/archived).
+    if (String(primitive.status ?? '').toLowerCase() !== 'published') {
+      throw new NotFoundException('Alojamiento no encontrado');
+    }
+    return primitive;
   }
 
   /** PATCH /accommodations/:id/publish — requires JWT; solo host dueño o admin (#19) */

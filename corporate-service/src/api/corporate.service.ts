@@ -218,6 +218,18 @@ export class CorporateService {
         : buildApprovalChain((wf as any).amount ?? 0, []);
     const currentLevel = (wf as any).currentLevel ?? chain[0]?.level ?? 1;
 
+    // Bloque 3: autorización del decisor. Nunca el solicitante (auto-aprobación) y,
+    // si el nivel tiene aprobador asignado, solo ese usuario puede decidir.
+    if ((wf as any).requesterId && (wf as any).requesterId === decidedBy) {
+      throw new ForbiddenException('No puedes aprobar tu propia solicitud');
+    }
+    const step = (chain as any[]).find(
+      (s) => s.level === currentLevel && s.status === 'pending',
+    );
+    if (step && step.approverId && step.approverId !== decidedBy) {
+      throw new ForbiddenException('No eres el aprobador asignado para este nivel');
+    }
+
     const r = applyDecision(chain as any, currentLevel, decision, decidedBy, comments ?? '');
     if (!r.changed) {
       throw new BadRequestException(
