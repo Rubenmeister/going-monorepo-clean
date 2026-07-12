@@ -145,6 +145,59 @@ export async function generateEditorialProposals(
  * público de contenido. Devuelve la URL pública (o null si falla / sin key).
  * Sube vía JSON API de GCS con el token del metadata-server (sin SDK).
  */
+// ── Librería propia de fotos de Going en el bucket (preferida sobre Pexels) ──
+const REGION_KEYWORDS: Record<string, string[]> = {
+  amazonia: ['amazon', 'amazonía', 'amazonia', 'tena', 'napo', 'oriente', 'misahuall', 'yasun', 'cuyabeno', 'selva', 'puyo', 'lago agrio', 'coca', 'jungla'],
+  galapagos: ['galápagos', 'galapagos', 'islas encantadas', 'isla', 'tortuga gigante', 'lobos marinos'],
+  costa: ['costa', 'guayaquil', 'manta', 'salinas', 'playa', 'esmeraldas', 'montañita', 'olón', 'puerto lópez', 'malecón', 'santa elena', 'machala', 'mar', 'ballenas'],
+  sierra: ['sierra', 'quito', 'cuenca', 'baños', 'riobamba', 'otavalo', 'cotopaxi', 'chimborazo', 'quilotoa', 'ambato', 'loja', 'ibarra', 'tulcán', 'andes', 'volcán', 'páramo', 'nariz del diablo'],
+};
+
+/** Deriva la carpeta de destino de la librería desde el texto del artículo. */
+function regionFor(text: string): string {
+  const t = (text || '').toLowerCase();
+  for (const [region, kws] of Object.entries(REGION_KEYWORDS)) {
+    if (kws.some((k) => t.includes(k))) return region;
+  }
+  return 'destinos-importantes'; // genérico curado
+}
+
+/** Lista objetos de una carpeta del bucket (JSON API + token metadata-server). */
+async function listLibrary(prefix: string): Promise<string[]> {
+  const bucket = process.env.CONTENT_MEDIA_BUCKET || 'going-content-media';
+  try {
+    const tr = await fetch(
+      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+      { headers: { 'Metadata-Flavor': 'Google' } },
+    );
+    const token = ((await tr.json()) as any)?.access_token;
+    if (!token) return [];
+    const r = await fetch(
+      `https://storage.googleapis.com/storage/v1/b/${bucket}/o?prefix=${encodeURIComponent(prefix)}&maxResults=1000`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!r.ok) return [];
+    const d: any = await r.json();
+    return (d?.items ?? []).map((o: any) => o.name).filter((n: string) => /\.(jpg|jpeg|png)$/i.test(n));
+  } catch {
+    return [];
+  }
+}
+
+/** Elige una foto de la librería propia por destino (o null si no hay). */
+async function pickFromLibrary(text: string, objId: string): Promise<string | null> {
+  const bucket = process.env.CONTENT_MEDIA_BUCKET || 'going-content-media';
+  const region = regionFor(text);
+  let objs = await listLibrary(`library/${region}/`);
+  if (!objs.length) objs = await listLibrary('library/fotos-web-ecuador/');
+  if (!objs.length) return null;
+  // Reparte determinísticamente por objId (evita repetir la misma foto siempre).
+  let h = 0;
+  for (const c of objId) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const name = objs[h % objs.length];
+  return `https://storage.googleapis.com/${bucket}/${name}`;
+}
+
 async function pexelsSearch(query: string): Promise<any | null> {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return null;
@@ -240,7 +293,9 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
   };
   for (const p of proposals) {
     const ref = fsdb.collection('content_items').doc();
-    const cover = await fetchAndStoreCover(coverQueries(p), ref.id).catch(() => null);
+    // Preferir la librería propia de Going por destino; Pexels solo de respaldo.
+    const libUrl = await pickFromLibrary(`${p.titulo} ${p.pilar}`, ref.id).catch(() => null);
+    const cover = libUrl ? null : await fetchAndStoreCover(coverQueries(p), ref.id).catch(() => null);
     await ref.set({
       type: typeByChannel[p.channel] ?? 'article',
       channel: p.channel,
@@ -251,8 +306,8 @@ export async function saveProposalsForReview(proposals: EditorialProposal[]): Pr
       body: p.cuerpo ?? '',
       outline: p.outline ?? [],
       cta: p.cta ?? '',
-      coverUrl: cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null,
-      coverCredit: cover?.credit ?? null,
+      coverUrl: libUrl ?? cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null,
+      coverCredit: libUrl ? 'Foto: Going Ecuador' : cover?.credit ?? null,
       status: 'review',      // pendiente de aprobación editorial
       lang: 'es',
       origin: 'content-agent-v2',
@@ -278,14 +333,20 @@ export async function backfillMissingCovers(): Promise<{ processed: number; upda
     const x: any = d.data();
     if (x.coverUrl && !String(x.coverUrl).includes('picsum.photos')) continue;
     processed++;
-    const queries = coverQueries({
-      titulo: x.title ?? x.titulo ?? '',
-      pilar: x.pilar ?? x.category ?? '',
-    });
-    const cover = await fetchAndStoreCover(queries, d.id).catch(() => null);
-    const url = cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null;
+    const text = `${x.title ?? x.titulo ?? ''} ${x.pilar ?? x.category ?? ''}`;
+    const libUrl = await pickFromLibrary(text, d.id).catch(() => null);
+    const cover = libUrl
+      ? null
+      : await fetchAndStoreCover(
+          coverQueries({ titulo: x.title ?? x.titulo ?? '', pilar: x.pilar ?? x.category ?? '' }),
+          d.id,
+        ).catch(() => null);
+    const url = libUrl ?? cover?.coverUrl ?? process.env.CONTENT_DEFAULT_COVER ?? null;
     if (url) {
-      await d.ref.update({ coverUrl: url, coverCredit: cover?.credit ?? 'Foto: Going Ecuador' });
+      await d.ref.update({
+        coverUrl: url,
+        coverCredit: libUrl ? 'Foto: Going Ecuador' : cover?.credit ?? 'Foto: Going Ecuador',
+      });
       updated++;
       console.log(`[content][backfill] ${d.id} (${x.channel}) → foto`);
     }
