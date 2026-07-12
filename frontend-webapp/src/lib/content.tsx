@@ -8,6 +8,16 @@ export interface ContentItem {
   id: string; channel: string; title: string; summary: string; body: string;
   outline: string[]; category: string; sources: (string | Source)[];
   author: string; publishedAt: string | null;
+  coverUrl?: string | null; videoUrl?: string | null;
+}
+
+/** Extrae el ID de un video de YouTube desde varias formas de URL. */
+export function youtubeId(url?: string | null): string | null {
+  if (!url) return null;
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/,
+  );
+  return m ? m[1] : /^[A-Za-z0-9_-]{11}$/.test(url) ? url : null;
 }
 
 /** Trae un item publicado por id desde el endpoint público /content/:id. */
@@ -71,11 +81,34 @@ export function ArticleView({
         </div>
       </div>
 
+      {item.coverUrl && (
+        <div className="container mx-auto px-4 max-w-3xl -mt-8 mb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.coverUrl}
+            alt={item.title}
+            className="w-full h-64 md:h-96 object-cover rounded-2xl shadow-lg"
+          />
+        </div>
+      )}
+
       <article className="container mx-auto px-4 py-12 max-w-3xl">
         {item.summary && (
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
             {item.summary}
           </p>
+        )}
+
+        {youtubeId(item.videoUrl) && (
+          <div className="relative w-full mb-8 rounded-2xl overflow-hidden shadow-lg" style={{ paddingBottom: '56.25%' }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${youtubeId(item.videoUrl)}`}
+              title={item.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
         )}
 
         {item.body && (

@@ -22,6 +22,7 @@ async function getBlogPosts() {
       author: it.author ?? 'Going Ecuador',
       date: (it.publishedAt ?? '').slice(0, 10),
       category: it.category ?? 'Blog',
+      coverUrl: it.coverUrl ?? null,
       readTime: Math.max(2, Math.round(String(it.body ?? '').split(/\s+/).length / 200)),
     }));
   } catch {
@@ -118,9 +119,14 @@ export default async function BlogPage() {
               key={post.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden"
             >
-              <div className="h-48 bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center">
-                <span className="text-white text-5xl">✍️</span>
-              </div>
+              {(post as { coverUrl?: string | null }).coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={(post as { coverUrl?: string | null }).coverUrl as string} alt={post.title} className="h-48 w-full object-cover" />
+              ) : (
+                <div className="h-48 bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center">
+                  <span className="text-white text-5xl">✍️</span>
+                </div>
+              )}
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs font-semibold rounded-full">

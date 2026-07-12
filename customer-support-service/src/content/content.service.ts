@@ -156,6 +156,7 @@ export class ContentService {
       sources: it.fuentes ?? it.sources ?? [],
       author: it.author ?? 'Going Ecuador',
       coverUrl: it.coverUrl ?? null,
+      videoUrl: it.videoUrl ?? null,
       publishedAt: it.publishedAt ?? it.createdAt ?? null,
     };
   }

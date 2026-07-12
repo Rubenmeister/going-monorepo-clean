@@ -44,7 +44,12 @@ export default async function RevistaPage() {
                 href={`/revista/${a.id}`}
                 className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm block hover:shadow-md transition-shadow"
               >
-                <div className="h-40 bg-gradient-to-br from-[#FF4C41] to-[#FF8A3D] flex items-center justify-center text-white text-4xl">📖</div>
+                {a.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={a.coverUrl} alt={a.title} className="h-40 w-full object-cover" />
+                ) : (
+                  <div className="h-40 bg-gradient-to-br from-[#FF4C41] to-[#FF8A3D] flex items-center justify-center text-white text-4xl">📖</div>
+                )}
                 <div className="p-5">
                   {a.category && <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF4C41]">{a.category}</span>}
                   <h2 className="font-bold text-gray-900 mt-1 mb-2 line-clamp-2">{a.title}</h2>
