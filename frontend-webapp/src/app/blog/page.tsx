@@ -73,9 +73,15 @@ export const metadata = {
     'Lee los últimos consejos, historias e ideas de la comunidad Going App Ecuador.',
 };
 
-export default async function BlogPage() {
-  const blogPosts = await getBlogPosts();
-  const categories = ['Todos', 'Popular', 'Consejos', 'Noticias', 'Comunidad'];
+export default async function BlogPage({ searchParams }: { searchParams: Promise<{ cat?: string }> }) {
+  const { cat } = await searchParams;
+  const allPosts = await getBlogPosts();
+  const categories = [
+    'Todos',
+    ...Array.from(new Set(allPosts.map((p) => p.category).filter(Boolean))),
+  ];
+  const active = cat && categories.includes(cat) ? cat : 'Todos';
+  const blogPosts = active === 'Todos' ? allPosts : allPosts.filter((p) => p.category === active);
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900">
@@ -96,16 +102,17 @@ export default async function BlogPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {categories.map((category) => (
-              <button
+              <Link
                 key={category}
+                href={category === 'Todos' ? '/blog' : `/blog?cat=${encodeURIComponent(category)}`}
                 className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
-                  category === 'Todos'
+                  category === active
                     ? 'bg-primary-500 text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
                 }`}
               >
                 {category}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
