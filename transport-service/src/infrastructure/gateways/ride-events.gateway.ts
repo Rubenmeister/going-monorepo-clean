@@ -636,4 +636,19 @@ export class RideEventsGateway
   }) {
     this.server.to(`ride:${rideId}`).emit('ride:driver_no_show', payload);
   }
+
+  /**
+   * El conductor no llegó pero el sistema está buscando otro AUTOMÁTICAMENTE
+   * (auto-rematch). La app del pasajero debe mostrar "Tu conductor no llegó,
+   * estamos asignando otro" en vez del CTA "Pedir otro viaje".
+   */
+  notifyRematching(rideId: string, payload: {
+    rideId: string;
+    previousDriverId: string;
+    attempt: number;
+    message: string;
+    timestamp: string;
+  }) {
+    this.server.to(`ride:${rideId}`).emit('ride:rematching', payload);
+  }
 }

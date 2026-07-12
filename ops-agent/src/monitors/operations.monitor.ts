@@ -44,6 +44,7 @@ import {
   mongoGetTodayRidesStats,
   mongoGetWeeklyStats,
   mongoGetNewDriverSignups7d,
+  mongoGetRecentNoShows,
 } from '../mongodb/rides.repository';
 import {
   mongoGetAllDrivers,
@@ -191,6 +192,62 @@ export async function checkRidesSinConductor(c: RunCollector): Promise<void> {
   } catch (err) {
     console.error('[ops] Error en checkRidesSinConductor:', err);
     c.errors.push('checkRidesSinConductor');
+  }
+}
+
+// ─── 1b. No-shows y auto-rematches (últimos 30 min) ───────────
+//
+// El auto-rematch vive en transport-service (ride-no-show.cron): al detectar
+// un conductor que no llegó, reasigna solo. Rumi OBSERVA el efecto y eleva al
+// cerebro si hay patrón (muchos no-shows = problema de oferta/disciplina, o un
+// ride que rebotó varias veces = necesita atención humana).
+export async function checkNoShowsYRematches(c: RunCollector): Promise<void> {
+  console.log('[ops] Verificando no-shows y rematches...');
+  try {
+    const s = await mongoGetRecentNoShows(30);
+    c.metrics.noShows30m = s.noShowCount;
+    c.metrics.rematchingNow = s.rematchingCount;
+    c.metrics.maxRematch = s.maxRematch;
+
+    // Muchos no-shows terminales en 30 min = problema real (oferta o disciplina).
+    if (s.noShowCount >= 3) {
+      c.anomalies.push({
+        type:     'no_show_spike',
+        severity: s.noShowCount >= 6 ? 'critical' : 'warning',
+        message:  `${s.noShowCount} no-shows de conductor en 30 min`,
+        data:     { noShowCount: s.noShowCount },
+      });
+      if (await shouldSuppress('no_show_spike', 'global')) {
+        c.actionsTaken.push({ type: 'sent_telegram_alert', target: 'no_show_spike', result: 'suppressed' });
+      } else {
+        const sent = await sendMessage(
+          `⚠️ *No-shows* — ${s.noShowCount} conductoras o conductores no llegaron en los últimos 30 min. ` +
+          `El sistema re-asignó automáticamente los que pudo; revisa oferta/disciplina.`,
+        );
+        c.actionsTaken.push({ type: 'sent_telegram_alert', target: 'no_show_spike', result: sent ? 'ok' : 'failed' });
+      }
+      // El cerebro puede pedir a marketing un incentivo de oferta.
+      c.actionsProposed.push({
+        type:    'boost_driver_supply',
+        reason:  `${s.noShowCount} no-shows en 30 min sugiere falta de oferta confiable`,
+        urgency: s.noShowCount >= 6 ? 0.8 : 0.55,
+      });
+    }
+
+    // Un ride que ya rebotó hasta el tope y sigue sin conductor = atención humana.
+    if (s.maxRematch >= 2 && s.rematchingCount > 0) {
+      c.anomalies.push({
+        type:     'ride_rematch_exhausted',
+        severity: 'warning',
+        message:  `${s.rematchingCount} viaje(s) reasignados por no-show aún sin conductor (máx ${s.maxRematch} reintentos)`,
+        data:     { rematchingCount: s.rematchingCount, maxRematch: s.maxRematch, samples: s.samples },
+      });
+    }
+
+    console.log(`[ops] no-shows=${s.noShowCount} rematching=${s.rematchingCount} maxRematch=${s.maxRematch}`);
+  } catch (err) {
+    console.error('[ops] Error en checkNoShowsYRematches:', err);
+    c.errors.push('checkNoShowsYRematches');
   }
 }
 
@@ -457,6 +514,7 @@ export async function runAllMonitors(): Promise<MonitorRunResult> {
 
   await checkExternalEndpoints(collector);     // health api.goingec.com + Mapbox
   await checkRidesSinConductor(collector);     // cada run
+  await checkNoShowsYRematches(collector);     // cada run — observa el auto-rematch
   await checkConductoresInactivos(collector);  // cada run (suprimido por hora)
   await checkIngresos(collector);              // solo 12pm y 18pm
   await enviarReporteDiario(collector);        // solo 21pm

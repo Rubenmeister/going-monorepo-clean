@@ -52,6 +52,12 @@ export class RideModelSchema {
   @Prop() preliminaryAssignedAt: Date;
   @Prop() previousDriverId: string;
   /**
+   * Cuántas veces se re-asignó este viaje por no-show del conductor (auto-rematch,
+   * ride-no-show.cron). Se topa en RIDE_AUTO_REMATCH_MAX para no reintentar
+   * infinitamente; al superarlo el viaje queda 'no_show' terminal.
+   */
+  @Prop({ default: 0 }) rematchCount: number;
+  /**
    * Marca de idempotencia: instante en que el cron disparó el matching de
    * este viaje programado. Mientras sea null el viaje sigue "en agenda".
    * Evita doble-dispatch si el cron corre en varios pods.

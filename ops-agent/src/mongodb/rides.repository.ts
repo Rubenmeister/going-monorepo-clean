@@ -83,6 +83,46 @@ export async function mongoGetPendingRidesNoDriver(cutoffMinutes: number): Promi
   }));
 }
 
+export interface NoShowSummary {
+  noShowCount: number;      // rides que quedaron 'no_show' terminal en la ventana
+  rematchingCount: number;  // rides re-asignados por no-show y aún buscando (rematchCount>0, status requested/searching)
+  maxRematch: number;       // el rematchCount más alto visto (señal de un ride problemático)
+  samples: { id: string; rematchCount: number; status: string }[];
+}
+
+/**
+ * Resumen de no-shows y auto-rematches en una ventana reciente. Sirve al
+ * ops-agent para observar el efecto del auto-rematch (transport-service) y
+ * elevar al cerebro si hay un patrón (muchos no-shows = problema de oferta/
+ * disciplina de conductores).
+ */
+export async function mongoGetRecentNoShows(cutoffMinutes: number): Promise<NoShowSummary> {
+  const db = await getRidesDb();
+  const cutoff = new Date(Date.now() - cutoffMinutes * 60 * 1000);
+  const col = db.collection<MongoRide & { rematchCount?: number; cancellationTime?: Date }>('rides');
+
+  const [noShowCount, rematchingDocs] = await Promise.all([
+    col.countDocuments({ status: 'no_show', cancellationTime: { $gte: cutoff } } as any),
+    col.find({
+      rematchCount: { $gte: 1 } as any,
+      status: { $in: ['requested', 'searching'] },
+    }).limit(50).toArray(),
+  ]);
+
+  const maxRematch = rematchingDocs.reduce((m, d) => Math.max(m, (d as any).rematchCount || 0), 0);
+
+  return {
+    noShowCount,
+    rematchingCount: rematchingDocs.length,
+    maxRematch,
+    samples: rematchingDocs.slice(0, 5).map((d) => ({
+      id: String(d._id),
+      rematchCount: (d as any).rematchCount || 0,
+      status: d.status || 'unknown',
+    })),
+  };
+}
+
 /**
  * Rides completados hoy (Ecuador) por conductor — para revenue diario.
  */
