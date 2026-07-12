@@ -48,6 +48,14 @@ import {
   DriverBaseSchema,
 } from '../infrastructure/persistence/schemas/driver-base.schema';
 import {
+  RideModelSchema,
+  RideSchema,
+} from '../infrastructure/persistence/schemas/ride.schema';
+import {
+  ScheduledTripModel,
+  ScheduledTripSchema,
+} from '../infrastructure/persistence/schemas/scheduled-trip.schema';
+import {
   DriverHybridContextModelSchema,
   DriverHybridContextSchema,
 } from '../infrastructure/persistence/schemas/driver-hybrid-context.schema';
@@ -62,6 +70,7 @@ import { DriverBaseController } from '../api/driver-base.controller';
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
 import { RideInternalController } from '../api/ride-internal.controller';
+import { PlatformPulseController } from '../api/platform-pulse.controller';
 import { HealthController } from '../api/health.controller';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
@@ -164,6 +173,9 @@ import { MulterModule } from '@nestjs/platform-express';
       { name: DriverBaseModelSchema.name, schema: DriverBaseSchema },
       { name: DriverHybridContextModelSchema.name, schema: DriverHybridContextSchema },
       { name: DriverPushTokenModelSchema.name, schema: DriverPushTokenSchema },
+      // Para PlatformPulseController (métricas de negocio S2S → Sacha).
+      { name: RideModelSchema.name, schema: RideSchema },
+      { name: ScheduledTripModel.name, schema: ScheduledTripSchema },
     ]),
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
     // Habilita @Cron decorators (DriverHybridTransitionCronService).
@@ -174,6 +186,7 @@ import { MulterModule } from '@nestjs/platform-express';
     TransportController,
     RideController,
     RideInternalController,
+    PlatformPulseController,
     HealthController,
     PaymentController,
     DriverController,

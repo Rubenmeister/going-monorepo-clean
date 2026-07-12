@@ -46,9 +46,14 @@ steps:
       - --memory=2Gi
       - --cpu=2
       - --max-retries=1
-      - --task-timeout=300s
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git,AGENT_MODEL=gemini-2.5-flash,CEREBRO_PUBLISH_ENABLED=true
-      - --set-secrets=GIT_TOKEN=GIT_TOKEN:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest
+      - --task-timeout=600s
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git,AGENT_MODEL=gemini-2.5-flash,CEREBRO_PUBLISH_ENABLED=true,TRANSPORT_INTERNAL_URL=https://transport-service-lw44cnhdeq-uc.a.run.app
+      - --set-secrets=GIT_TOKEN=GIT_TOKEN:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,INTERNAL_SERVICE_TOKEN=INTERNAL_SERVICE_TOKEN:latest
+      # VPC connector sancionado (going-connector) + egress all-traffic: necesario
+      # para alcanzar transport-service (ingress internal) vía S2S, igual que los
+      # demás servicios. NO es un connector nuevo — es el único que existe.
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 
   # 3. Cloud Scheduler — cada 6 horas (UTC).

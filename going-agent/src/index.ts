@@ -32,6 +32,7 @@ import {
   publishAgentRunEvent,
   runCommandMode,
 } from '@going-platform/cerebro-contracts';
+import { fetchPlatformPulse, derivePulseSignals } from './platform-pulse';
 
 // ─── RunCollector compartido (Cerebro) ───────────────────────
 //
@@ -491,18 +492,51 @@ Reporta todo lo que encuentres.`,
   return { finalReport };
 }
 
+// ── Pulso del producto (dimensión de NEGOCIO, sin LLM) ─────────────────────
+//
+// Consulta KPIs reales a transport-service y deriva anomalías + propuestas
+// determinísticas al Cerebro. Corre SIEMPRE (independiente del ciclo de código
+// con Gemini); si transport-service no responde, es un no-op silencioso.
+async function runPlatformPulse(c: RunCollector): Promise<void> {
+  const pulse = await fetchPlatformPulse();
+  if (!pulse) return;
+
+  const { anomalies, actionsProposed, metrics, summary } = derivePulseSignals(pulse);
+  Object.assign(c.metrics, metrics);
+  c.anomalies.push(...anomalies);
+  c.actionsProposed.push(...actionsProposed);
+
+  console.log(`\n📈 ${summary.replace(/\*/g, '')}`);
+  if (anomalies.length > 0) {
+    // Solo mandamos el pulso a Telegram cuando hay algo que mirar (anti-ruido).
+    await sendTelegramReport(
+      `${summary}\n\n_Sacha · pulso del producto ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}_`,
+    );
+    c.actionsTaken.push({
+      type: 'sent_pulse_alert',
+      target: 'ops_chat',
+      result: 'ok',
+      data: { anomalies: anomalies.length, proposed: actionsProposed.length },
+    });
+  }
+}
+
 // ── Arranque — Cloud Run Job: un ciclo y salida limpia ────────────────────
 async function main() {
   console.log('🚀 Going Agent — Cloud Run Job');
   console.log(`📁 Repo: ${config.repoPath}`);
   console.log(`🕐 ${new Date().toISOString()}\n`);
 
-  // Modo command (Orchestrator override COMMAND_JSON).
+  // Modo command (Orchestrator override COMMAND_JSON). Wayra puede dirigir a
+  // Sacha con acciones concretas; cada handler corre y sale.
   const cmd = parseCommandFromEnv();
   if (cmd) {
     await runCommandMode(cmd, {
-      // Handlers concretos cuando aparezcan reglas, ej:
-      // force_review_logs: async () => { await runAgentCycle(createCollector()); },
+      // Solo el pulso de negocio (rápido, sin Gemini).
+      platform_pulse: async () => { await runPlatformPulse(createCollector()); },
+      // Revisión de logs/builds dirigida (ciclo completo con Gemini).
+      force_review_logs: async () => { await runAgentCycle(createCollector()); },
+      review_logs:       async () => { await runAgentCycle(createCollector()); },
     });
     process.exit(0);
   }
@@ -514,6 +548,11 @@ async function main() {
   let cycleOk = false;
 
   try {
+    // Dimensión de NEGOCIO primero (rápida, sin LLM). Un fallo aquí no debe
+    // tumbar el ciclo de mantenimiento de código.
+    await runPlatformPulse(collector).catch((e) =>
+      console.error('[going-agent] pulso falló (non-fatal):', (e as Error).message),
+    );
     await runAgentCycle(collector);
     cycleOk = true;
     if (collector.errors.length > 0) {
