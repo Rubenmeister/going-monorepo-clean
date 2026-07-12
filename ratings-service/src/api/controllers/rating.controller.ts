@@ -8,6 +8,8 @@ import {
   HttpStatus,
   UseGuards,
   Inject,
+  Logger,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common';
@@ -86,6 +88,9 @@ export class RatingController {
     @Body() dto: SubmitRatingDTO,
     @CurrentUser() user: { id: string },
   ) {
+    // Bloque 3 (#6): solo quien participó en el viaje puede calificarlo.
+    await this.assertParticipation(dto.tripId, user.id);
+
     const ratingId = uuidv4();
     const rating = await this.submitRatingUseCase.execute({
       id: ratingId,
@@ -103,6 +108,47 @@ export class RatingController {
       message: 'Rating submitted successfully',
       data: rating,
     };
+  }
+
+  private readonly participationLogger = new Logger('RatingParticipation');
+
+  /**
+   * Verifica en transport-service que raterId participó en el viaje (pasajero o
+   * conductor). Fail-closed si el viaje existe y no participó, o si no existe
+   * (tripId fabricado). Fail-open (permite + loguea) solo ante error de red/timeout.
+   */
+  private async assertParticipation(tripId: string, raterId: string): Promise<void> {
+    if (!tripId) throw new ForbiddenException('tripId requerido');
+    const base = (process.env.TRANSPORT_URL ||
+      'https://transport-service-lw44cnhdeq-uc.a.run.app').replace(/\/$/, '');
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!token) {
+      this.participationLogger.warn('INTERNAL_SERVICE_TOKEN no configurado — no se verifica participación');
+      return;
+    }
+    let ctx: any;
+    try {
+      const res = await fetch(`${base}/rides/${encodeURIComponent(tripId)}/payment-context`, {
+        headers: { 'X-Internal-Token': token },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.status === 404) {
+        throw new ForbiddenException('El viaje no existe o no participaste en él');
+      }
+      if (!res.ok) {
+        this.participationLogger.warn(`transport ${res.status} verificando ${tripId} — se permite (fail-open)`);
+        return;
+      }
+      ctx = await res.json();
+    } catch (e) {
+      if (e instanceof ForbiddenException) throw e;
+      this.participationLogger.warn(`transport inalcanzable verificando ${tripId} — se permite: ${(e as Error).message}`);
+      return;
+    }
+    const participants = [ctx?.passengerId, ctx?.driverId].filter(Boolean).map((x: any) => String(x));
+    if (!participants.includes(String(raterId))) {
+      throw new ForbiddenException('Solo puedes calificar viajes en los que participaste');
+    }
   }
 
   @Get('rating/:id')
