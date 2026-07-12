@@ -70,16 +70,19 @@ async function bootstrap() {
   const RL_GENERAL_MAX = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10);
   const RL_AUTH_MAX = parseInt(process.env.RATE_LIMIT_AUTH_MAX || '5', 10);
   const RL_PAYMENTS_MAX = parseInt(process.env.RATE_LIMIT_PAYMENTS_MAX || '10', 10);
-  const rlBucketOf = (url: string): 'auth' | 'payments' | 'general' => {
+  // Bloque 3: chat público anónimo pega a Claude (costo). Límite estricto propio.
+  const RL_AI_MAX = parseInt(process.env.RATE_LIMIT_AI_MAX || '15', 10);
+  const rlBucketOf = (url: string): 'auth' | 'payments' | 'ai' | 'general' => {
     const u = (url || '').split('?')[0];
     if (u.startsWith('/auth/login') || u.startsWith('/auth/corporate/login') ||
         u.startsWith('/auth/register') || u.startsWith('/auth/reset-password') ||
         u.startsWith('/auth/forgot-password')) return 'auth';
     if (u.startsWith('/payments')) return 'payments';
+    if (u.startsWith('/support/public')) return 'ai';
     return 'general';
   };
   const rlMaxFor = (b: string): number =>
-    b === 'auth' ? RL_AUTH_MAX : b === 'payments' ? RL_PAYMENTS_MAX : RL_GENERAL_MAX;
+    b === 'auth' ? RL_AUTH_MAX : b === 'payments' ? RL_PAYMENTS_MAX : b === 'ai' ? RL_AI_MAX : RL_GENERAL_MAX;
   // IP real del cliente: detrás del GLB, request.ip es el balanceador (todos
   // compartirían contador). El GLB pone la IP real como primer X-Forwarded-For.
   const rlClientIp = (request: any): string => {
@@ -123,7 +126,7 @@ async function bootstrap() {
   };
   Logger.log(
     `Rate limiting ${rateLimitEnabled ? 'ACTIVO' : 'OFF'} (store=${rlRedis ? 'redis-compartido' : 'in-memory-por-pod'}): ` +
-    `${RL_GENERAL_MAX}/min general, ${RL_AUTH_MAX}/min auth, ${RL_PAYMENTS_MAX}/min pagos (por IP y bucket)`,
+    `${RL_GENERAL_MAX}/min general, ${RL_AUTH_MAX}/min auth, ${RL_PAYMENTS_MAX}/min pagos, ${RL_AI_MAX}/min chat-IA (por IP y bucket)`,
     'Security'
   );
 
