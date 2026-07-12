@@ -67,10 +67,12 @@ async function main(): Promise<void> {
   // Modo command (Orchestrator override COMMAND_JSON).
   const cmd = parseCommandFromEnv();
   if (cmd) {
+    // Solo acciones SIN movimiento de dinero ni emisión al SRI. Wayra puede
+    // pedir a Inti recalcular/observar; NO liquidar payouts ni facturar en prod
+    // (eso queda como decisión humana, regla de Rubén).
     await runCommandMode(cmd, {
-      // Handlers concretos se agregan cuando aparezcan reglas:
-      // force_invoice_retry: async () => { await runInvoicingLoop(); },
-      // force_weekly_payouts: async () => { await processWeeklyPayouts(); },
+      run_financial_monitor: async () => { await runFinancialMonitor(); },
+      force_reconciliation:  async () => { await runBankReconciliation(); },
     });
     await closeMongoClient().catch(() => {});
     process.exit(0);

@@ -35,6 +35,8 @@ interface MongoRide {
   cashConfirmed?: boolean;      // driver received cash
   modalidad?: string;           // 'compartido' | 'privado'
   serviceType?: string;
+  paymentCaptureStatus?: string;   // 'captured' | 'failed' (captura del cobro digital al completar)
+  paymentCaptureFailedAt?: Date;
 }
 
 /**
@@ -129,6 +131,23 @@ export async function mongoGetPendingPayments(): Promise<Ride[]> {
         { paymentMethod: { $in: ['card', 'transfer'] }, paymentRef: '' },
       ],
     })
+    .toArray();
+  return docs.map(toRide);
+}
+
+/**
+ * Pagos fallidos REALES = rides cuya captura de cobro digital falló al
+ * completar (paymentCaptureStatus='failed', escrito por transport-service).
+ * Fuente autoritativa de "pago fallido" (antes getFailedPayments retornaba []).
+ */
+export async function mongoGetFailedCapturePayments(from: Date, to: Date): Promise<Ride[]> {
+  const db = await getRidesDb();
+  const docs = await db.collection<MongoRide>('rides')
+    .find({
+      paymentCaptureStatus: 'failed',
+      paymentCaptureFailedAt: { $gte: from, $lte: to },
+    })
+    .sort({ paymentCaptureFailedAt: -1 })
     .toArray();
   return docs.map(toRide);
 }

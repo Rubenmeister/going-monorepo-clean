@@ -1,7 +1,7 @@
 import { VertexAI } from '@google-cloud/vertexai';
-import { Firestore, Timestamp } from '@google-cloud/firestore';
-import { generateDailyReport, generateWeeklyReport } from '../reports/revenue.report';
+import { generateWeeklyReport } from '../reports/revenue.report';
 import { RevenueReport } from '../types/financial.types';
+import { mongoGetCompletedRides } from '../mongodb/rides.repository';
 
 // ============================================================
 // AI Financial Analysis – Gemini 2.5 Flash analiza los datos financieros
@@ -28,7 +28,6 @@ const vertexAI = new VertexAI({
   location: process.env.GCP_REGION || 'us-central1',
 });
 
-const db = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
 
 /**
  * Llama al modelo Gemini con un prompt único y devuelve el texto plano.
@@ -58,12 +57,11 @@ export async function detectDriverAnomalies(): Promise<{
   const now  = new Date();
   const from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
 
-  const ridesSnap = await db.collection('rides')
-    .where('status', '==', 'completed')
-    .where('completedAt', '>=', Timestamp.fromDate(from))
-    .get();
-
-  const rides = ridesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // FIX (12-jul): los rides reales viven en Mongo Atlas (los escribe
+  // transport-service), NO en Firestore. Antes esta query leía Firestore
+  // 'rides' (vacío) → el fraude nunca detectaba nada (falsos negativos
+  // silenciosos). Ahora lee la misma fuente que el resto del agente.
+  const rides = await mongoGetCompletedRides(from, now);
 
   // Agrupar por conductor
   const driverStats = new Map<string, {
@@ -71,14 +69,15 @@ export async function detectDriverAnomalies(): Promise<{
     avgRideDuration: number; cashRides: number; shortRides: number;
   }>();
 
-  rides.forEach((r: Record<string, unknown>) => {
-    const dId = r.driverId as string;
+  rides.forEach((r) => {
+    const dId = r.driverId;
+    if (!dId) return;
     const existing = driverStats.get(dId) || { rides:0, totalKm:0, totalFare:0, avgRideDuration:0, cashRides:0, shortRides:0 };
-    const distKm = r.distanceKm as number || 0;
+    const distKm = r.distanceKm || 0;
     driverStats.set(dId, {
       rides: existing.rides + 1,
       totalKm: existing.totalKm + distKm,
-      totalFare: existing.totalFare + (r.fareTotal as number || 0),
+      totalFare: existing.totalFare + (r.fareTotal || 0),
       avgRideDuration: existing.avgRideDuration,
       cashRides: existing.cashRides + (r.paymentMethod === 'cash' ? 1 : 0),
       shortRides: existing.shortRides + (distKm < 2 ? 1 : 0),  // <2km = viaje muy corto
@@ -150,22 +149,18 @@ export async function projectMonthlyRevenue(): Promise<{
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
   const from = new Date(now.getFullYear(), now.getMonth(), 1);
-  await generateDailyReport(now); // mantiene la llamada por si tiene side effects
 
-  // Ingresos acumulados del mes hasta hoy
-  const monthSnap = await db.collection('rides')
-    .where('status', '==', 'completed')
-    .where('completedAt', '>=', Timestamp.fromDate(from))
-    .where('completedAt', '<=', Timestamp.fromDate(now))
-    .get();
+  // Ingresos acumulados del mes hasta hoy — desde Mongo Atlas (misma fuente
+  // que el resto del agente). Antes leía Firestore 'rides' (vacío).
+  const monthRides = await mongoGetCompletedRides(from, now);
 
-  const currentRevenue = monthSnap.docs.reduce((s, d) => s + (d.data().fareTotal || 0), 0);
+  const currentRevenue = monthRides.reduce((s, r) => s + (r.fareTotal || 0), 0);
   const dailyAverage   = day > 0 ? currentRevenue / day : 0;
   const projected      = dailyAverage * daysInMonth;
   const daysRemaining  = daysInMonth - day;
 
   // Meta mensual: $100/día × conductores activos
-  const activeDrivers = new Set(monthSnap.docs.map(d => d.data().driverId)).size;
+  const activeDrivers = new Set(monthRides.map(r => r.driverId).filter(Boolean)).size;
   const monthlyTarget = activeDrivers * 100 * daysInMonth;
   const onTrack       = projected >= monthlyTarget * 0.8; // 80% de la meta = on track
 

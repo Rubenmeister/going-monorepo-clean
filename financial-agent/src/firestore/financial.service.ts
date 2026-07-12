@@ -7,6 +7,7 @@ import {
   mongoGetCompletedRides,
   mongoGetRidesByDriver,
   mongoGetPendingPayments,
+  mongoGetFailedCapturePayments,
   mongoGetRidesPendingInvoice,
   mongoUpdateRideInvoice,
 } from '../mongodb/rides.repository';
@@ -28,10 +29,12 @@ export async function getCompletedRides(from: Date, to: Date): Promise<Ride[]> {
  * NO se confirmó (sin paymentRef ni cashConfirmed). Refinable cruzando
  * con payment-service.transactions.status='failed'.
  */
-export async function getFailedPayments(_from: Date, _to: Date): Promise<Ride[]> {
-  // TODO Día 2: cruzar con payment-service para detectar transacciones con
-  // status='failed' real. Por ahora retornamos vacío para no falsos positivos.
-  return [];
+export async function getFailedPayments(from: Date, to: Date): Promise<Ride[]> {
+  // FIX (12-jul): fuente real de pago fallido = captura de cobro digital que
+  // falló al completar el viaje (paymentCaptureStatus='failed', escrito por
+  // transport-service). Antes retornaba [] → el conteo de fallidos en los
+  // reportes de ingresos era siempre 0.
+  return mongoGetFailedCapturePayments(from, to);
 }
 
 export async function getPendingPayments(): Promise<Ride[]> {
