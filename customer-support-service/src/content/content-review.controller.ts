@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   NotFoundException,
@@ -77,6 +78,17 @@ export class ContentReviewController {
     @Body() _body: unknown,
   ): Promise<any> {
     const item = await this.content.setStatus(id, 'rejected', user?.email || user?.id, this.now());
+    if (!item) throw new NotFoundException('Propuesta no encontrada o ya resuelta');
+    return item;
+  }
+
+  /** Override de foto/video antes de aprobar. Body: { coverUrl?, videoUrl? }. */
+  @Patch(':id/media')
+  async media(
+    @Param('id') id: string,
+    @Body() body: { coverUrl?: string | null; videoUrl?: string | null },
+  ): Promise<any> {
+    const item = await this.content.updateMedia(id, body ?? {});
     if (!item) throw new NotFoundException('Propuesta no encontrada o ya resuelta');
     return item;
   }

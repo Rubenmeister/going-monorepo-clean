@@ -21,6 +21,7 @@ interface Editorial {
   id: string; channel: string; title: string; summary: string; body: string;
   outline: string[]; category: string; sources: (string | { title?: string; url?: string })[];
   cta: string; author: string; createdAt: string | null;
+  coverUrl?: string | null; coverCredit?: string | null; videoUrl?: string | null;
 }
 
 interface Social {
@@ -122,6 +123,25 @@ export default function ComunicacionPage() {
     }
   };
 
+  const saveMedia = async (id: string, coverUrl: string, videoUrl: string) => {
+    setBusy((b) => ({ ...b, [`m_${id}`]: true }));
+    try {
+      const res = await fetch(`/api/content/${id}/media`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coverUrl: coverUrl || null, videoUrl: videoUrl || null }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const updated = await res.json();
+      setEditorial((l) => l.map((it) => (it.id === id ? { ...it, ...updated } : it)));
+      flash('🖼️ Media actualizada.');
+    } catch (e) {
+      flash(`⚠️ No se pudo guardar la media: ${(e as Error).message}`);
+    } finally {
+      setBusy((b) => ({ ...b, [`m_${id}`]: false }));
+    }
+  };
+
   const decideSocial = async (id: string, action: 'approve' | 'reject') => {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
@@ -194,6 +214,7 @@ export default function ComunicacionPage() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-1.5">{it.title}</h2>
                     {it.summary && <p className="text-gray-600 mb-3">{it.summary}</p>}
+                    <MediaEditor item={it} onSave={saveMedia} busy={!!busy[`m_${it.id}`]} />
                     {it.outline?.length > 0 && (
                       <ul className="mb-3 space-y-1">
                         {it.outline.map((o, i) => <li key={i} className="text-sm text-gray-500 flex gap-2"><span className="text-gray-300">›</span>{o}</li>)}
@@ -261,6 +282,39 @@ export default function ComunicacionPage() {
         )}
       </div>
     </AdminLayout>
+  );
+}
+
+function MediaEditor({
+  item,
+  onSave,
+  busy,
+}: {
+  item: { id: string; coverUrl?: string | null; coverCredit?: string | null; videoUrl?: string | null };
+  onSave: (id: string, coverUrl: string, videoUrl: string) => void;
+  busy: boolean;
+}) {
+  const [cover, setCover] = useState(item.coverUrl ?? '');
+  const [video, setVideo] = useState(item.videoUrl ?? '');
+  return (
+    <div className="mb-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+      <div className="flex items-start gap-3">
+        {item.coverUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.coverUrl} alt="" className="w-24 h-16 object-cover rounded-lg flex-shrink-0" />
+        ) : (
+          <div className="w-24 h-16 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-[10px] flex-shrink-0">sin foto</div>
+        )}
+        <div className="flex-1 space-y-1.5 min-w-0">
+          <input value={cover} onChange={(e) => setCover(e.target.value)} placeholder="URL de la foto (Pexels/bucket)" className="w-full text-xs px-2 py-1.5 rounded border border-gray-200" />
+          <input value={video} onChange={(e) => setVideo(e.target.value)} placeholder="Link de YouTube (opcional)" className="w-full text-xs px-2 py-1.5 rounded border border-gray-200" />
+        </div>
+        <button disabled={busy} onClick={() => onSave(item.id, cover, video)} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 flex-shrink-0">
+          {busy ? '...' : 'Guardar'}
+        </button>
+      </div>
+      {item.coverCredit && <p className="text-[10px] text-gray-400 mt-1">{item.coverCredit}</p>}
+    </div>
   );
 }
 

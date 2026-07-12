@@ -138,9 +138,35 @@ export class ContentService {
       category: it.category ?? it.pilar ?? '',
       sources: it.fuentes ?? it.sources ?? [],
       cta: it.cta ?? '',
+      coverUrl: it.coverUrl ?? null,
+      coverCredit: it.coverCredit ?? null,
+      videoUrl: it.videoUrl ?? null,
       author: it.author ?? 'Going Ecuador',
       createdAt: it.createdAt ?? null,
     };
+  }
+
+  /** Override editorial de media (foto/video) antes de aprobar. Solo en revisión. */
+  async updateMedia(
+    id: string,
+    media: { coverUrl?: string | null; videoUrl?: string | null },
+  ): Promise<any | null> {
+    try {
+      const ref = this.db.collection('content_items').doc(id);
+      const doc = await ref.get();
+      if (!doc.exists) return null;
+      const data = doc.data() as any;
+      if (data.status !== 'review') return null;
+      const patch: any = {};
+      if (media.coverUrl !== undefined) patch.coverUrl = media.coverUrl || null;
+      if (media.videoUrl !== undefined) patch.videoUrl = media.videoUrl || null;
+      if (Object.keys(patch).length === 0) return this.toReview({ id, ...data });
+      await ref.update(patch);
+      return this.toReview({ id, ...data, ...patch });
+    } catch (e) {
+      this.logger.error(`updateMedia(${id}) fallo: ${(e as Error).message}`);
+      return null;
+    }
   }
 
   /** Proyección pública (no exponemos campos internos de revisión). */
