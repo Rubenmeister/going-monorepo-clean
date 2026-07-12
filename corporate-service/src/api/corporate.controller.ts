@@ -214,6 +214,17 @@ export class CorporateController {
     return { adminUserIds };
   }
 
+  /**
+   * POST /corporate/admins/migrate?dryRun=1 — SOLO staff Going. Siembra el admin
+   * inicial (usuario más antiguo) en cada empresa sin admins. dryRun=1 no escribe.
+   */
+  @Post('admins/migrate')
+  async migrateAdmins(@Req() req: Request, @Query('dryRun') dryRun?: string) {
+    this.requireAdmin(req);
+    const token = this.extractToken(req);
+    return this.svc.migrateCompanyAdmins(token, dryRun === '1' || dryRun === 'true');
+  }
+
   /** GET /corporate/employees */
   @Get('employees')
   async listEmployees(@Req() req: Request) {

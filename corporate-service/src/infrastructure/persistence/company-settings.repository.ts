@@ -14,6 +14,11 @@ export class CompanySettingsRepository {
     return this.model.findOne({ companyId }).lean().exec() as any;
   }
 
+  /** Todas las empresas con settings (para migración de admins). */
+  async findAll(): Promise<CompanySettingsSchema[]> {
+    return this.model.find().lean().exec() as any;
+  }
+
   async upsert(companyId: string, data: Partial<CompanySettingsSchema>): Promise<CompanySettingsSchema> {
     return this.model.findOneAndUpdate(
       { companyId },

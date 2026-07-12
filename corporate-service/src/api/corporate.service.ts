@@ -392,6 +392,54 @@ export class CorporateService {
     return next;
   }
 
+  /**
+   * MIGRACIÓN (Bloque 3 #5): siembra el admin inicial de cada empresa que aún no
+   * tiene ninguno = el usuario corporativo MÁS ANTIGUO. Idempotente (salta las que
+   * ya tienen admins). Usa el token del staff Going que lo dispara para consultar
+   * user-auth. Corre en dry-run si dryRun=true (no escribe, solo reporta).
+   */
+  async migrateCompanyAdmins(
+    token: string,
+    dryRun = false,
+  ): Promise<{ total: number; seeded: number; skipped: number; noUsers: number; dryRun: boolean; details: any[] }> {
+    const companies = (await this.settingsRepo.findAll().catch(() => [])) as any[];
+    const details: any[] = [];
+    let seeded = 0;
+    let skipped = 0;
+    let noUsers = 0;
+    for (const c of companies) {
+      const companyId = c.companyId;
+      if (Array.isArray(c.adminUserIds) && c.adminUserIds.length > 0) {
+        skipped++;
+        continue;
+      }
+      const users: any[] = await this.listEmployees(companyId, token).catch(() => []);
+      if (!users.length) {
+        noUsers++;
+        details.push({ companyId, result: 'sin usuarios corporativos' });
+        continue;
+      }
+      const earliest = [...users].sort(
+        (a, b) =>
+          new Date(a.createdAt ?? a.created_at ?? 0).getTime() -
+          new Date(b.createdAt ?? b.created_at ?? 0).getTime(),
+      )[0];
+      const adminId = String(earliest.id ?? earliest._id ?? earliest.userId ?? '');
+      if (!adminId) {
+        noUsers++;
+        details.push({ companyId, result: 'usuario sin id' });
+        continue;
+      }
+      if (!dryRun) {
+        await this.settingsRepo.upsert(companyId, { companyId, adminUserIds: [adminId] } as any);
+        this.logger.log(`[company-admin][migrate] ${companyId} → admin ${adminId}`);
+      }
+      seeded++;
+      details.push({ companyId, admin: adminId, wouldSeed: dryRun });
+    }
+    return { total: companies.length, seeded, skipped, noUsers, dryRun, details };
+  }
+
   // ── Travel Policy (Gap #2) ─────────────────────────────────────────────
 
   /**
