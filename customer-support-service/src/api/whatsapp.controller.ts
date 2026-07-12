@@ -339,14 +339,25 @@ export class WhatsAppController {
     }
     const header = req?.headers?.['x-hub-signature-256'];
     const raw = req?.rawBody;
-    if (typeof header !== 'string' || !header.startsWith('sha256=') || !raw || !Buffer.isBuffer(raw)) {
+    if (typeof header !== 'string' || !header.startsWith('sha256=')) {
+      // Sin header → típicamente un scan/test, NO un mensaje real de Meta.
+      this.logger.warn('[whatsapp][sig] sin header X-Hub-Signature-256 (probable scan/test)');
+      return false;
+    }
+    if (!raw || !Buffer.isBuffer(raw)) {
+      this.logger.warn('[whatsapp][sig] rawBody ausente — no se puede verificar');
       return false;
     }
     const expected = 'sha256=' + createHmac('sha256', secret).update(raw).digest('hex');
     try {
       const a = Buffer.from(header);
       const b = Buffer.from(expected);
-      return a.length === b.length && timingSafeEqual(a, b);
+      const ok = a.length === b.length && timingSafeEqual(a, b);
+      if (!ok) {
+        // Header PRESENTE pero no coincide → revisar FACEBOOK_APP_SECRET/HMAC ANTES de flip.
+        this.logger.warn('[whatsapp][sig] firma presente NO coincide — revisar secret/HMAC antes de enforce');
+      }
+      return ok;
     } catch {
       return false;
     }

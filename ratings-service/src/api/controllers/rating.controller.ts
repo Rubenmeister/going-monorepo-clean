@@ -207,7 +207,13 @@ export class RatingController {
   }
 
   @Get('user/:userId/ratings-given')
-  async getUserRatingsGiven(@Param('userId') userId: string) {
+  @UseGuards(JwtAuthGuard)
+  async getUserRatingsGiven(@Param('userId') userId: string, @CurrentUser() user: any) {
+    // Bloque 3 (#23): solo el propio usuario o un admin ve las reseñas que dio alguien.
+    const roles: string[] = user?.roles ?? [];
+    if (String(user?.id) !== String(userId) && !roles.includes('admin')) {
+      throw new ForbiddenException('No puedes ver las reseñas de otro usuario');
+    }
     const ratings = await this.ratingRepository.findByRater(userId, 20);
     return { statusCode: HttpStatus.OK, data: ratings };
   }
