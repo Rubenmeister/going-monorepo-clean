@@ -35,7 +35,7 @@ Siempre escribe en español ecuatoriano (tuteo). Máximo 1-2 oraciones de hashta
 Nunca uses más de 5 hashtags en Instagram/Facebook. En X máximo 3.
 `;
 
-const BASE_HASHTAGS = ['#Going App', '#GoingEc', '#TransporteSeguro', '#Ecuador'];
+const BASE_HASHTAGS = ['#GoingApp', '#GoingEc', '#TransporteSeguro', '#Ecuador'];
 const ROUTE_HASHTAGS = ['#ViajeSeguro', '#TravelEcuador', '#RoadTrip'];
 const DRIVER_HASHTAGS = ['#ConductoresGoing', '#TeamGoing', '#Conductores'];
 const PROMO_HASHTAGS = ['#Oferta', '#Descuento', '#ViajaMás'];
