@@ -58,18 +58,34 @@ export function ArticleView({
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white py-14">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <Link href={backHref} className="text-primary-100 hover:text-white mb-4 inline-block">
+      {/* Norma de diseño: la foto ocupa toda la banda superior con el título encima. */}
+      <div
+        className={`relative text-white ${
+          item.coverUrl ? 'min-h-[20rem] md:min-h-[30rem]' : 'bg-gradient-to-r from-primary-500 to-accent-500 py-16'
+        }`}
+      >
+        {item.coverUrl && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={item.coverUrl} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25" />
+          </>
+        )}
+        <div
+          className={`relative container mx-auto px-4 max-w-3xl ${
+            item.coverUrl ? 'flex flex-col justify-end min-h-[20rem] md:min-h-[30rem] pb-10 pt-16' : ''
+          }`}
+        >
+          <Link href={backHref} className="text-white/80 hover:text-white mb-4 inline-block drop-shadow">
             ← {backLabel}
           </Link>
           {item.category && (
-            <span className="inline-block text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full mb-3">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full mb-3 w-fit">
               {item.category}
             </span>
           )}
-          <h1 className="text-3xl md:text-5xl font-bold mb-3 text-balance">{item.title}</h1>
-          <div className="flex items-center gap-3 text-primary-100 text-sm">
+          <h1 className="text-3xl md:text-5xl font-bold mb-3 text-balance drop-shadow-lg">{item.title}</h1>
+          <div className="flex items-center gap-3 text-white/85 text-sm drop-shadow">
             <span>{item.author}</span>
             {date && (
               <>
@@ -80,17 +96,6 @@ export function ArticleView({
           </div>
         </div>
       </div>
-
-      {item.coverUrl && (
-        <div className="container mx-auto px-4 max-w-3xl -mt-8 mb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={item.coverUrl}
-            alt={item.title}
-            className="w-full h-64 md:h-96 object-cover rounded-2xl shadow-lg"
-          />
-        </div>
-      )}
 
       <article className="container mx-auto px-4 py-12 max-w-3xl">
         {item.summary && (
