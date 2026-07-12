@@ -1,4 +1,6 @@
-import { Controller, Post, Get, Body, Query, Res, Logger, HttpCode } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, Req, Res, Logger, HttpCode, UseGuards } from '@nestjs/common';
+import { createHmac, timingSafeEqual } from 'crypto';
+import { AdminOrInternalGuard } from '../infrastructure/auth/jwt.guard';
 import { AgentService } from '../agent/agent.service';
 import { ConversationService } from '../agent/conversation.service';
 import { ConfigService } from '@nestjs/config';
@@ -38,6 +40,7 @@ export class WhatsAppController {
   // recibir mensajes en producción. Útil tras renovar el token o
   // cambiar de número.
   @Get('diagnose')
+  @UseGuards(AdminOrInternalGuard) // Bloque 3: filtraba token/metadata del número
   async diagnose() {
     const token       = this.config.get<string>('META_WA_ACCESS_TOKEN');
     const phoneId     = this.config.get<string>('WHATSAPP_PHONE_NUMBER_ID');
@@ -133,6 +136,7 @@ export class WhatsAppController {
 
   // ─── Guía paso a paso de setup ───────────────────────────────
   @Get('setup-help')
+  @UseGuards(AdminOrInternalGuard) // Bloque 3: exponía guía/config interna
   setupHelp() {
     return {
       passos: [
@@ -173,9 +177,20 @@ export class WhatsAppController {
   // ─── Incoming messages (Meta POST) ───────────────────────────
   @Post('webhook')
   @HttpCode(200)
-  async handleMessage(@Body() body: any, @Res() res: any) {
+  async handleMessage(@Body() body: any, @Req() req: any, @Res() res: any) {
     // Always respond 200 immediately so Meta doesn't retry
     res.status(200).send('EVENT_RECEIVED');
+
+    // Bloque 3: verifica la firma X-Hub-Signature-256 de Meta. Rollout monitoreado:
+    // loguea siempre; SOLO descarta el payload si WHATSAPP_ENFORCE_SIGNATURE=1
+    // (tras confirmar en logs que los mensajes reales de Meta validan).
+    const sigOk = this.verifyWebhookSignature(req);
+    if (!sigOk) {
+      this.logger.warn('[whatsapp] webhook con firma inválida o ausente');
+      if (process.env.WHATSAPP_ENFORCE_SIGNATURE === '1') {
+        return; // fail-closed: no procesamos payload no firmado por Meta
+      }
+    }
 
     try {
       const entry = body?.entry?.[0];
@@ -301,11 +316,39 @@ export class WhatsAppController {
     });
   }
 
+  // Bloque 3: envío saliente desde el número oficial — SOLO admin/servicio interno.
+  // Antes sin guard: cualquiera desde internet mandaba WhatsApp a cualquier número.
   @Post('operator-message')
+  @UseGuards(AdminOrInternalGuard)
   async operatorMessage(@Body() body: { userId: string; message: string; operatorId: string }) {
     const { userId, message, operatorId } = body;
-    this.conversationService.addMessage(userId, 'assistant', `[Operador ${operatorId}]: ${message}`);
+    if (typeof userId !== 'string' || typeof message !== 'string' || !userId || !message) {
+      return { ok: false, error: 'invalid_payload' };
+    }
+    this.conversationService.addMessage(userId, 'assistant', `[Operador ${operatorId ?? 'ops'}]: ${message}`);
     await this.whatsappService.sendText(userId, message);
     return { ok: true };
+  }
+
+  /** Verifica la firma HMAC-SHA256 del webhook de Meta contra FACEBOOK_APP_SECRET. */
+  private verifyWebhookSignature(req: any): boolean {
+    const secret = process.env.FACEBOOK_APP_SECRET;
+    if (!secret) {
+      this.logger.warn('[whatsapp] FACEBOOK_APP_SECRET no configurado — firma no verificable');
+      return false;
+    }
+    const header = req?.headers?.['x-hub-signature-256'];
+    const raw = req?.rawBody;
+    if (typeof header !== 'string' || !header.startsWith('sha256=') || !raw || !Buffer.isBuffer(raw)) {
+      return false;
+    }
+    const expected = 'sha256=' + createHmac('sha256', secret).update(raw).digest('hex');
+    try {
+      const a = Buffer.from(header);
+      const b = Buffer.from(expected);
+      return a.length === b.length && timingSafeEqual(a, b);
+    } catch {
+      return false;
+    }
   }
 }

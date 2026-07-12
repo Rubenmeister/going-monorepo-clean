@@ -29,7 +29,9 @@ async function bootstrap() {
   }
 
   // ── 2) Bootstrap normal de Nest.
-  const app = await NestFactory.create(AppModule);
+  // rawBody:true → guarda el buffer crudo del body para verificar la firma
+  // X-Hub-Signature-256 del webhook de Meta (Bloque 3).
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const port = process.env.PORT || 3013;
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
