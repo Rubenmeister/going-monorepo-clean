@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { BookingWidget } from './components/BookingWidget';
+import { AgentSystem } from './components/AgentSystem';
 
 /* ── Data ─────────────────────────────────────────────────────── */
 const SERVICES = [
@@ -378,6 +379,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* La tecnología detrás de Going — sistema agéntico (cerebro + 7 agentes) */}
+      <AgentSystem />
     </>
   );
 }
