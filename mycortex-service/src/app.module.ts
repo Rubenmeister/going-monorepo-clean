@@ -15,10 +15,12 @@ import { HealthController } from './api/health.controller';
 import { MyCortexController } from './api/mycortex.controller';
 import { IntentionSchema } from './infrastructure/schemas/intention.schema';
 import { CortexConfig, CortexConfigSchema } from './infrastructure/schemas/cortex-config.schema';
+import { BusinessContext, BusinessContextSchema } from './infrastructure/schemas/business-context.schema';
 import { MemoryRollupSchema } from './infrastructure/schemas/memory-rollup.schema';
 import { ConfigAuditSchema } from './infrastructure/schemas/config-audit.schema';
 import { IntentionRepository } from './infrastructure/persistence/intention.repository';
 import { CortexConfigRepository } from './infrastructure/persistence/cortex-config.repository';
+import { BusinessContextRepository } from './infrastructure/persistence/business-context.repository';
 import { MemoryRollupRepository } from './infrastructure/persistence/memory-rollup.repository';
 import { ConfigAuditRepository } from './infrastructure/persistence/config-audit.repository';
 import { WorldSnapshotClient } from './reasoning/world-snapshot.client';
@@ -27,6 +29,7 @@ import { PromptBuilderService } from './reasoning/prompt-builder.service';
 import { IntentionsParserService } from './reasoning/intentions-parser.service';
 import { TelegramReporterService } from './reasoning/telegram-reporter.service';
 import { CortexConfigService } from './reasoning/cortex-config.service';
+import { BusinessContextService } from './reasoning/business-context.service';
 import { ReasoningLoopService } from './reasoning/reasoning-loop.service';
 import { MemoryRollupService } from './reasoning/memory-rollup.service';
 import { AnomalyRulesService } from './reasoning/anomaly-rules.service';
@@ -48,10 +51,11 @@ import { AnomalyRulesService } from './reasoning/anomaly-rules.service';
       },
     ),
     MongooseModule.forFeature([
-      { name: 'Intention',          schema: IntentionSchema },
-      { name: CortexConfig.name,    schema: CortexConfigSchema },
-      { name: 'MemoryRollup',       schema: MemoryRollupSchema },
-      { name: 'ConfigAudit',        schema: ConfigAuditSchema },
+      { name: 'Intention',           schema: IntentionSchema },
+      { name: CortexConfig.name,     schema: CortexConfigSchema },
+      { name: BusinessContext.name,  schema: BusinessContextSchema },
+      { name: 'MemoryRollup',        schema: MemoryRollupSchema },
+      { name: 'ConfigAudit',         schema: ConfigAuditSchema },
     ]),
   ],
   controllers: [
@@ -61,11 +65,13 @@ import { AnomalyRulesService } from './reasoning/anomaly-rules.service';
   providers: [
     IntentionRepository,
     CortexConfigRepository,
+    BusinessContextRepository,
     MemoryRollupRepository,
     ConfigAuditRepository,
     WorldSnapshotClient,
     AnthropicClient,
     CortexConfigService,
+    BusinessContextService,
     PromptBuilderService,
     IntentionsParserService,
     TelegramReporterService,

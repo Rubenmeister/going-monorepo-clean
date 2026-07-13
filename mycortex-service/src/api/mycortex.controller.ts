@@ -4,6 +4,8 @@ import { IntentionRepository } from '../infrastructure/persistence/intention.rep
 import { ReasoningLoopService } from '../reasoning/reasoning-loop.service';
 import { CortexConfigRepository } from '../infrastructure/persistence/cortex-config.repository';
 import { CortexConfigService } from '../reasoning/cortex-config.service';
+import { BusinessContextRepository } from '../infrastructure/persistence/business-context.repository';
+import { BusinessContextService } from '../reasoning/business-context.service';
 import { PromptBuilderService } from '../reasoning/prompt-builder.service';
 import { MemoryRollupRepository } from '../infrastructure/persistence/memory-rollup.repository';
 import { MemoryRollupService } from '../reasoning/memory-rollup.service';
@@ -28,6 +30,8 @@ export class MyCortexController {
     private readonly loop:           ReasoningLoopService,
     private readonly configRepo:     CortexConfigRepository,
     private readonly configCache:    CortexConfigService,
+    private readonly bizContextRepo: BusinessContextRepository,
+    private readonly bizContextCache: BusinessContextService,
     private readonly promptBuilder:  PromptBuilderService,
     private readonly rollupRepo:     MemoryRollupRepository,
     private readonly rollupSvc:      MemoryRollupService,
@@ -130,6 +134,44 @@ export class MyCortexController {
   @Get('config/default')
   getConfigDefault() {
     return { systemPrompt: this.promptBuilder.getDefaultSystemPrompt() };
+  }
+
+  // ─── Constitución del negocio (Fase 1 upgrade agéntico) ─────
+  //
+  // Contexto autoritativo de cómo opera Going, inyectado en cada razonamiento.
+  // Editable desde admin-dashboard sin redeploy (cache 60s en el loop).
+
+  @Get('business-context')
+  async getBusinessContext() {
+    const doc = await this.bizContextRepo.findOrCreate();
+    return {
+      _id:       doc._id,
+      body:      doc.body ?? '',
+      updatedAt: doc.updatedAt ?? null,
+      updatedBy: doc.updatedBy ?? null,
+    };
+  }
+
+  @Get('business-context/default')
+  getBusinessContextDefault() {
+    return { body: this.promptBuilder.getDefaultBusinessContext() };
+  }
+
+  @Put('business-context')
+  @HttpCode(200)
+  async updateBusinessContext(@Body() body: { body?: string; updatedBy?: string }) {
+    const updated = await this.bizContextRepo.update({
+      body:      body.body,
+      updatedBy: body.updatedBy ?? 'admin-dashboard',
+    });
+    this.bizContextCache.invalidate();
+    return {
+      ok:        true,
+      _id:       updated._id,
+      body:      updated.body ?? '',
+      updatedAt: updated.updatedAt ?? null,
+      updatedBy: updated.updatedBy ?? null,
+    };
   }
 
   /**

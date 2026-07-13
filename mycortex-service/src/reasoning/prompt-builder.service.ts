@@ -3,6 +3,7 @@ import { WorldSnapshot } from './world-snapshot.client';
 import { IntentionEntity } from '../infrastructure/schemas/intention.schema';
 import { MemoryRollupEntity } from '../infrastructure/schemas/memory-rollup.schema';
 import { CortexConfigService } from './cortex-config.service';
+import { BusinessContextService } from './business-context.service';
 
 /**
  * Construye los prompts (system + user) que se envían a Claude.
@@ -20,7 +21,10 @@ import { CortexConfigService } from './cortex-config.service';
 export class PromptBuilderService {
   private readonly logger = new Logger(PromptBuilderService.name);
 
-  constructor(private readonly configService: CortexConfigService) {}
+  constructor(
+    private readonly configService: CortexConfigService,
+    private readonly businessContextService: BusinessContextService,
+  ) {}
 
   /**
    * System prompt de MyCortex. Define rol, capas del sistema, qué hacer y
@@ -33,6 +37,7 @@ export class PromptBuilderService {
    * si el prompt vino de DB o del default.
    */
   async buildSystemPrompt(): Promise<string> {
+    let rolePrompt = DEFAULT_SYSTEM_PROMPT;
     try {
       const config = await this.configService.get();
       const custom = (config.systemPrompt ?? '').trim();
@@ -40,9 +45,8 @@ export class PromptBuilderService {
         // Sanity check: si alguien guardó algo absurdamente corto (e.g. ""),
         // ignoramos y usamos default. 100 chars es un floor razonable —
         // un prompt útil nunca es así de corto.
-        return custom;
-      }
-      if (custom.length > 0) {
+        rolePrompt = custom;
+      } else if (custom.length > 0) {
         this.logger.warn(
           `Prompt custom muy corto (${custom.length} chars) — usando default por seguridad`,
         );
@@ -50,12 +54,41 @@ export class PromptBuilderService {
     } catch (e) {
       this.logger.warn(`Error leyendo cortex config: ${(e as Error).message} — usando default`);
     }
-    return DEFAULT_SYSTEM_PROMPT;
+    // Constitución del negocio: se ANEXA al system prompt (estable entre runs →
+    // la retiene el prompt-cache de Anthropic). Es autoritativa: el cerebro razona
+    // con las reglas reales de Going en vez de re-adivinarlas.
+    return `${rolePrompt}\n\n${await this.buildBusinessContextBlock()}`;
+  }
+
+  /**
+   * Bloque autoritativo de la constitución del negocio. Lee el override de Mongo
+   * (editable en admin-dashboard); si está vacío o muy corto, cae al
+   * DEFAULT_BUSINESS_CONTEXT. Best-effort: nunca tira.
+   */
+  private async buildBusinessContextBlock(): Promise<string> {
+    let body = DEFAULT_BUSINESS_CONTEXT;
+    try {
+      const doc = await this.businessContextService.get();
+      const custom = (doc.body ?? '').trim();
+      if (custom.length > 50) body = custom;
+    } catch (e) {
+      this.logger.warn(`Error leyendo business context: ${(e as Error).message} — usando default`);
+    }
+    return (
+      `--- CONSTITUCIÓN DEL NEGOCIO (autoritativo — respétalo siempre) ---\n` +
+      `${body}\n` +
+      `--- FIN DE LA CONSTITUCIÓN ---`
+    );
   }
 
   /** Útil para mostrar el default en la UI (botón "restaurar default"). */
   getDefaultSystemPrompt(): string {
     return DEFAULT_SYSTEM_PROMPT;
+  }
+
+  /** Default de la constitución del negocio (botón "restaurar default" en la UI). */
+  getDefaultBusinessContext(): string {
+    return DEFAULT_BUSINESS_CONTEXT;
   }
 
   /**
@@ -374,3 +407,48 @@ preocupantes), emite un array vacío \`[]\`. NO inventes intenciones por
 inventar.
 
 Máximo 5 intenciones por ciclo. Calidad > cantidad.`;
+
+// ─── Constitución del negocio (default) ───────────────────────
+//
+// Reglas AUTORITATIVAS de cómo opera Going. Editable en runtime desde
+// admin-dashboard (colección Mongo business_context); esto es el fallback.
+// Fuente: CLAUDE.md + modelo de operación + specs de precios/zonas/alertas.
+
+const DEFAULT_BUSINESS_CONTEXT = `## Modelo de operación de viajes
+- INTERCITY (entre ciudades): programado, SIN matching inmediato, tarifa FIJA
+  (sin surge). Asignación el día anterior.
+- INTRACIUDAD (urbano): matching on-demand al conductor más cercano, tarifa
+  dinámica (taxímetro). Oferta secuencial al más cercano (15s → siguiente).
+- Foco de producto actual: lanzar VIAJES COMPARTIDOS (modelo conductor por ruta/
+  día/hora; arranque Quito-aeropuerto desde Riobamba/Sto. Domingo/Tulcán).
+
+## Precios (reglas de dominio)
+- Corporativo: +25% de RECARGO (NO descuento).
+- Envíos: solo vehículos SUV / SUV-XL.
+- Intercity: precios FIJOS del Excel del fundador, sin surge, sin +$5/×4.
+- La fuente única de tarifas es el Excel del fundador; no inventar precios.
+
+## Seguridad — zonas rojas Quito (aviso al conductor)
+Zonas: Sur (Quitumbe/Guamaní), Norte (La Roldós/Comité del Pueblo), Centro
+(San Roque/La Marín/Panecillo), Vías (Cumbayá/Ruta Viva/Simón Bolívar).
+Criterios COMBINADOS: hora > 20:00 + perfil de pasajero (<4.75★ o cuenta nueva)
++ ventanas/seguros + comunidades. Escalar aviso por hora y por perfil.
+
+## Alertas obligatorias del viaje (NO consolidar — cada una es propia)
+24h antes, 1h antes, 5min antes (crons) + 10min, 3min, "llegó" (gateway).
+Son 6 alertas obligatorias; ninguna se elimina ni se fusiona.
+
+## Lenguaje
+Español NEUTRO de Ecuador — NUNCA rioplatense/voseo. Usar "tú" (no "vos"),
+imperativos estándar ("carga/envía/revisa"). Inclusivo SIEMPRE ("conductora o
+conductor", "viajeras y viajeros").
+
+## Infraestructura (stack autorizada, going-5d1ae)
+Solo Cloud Run (us-central1) + MongoDB Atlas + Redis Labs + Secret Manager +
+Cloud Logging/Monitoring. PROHIBIDO proponer GKE/k8s, VPC connectors extra,
+Cloud SQL, Elastic/Grafana/Prometheus auto-hosteados. Cloud Run cumple el caso.
+
+## Qué NO hacer
+- No proponer migraciones de infra que pisen la stack autorizada.
+- No tratar a Going como si fuera MyCortex o PYMEX: son apps independientes.
+- No inventar datos ni precios que no estén en el snapshot o en esta constitución.`;
