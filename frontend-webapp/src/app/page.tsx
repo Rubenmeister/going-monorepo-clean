@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, type ReactElement, type MouseEvent } from 
 import Link from 'next/link';
 import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
+import { AgentSystem } from './components/AgentSystem';
 import { WebAppInstallBadge } from './components/WebAppInstallBadge';
 import { COLORS } from './components/design-tokens';
 import {
@@ -1520,6 +1521,9 @@ export default function HomePage() {
 
           {/* ── REVIEWS / VALORACIONES ── */}
           <ReviewsList />
+
+          {/* ── LA TECNOLOGÍA DETRÁS DE GOING (cerebro + 7 agentes) ── */}
+          <AgentSystem />
         </>
       )}
     </>
