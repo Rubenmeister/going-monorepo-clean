@@ -37,8 +37,18 @@ Cobertura por dominio (estado real hoy):
   de marketing (Sumak) está a medias → **reforzarlo + darle playbooks** es requisito.
 - **Contenido (Killa)** — 🟢 fuerte.
 - **Móvil (Quinde) / Frontend (Kuntur)** — 🟡 salud/uptime (calidad, no ventas).
-- **B2B / empresas** — 🔴 **sin agente dedicado**. Si el corporativo también debe
-  mejorar decisiones/ventas, es un dominio NUEVO a sumar (agente + data + playbooks).
+- **B2B / empresas** — 🟡 dominio NUEVO a sumar con una LENTE PROPIA (Rubén 13-jul):
+  Empresas es una extensión dentro de la PC del cliente para **reservar solo, sin
+  llamar a Going** (autoservicio). Su capa inteligente **NO sirve a la empresa**
+  (a diferencia de PYMEX, que sirve al cliente) — **sirve a GOING**: observa los
+  pedidos corporativos y nos da la data para (a) impulsar ventas en esa empresa
+  (promos/incentivos a medida) y (b) **replicar lo que funcionó en otras empresas**.
+  Wiring: `corporate-service` emite señales de reservas al cerebro (publishAgentRunEvent,
+  como los otros agentes) → playbook de **crecimiento B2B** (promo por caída de uso,
+  paquete recurrente por patrón de ruta, upsell por horario) → jugadas al equipo de
+  Going (brief/Telegram), NO a la empresa → **replicación cross-empresa = el pilar de
+  "sabiduría de otros", ahora B2B** (el moat corporativo). El producto Empresas en sí
+  ya está ~95% (ver docs/GOING-EMPRESAS — embudo + menores en curso).
 
 Límite honesto: el cerebro NO edita las apps (webapp/móvil). Mejora DECISIONES y
 ejecuta ACCIONES (asignación, cobros, reactivación, bonos) y lo resume en el brief.

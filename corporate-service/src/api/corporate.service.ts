@@ -12,6 +12,8 @@ import { CorporateInvoiceRepository } from '../infrastructure/persistence/corpor
 import { TeamInvitationRepository } from '../infrastructure/persistence/team-invitation.repository';
 import { QuoteRepository } from '../infrastructure/persistence/quote.repository';
 import { DashcamClipRequestRepository } from '../infrastructure/persistence/dashcam-clip-request.repository';
+import { CompanyApplicationRepository } from '../infrastructure/persistence/company-application.repository';
+import { isValidEcuadorianRuc } from './ruc.validator';
 import {
   computePeriodSpend,
   checkBudget,
@@ -39,6 +41,7 @@ export class CorporateService {
   private readonly billingUrl: string;
   private readonly analyticsUrl: string;
   private readonly authUrl: string;
+  private readonly notificationsUrl: string;
 
   constructor(
     private readonly settingsRepo: CompanySettingsRepository,
@@ -48,11 +51,101 @@ export class CorporateService {
     private readonly invitationRepo: TeamInvitationRepository,
     private readonly quoteRepo: QuoteRepository,
     private readonly clipRequestRepo: DashcamClipRequestRepository,
+    private readonly applicationRepo: CompanyApplicationRepository,
   ) {
     this.bookingUrl  = process.env.BOOKING_SERVICE_URL  || 'http://localhost:3005';
     this.billingUrl  = process.env.BILLING_SERVICE_URL  || 'http://localhost:3008';
     this.analyticsUrl = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3009';
     this.authUrl     = process.env.AUTH_SERVICE_URL     || 'http://localhost:3001';
+    this.notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || process.env.NOTIFICATION_SERVICE_URL || '';
+  }
+
+  // ── Solicitudes de alta (embudo B2B — antes se perdían in-memory) ────────
+
+  /**
+   * Crea una solicitud de alta de empresa (prospecto). PÚBLICO (sin auth): lo
+   * llama el formulario del sitio. Valida RUC (formato+checksum), deduplica
+   * solicitudes abiertas por RUC/email, persiste y avisa a ventas (best-effort).
+   */
+  async createApplication(input: {
+    razonSocial: string;
+    ruc: string;
+    tipoCuenta?: string;
+    contactoNombre: string;
+    contactoEmail: string;
+    contactoTelefono?: string;
+    ciudad?: string;
+    empleadosEstimados?: number;
+    notas?: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    const email = input.contactoEmail.trim().toLowerCase();
+    const ruc = input.ruc.trim();
+    const rucValido = isValidEcuadorianRuc(ruc);
+
+    const existing = await this.applicationRepo.findOpenByRucOrEmail(ruc, email);
+    if (existing) {
+      // Idempotente para el prospecto: no crea duplicados ni le muestra error.
+      return { id: (existing as any)._id?.toString?.() ?? '', estado: existing.estado, rucValido: existing.rucValido, duplicate: true };
+    }
+
+    const doc = await this.applicationRepo.create({
+      razonSocial: input.razonSocial.trim(),
+      ruc,
+      tipoCuenta: input.tipoCuenta || 'negocio',
+      contactoNombre: input.contactoNombre.trim(),
+      contactoEmail: email,
+      contactoTelefono: (input.contactoTelefono || '').trim(),
+      ciudad: (input.ciudad || '').trim(),
+      empleadosEstimados: Number(input.empleadosEstimados) || undefined,
+      notas: (input.notas || '').trim(),
+      estado: 'prospect',
+      rucValido,
+      metadata: input.metadata || {},
+    });
+    const id = (doc as any)._id?.toString?.() ?? '';
+
+    // Aviso a ventas (best-effort — nunca rompe el alta del prospecto).
+    void this.notifySales(
+      `🏢 Nueva solicitud de empresa: *${input.razonSocial}* (RUC ${ruc}${rucValido ? '' : ' ⚠️ inválido'}). ` +
+      `Contacto: ${input.contactoNombre} · ${email}${input.contactoTelefono ? ' · ' + input.contactoTelefono : ''}.`,
+    ).catch(() => undefined);
+
+    this.logger.log(`Nueva solicitud de empresa: ${input.razonSocial} (RUC ${ruc}, válido=${rucValido})`);
+    return { id, estado: 'prospect', rucValido, duplicate: false };
+  }
+
+  async listApplications(estado?: string, limit = 200) {
+    const apps = await this.applicationRepo.findAll(estado, limit);
+    return { applications: apps, total: apps.length };
+  }
+
+  /** Cambia el estado de una solicitud (contacted/approved/rejected). Admin. */
+  async decideApplication(id: string, estado: string, decidedBy: string, companyId?: string) {
+    if (!['contacted', 'approved', 'rejected'].includes(estado)) {
+      throw new BadRequestException('estado debe ser contacted|approved|rejected');
+    }
+    const app = await this.applicationRepo.findById(id);
+    if (!app) throw new NotFoundException('solicitud no encontrada');
+    const updated = await this.applicationRepo.updateStatus(id, { estado, decididoPor: decidedBy, companyId });
+    return { ok: true, application: updated };
+  }
+
+  /** Envío best-effort de una alerta a ventas vía notifications-service. */
+  private async notifySales(message: string): Promise<void> {
+    if (!this.notificationsUrl) {
+      this.logger.warn(`NOTIFICATIONS_SERVICE_URL no configurada — aviso a ventas solo en log: ${message}`);
+      return;
+    }
+    try {
+      await fetch(`${this.notificationsUrl}/notifications/internal/sales`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: 'sales', message }),
+      });
+    } catch (e) {
+      this.logger.warn(`notifySales falló (best-effort): ${(e as Error).message}`);
+    }
   }
 
   // ── Stats ──────────────────────────────────────────────────────────────
@@ -761,9 +854,40 @@ export class CorporateService {
       `Invitation ${invitationId} for ${invitation.email} role=${invitation.role} (link: ${inviteLink})`,
     );
 
-    // TODO: trigger email via notifications-service:
-    //   POST notifications-url/notifications/send with template "corporate_invite"
+    // Email de invitación (best-effort) — nunca rompe la creación de la invitación.
+    // Si no hay notifications-service configurado, la empresa comparte el link manual.
+    void this.sendInviteEmail(invitation.email, {
+      firstName: invitation.firstName || '',
+      role: invitation.role,
+      inviteLink,
+    }).catch(() => undefined);
+
     return { invitationId, email: invitation.email, inviteLink };
+  }
+
+  /** Envía el email de invitación al equipo corporativo (best-effort). */
+  private async sendInviteEmail(
+    to: string,
+    ctx: { firstName: string; role: string; inviteLink: string },
+  ): Promise<void> {
+    if (!this.notificationsUrl) {
+      this.logger.warn(`NOTIFICATIONS_SERVICE_URL no configurada — invitación solo por link manual (${to})`);
+      return;
+    }
+    try {
+      await fetch(`${this.notificationsUrl}/notifications/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: 'email',
+          to,
+          template: 'corporate_invite',
+          data: { firstName: ctx.firstName, role: ctx.role, inviteLink: ctx.inviteLink },
+        }),
+      });
+    } catch (e) {
+      this.logger.warn(`sendInviteEmail falló (best-effort): ${(e as Error).message}`);
+    }
   }
 
   // ── Quotes (cotizaciones) ──────────────────────────────────────────────

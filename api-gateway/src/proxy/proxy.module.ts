@@ -390,6 +390,15 @@ export class ProxyModule implements NestModule {
     // alimentan estadísticas y toma de decisiones (admin-dashboard, app).
     guard('ratings', svc.ratings);
     guard('social', svc.social);
+    // /corporate/public/* — alta pública de empresas (prospectos B2B) SIN login.
+    // El formulario del sitio postea aquí para persistir la solicitud. Se registra
+    // ANTES que guard('corporate') para tener precedencia (igual que ratings/public):
+    // el forward responde directo y el guard JWT nunca corre para esta subruta.
+    if (svc.corporate) {
+      consumer
+        .apply(makeForwardMiddleware(svc.corporate, 'corporate'))
+        .forRoutes({ path: 'corporate/public/*path', method: RequestMethod.ALL });
+    }
     guard('corporate', svc.corporate);
 
     // /sos y /incidents → emergency-service. Auth JWT en ambos (la propia

@@ -450,6 +450,31 @@ export class CorporateController {
     return this.svc.updateCompanyStatus(token, id, body.status, userId);
   }
 
+  // ── Solicitudes de alta (embudo B2B — ventas las revisa aquí) ────────────
+
+  /** GET /corporate/applications?estado=prospect — solicitudes de prospectos. */
+  @Get('applications')
+  async listApplications(
+    @Req() req: Request,
+    @Query('estado') estado?: string,
+    @Query('limit') limit = '200',
+  ) {
+    this.requireAdmin(req);
+    return this.svc.listApplications(estado, +limit);
+  }
+
+  /** PATCH /corporate/applications/:id/status — contacted | approved | rejected. */
+  @Patch('applications/:id/status')
+  async decideApplication(
+    @Param('id') id: string,
+    @Body() body: { estado: string; companyId?: string },
+    @Req() req: Request,
+  ) {
+    this.requireAdmin(req);
+    const userId = this.extractUserId(req);
+    return this.svc.decideApplication(id, body?.estado, userId, body?.companyId);
+  }
+
   // ── helpers ────────────────────────────────────────────────────────────
 
   private extractToken(req: Request): string {

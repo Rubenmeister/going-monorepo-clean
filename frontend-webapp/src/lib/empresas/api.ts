@@ -121,17 +121,19 @@ export async function fetchDashboardStats(token: string): Promise<DashboardStats
 
 // ── Solicitudes ─────────────────────────────────────────────────────────────
 
-// Solicitudes
+// Solicitudes — alta pública de empresa (prospecto). Ahora PERSISTE en el
+// corporate-service vía el endpoint público del gateway (antes iba a una ruta
+// Next mock in-memory que perdía los prospectos en cada reinicio).
 export async function crearSolicitudEmpresa(data: any): Promise<any> {
-  const res = await fetch("/api/v1/empresas/solicitudes", {
+  const res = await fetch(`${API_BASE_URL}/corporate/public/applications`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API ${res.status}: ${text}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`No se pudo enviar la solicitud (${res.status}). ${text.slice(0, 200)}`);
   }
 
   return res.json();

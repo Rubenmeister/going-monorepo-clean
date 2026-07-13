@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CorporateController } from './api/corporate.controller';
+import { CorporatePublicController } from './api/corporate-public.controller';
 import { HealthController } from './api/health.controller';
 import { CorporateService } from './api/corporate.service';
 import { CompanySettingsSchema, CompanySettingsSchemaDefinition } from './infrastructure/schemas/company-settings.schema';
@@ -11,6 +12,7 @@ import { CorporateInvoiceSchema, CorporateInvoiceSchemaDefinition } from './infr
 import { TeamInvitationSchema, TeamInvitationSchemaDefinition } from './infrastructure/schemas/team-invitation.schema';
 import { QuoteSchema, QuoteSchemaDefinition } from './infrastructure/schemas/quote.schema';
 import { DashcamClipRequestSchema, DashcamClipRequestSchemaDefinition } from './infrastructure/schemas/dashcam-clip-request.schema';
+import { CompanyApplicationSchema, CompanyApplicationSchemaDefinition } from './infrastructure/schemas/company-application.schema';
 import { CompanySettingsRepository } from './infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from './infrastructure/persistence/approval-workflow.repository';
 import { SpendingLimitRepository } from './infrastructure/persistence/spending-limit.repository';
@@ -18,6 +20,7 @@ import { CorporateInvoiceRepository } from './infrastructure/persistence/corpora
 import { TeamInvitationRepository } from './infrastructure/persistence/team-invitation.repository';
 import { QuoteRepository } from './infrastructure/persistence/quote.repository';
 import { DashcamClipRequestRepository } from './infrastructure/persistence/dashcam-clip-request.repository';
+import { CompanyApplicationRepository } from './infrastructure/persistence/company-application.repository';
 
 @Module({
   imports: [
@@ -46,9 +49,10 @@ import { DashcamClipRequestRepository } from './infrastructure/persistence/dashc
       { name: TeamInvitationSchema.name, schema: TeamInvitationSchemaDefinition },
       { name: QuoteSchema.name, schema: QuoteSchemaDefinition },
       { name: DashcamClipRequestSchema.name, schema: DashcamClipRequestSchemaDefinition },
+      { name: CompanyApplicationSchema.name, schema: CompanyApplicationSchemaDefinition },
     ]),
   ],
-  controllers: [CorporateController, HealthController],
-  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository, TeamInvitationRepository, QuoteRepository, DashcamClipRequestRepository],
+  controllers: [CorporateController, CorporatePublicController, HealthController],
+  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository, TeamInvitationRepository, QuoteRepository, DashcamClipRequestRepository, CompanyApplicationRepository],
 })
 export class AppModule {}
