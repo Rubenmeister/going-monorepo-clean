@@ -142,6 +142,82 @@ export class AuthController {
     return { ok: true, action: 'created', email: body.email, id };
   }
 
+  // ────────────────────────────────────────────────
+  // POST /auth/admin/create-corporate-user
+  // Provisiona la cuenta corporativa (admin de la empresa) cuando se APRUEBA
+  // una solicitud B2B. Solo un admin de Going (rol 'admin' en el JWT verificado
+  // — corporate-service reenvía el token del staff que aprueba).
+  //
+  // Crea el usuario con role='corporate' + companyId, password random, y un
+  // resetPasswordToken para que la persona DEFINA su contraseña (email vía el
+  // mismo nodemailer de forgot-password). Idempotente: si el email ya existe,
+  // le suma el rol corporate + companyId y le manda el link.
+  //
+  // Esto NO se hace por /auth/register a propósito: register descarta roles
+  // corporativos (sanitizeSelfServiceRoles) y su DTO no tiene companyId.
+  // ────────────────────────────────────────────────
+  @Post('admin/create-corporate-user')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(201)
+  async createCorporateUser(
+    @CurrentUser('roles') callerRoles: string[],
+    @Body() body: { email: string; firstName?: string; lastName?: string; companyId: string; companyName?: string },
+  ): Promise<any> {
+    const roles: string[] = Array.isArray(callerRoles) ? callerRoles : [];
+    if (!roles.includes('admin')) {
+      throw new UnauthorizedException('Se requiere rol admin de Going');
+    }
+    if (!body?.email || !body?.companyId) {
+      throw new BadRequestException('email y companyId son requeridos');
+    }
+    const email = body.email.toLowerCase().trim();
+    const RESET_TTL_MS = 72 * 60 * 60 * 1000; // 72h para el onboarding
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.goingec.com';
+    const resetToken = randomBytes(32).toString('hex');
+    const resetExpiry = new Date(Date.now() + RESET_TTL_MS);
+    const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+
+    const existing = await this.userModel.findOne({ email }).exec();
+    if (existing) {
+      const newRoles = Array.from(new Set([...(existing.roles ?? []), 'corporate']));
+      await this.userModel.updateOne({ email }, {
+        $set: {
+          roles: newRoles,
+          companyId: body.companyId,
+          companyName: body.companyName ?? existing.companyName,
+          status: 'active',
+          resetPasswordToken: resetToken,
+          resetPasswordExpiry: resetExpiry,
+        },
+      }).exec();
+      await this.sendResetEmail(email, resetLink).catch(() => undefined);
+      this.logger.log(`[corporate] cuenta vinculada ${email} companyId=${body.companyId}`);
+      return { ok: true, action: 'linked', userId: existing.id, companyId: body.companyId, resetLink };
+    }
+
+    const id = randomUUID();
+    const randomPass = randomBytes(24).toString('hex');
+    const passwordHash = await bcrypt.hash(randomPass, 10);
+    await this.userModel.create({
+      _id: id,
+      id,
+      email,
+      passwordHash,
+      firstName: body.firstName || 'Empresa',
+      lastName: body.lastName || '',
+      roles: ['corporate'],
+      status: 'active',
+      companyId: body.companyId,
+      companyName: body.companyName,
+      resetPasswordToken: resetToken,
+      resetPasswordExpiry: resetExpiry,
+      createdAt: new Date(),
+    });
+    await this.sendResetEmail(email, resetLink).catch(() => undefined);
+    this.logger.log(`[corporate] cuenta creada ${email} companyId=${body.companyId}`);
+    return { ok: true, action: 'created', userId: id, companyId: body.companyId, resetLink };
+  }
+
   /**
    * Resuelve la URL final a la que redirigir tras el callback OAuth.
    *

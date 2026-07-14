@@ -12,6 +12,7 @@ import { CorporateInvoiceRepository } from '../infrastructure/persistence/corpor
 import { TeamInvitationRepository } from '../infrastructure/persistence/team-invitation.repository';
 import { QuoteRepository } from '../infrastructure/persistence/quote.repository';
 import { DashcamClipRequestRepository } from '../infrastructure/persistence/dashcam-clip-request.repository';
+import { randomUUID } from 'node:crypto';
 import { CompanyApplicationRepository } from '../infrastructure/persistence/company-application.repository';
 import { isValidEcuadorianRuc } from './ruc.validator';
 import {
@@ -1167,13 +1168,41 @@ export class CorporateService {
     tipoCuenta: string,
     decidedBy: string,
   ): Promise<any> {
-    // Si el id es una SOLICITUD web (prospecto del formulario), delegamos a
-    // decideApplication → marca estado=approved (calificada). La creación de la
-    // cuenta corporativa real queda como flujo aparte (onboarding).
+    // Si el id es una SOLICITUD web (prospecto del formulario): PROVISIONA la
+    // cuenta corporativa (crea el usuario admin de la empresa con companyId +
+    // role='corporate' en user-auth-service, reenviando el token del staff que
+    // aprueba) y luego marca la solicitud approved con su companyId. La persona
+    // recibe un email para definir su contraseña y entrar al portal Empresas.
     const app = await this.applicationRepo.findById(id).catch(() => null);
     if (app) {
-      await this.decideApplication(id, 'approved', decidedBy);
-      return { id, status: 'active', tipoCuenta, approvedBy: decidedBy, approvedAt: new Date().toISOString(), source: 'application' };
+      const a = app as any;
+      const companyId = `comp_${randomUUID()}`;
+      let provisioned = false;
+      let resetLink: string | null = null;
+      try {
+        const res = await this.postJson(`${this.authUrl}/auth/admin/create-corporate-user`, token, {
+          email: a.contactoEmail,
+          firstName: a.contactoNombre,
+          companyId,
+          companyName: a.razonSocial,
+        });
+        provisioned = true;
+        resetLink = (res as any)?.resetLink ?? null;
+      } catch (e) {
+        this.logger.warn(`No se pudo provisionar la cuenta corporativa (solicitud ${id}): ${(e as Error).message}`);
+      }
+      await this.decideApplication(id, 'approved', decidedBy, provisioned ? companyId : undefined);
+      return {
+        id,
+        status: 'active',
+        tipoCuenta,
+        approvedBy: decidedBy,
+        approvedAt: new Date().toISOString(),
+        source: 'application',
+        companyId: provisioned ? companyId : null,
+        provisioned,
+        resetLink,
+      };
     }
     // En una versión completa, esto:
     //  1. Actualiza el status del usuario admin de la empresa a 'active'
