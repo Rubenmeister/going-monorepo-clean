@@ -1115,7 +1115,38 @@ export class CorporateService {
       }
     }
 
-    return { companies: Array.from(byCompany.values()) };
+    const companies = Array.from(byCompany.values());
+
+    // Merge de las SOLICITUDES web (prospectos del formulario público) como
+    // entradas 'prospect' → aparecen en la pestaña "Solicitudes" del admin sin
+    // tocar el frontend. Su id es el _id de la solicitud (approve/reject lo
+    // detectan y delegan a decideApplication).
+    try {
+      const apps = await this.applicationRepo.findAll(undefined, 200);
+      for (const a of apps as any[]) {
+        if (!['prospect', 'contacted'].includes(a.estado)) continue;
+        companies.push({
+          id: String(a._id),
+          name: a.razonSocial,
+          email: a.contactoEmail,
+          ruc: a.ruc,
+          status: 'prospect',
+          tipoCuenta: a.tipoCuenta ?? 'negocio',
+          industry: undefined,
+          city: a.ciudad,
+          phone: a.contactoTelefono,
+          employees: a.empleadosEstimados ?? 0,
+          createdAt: a.createdAt ?? new Date().toISOString(),
+          descripcionUso: a.notas,
+          source: 'application',
+          rucValido: a.rucValido,
+        });
+      }
+    } catch (e) {
+      this.logger.warn(`No se pudieron mezclar solicitudes web: ${(e as Error).message}`);
+    }
+
+    return { companies };
   }
 
   async getCompanyById(token: string, id: string): Promise<any | null> {
@@ -1136,6 +1167,14 @@ export class CorporateService {
     tipoCuenta: string,
     decidedBy: string,
   ): Promise<any> {
+    // Si el id es una SOLICITUD web (prospecto del formulario), delegamos a
+    // decideApplication → marca estado=approved (calificada). La creación de la
+    // cuenta corporativa real queda como flujo aparte (onboarding).
+    const app = await this.applicationRepo.findById(id).catch(() => null);
+    if (app) {
+      await this.decideApplication(id, 'approved', decidedBy);
+      return { id, status: 'active', tipoCuenta, approvedBy: decidedBy, approvedAt: new Date().toISOString(), source: 'application' };
+    }
     // En una versión completa, esto:
     //  1. Actualiza el status del usuario admin de la empresa a 'active'
     //  2. Setea companyTipoCuenta en su user record
@@ -1157,6 +1196,12 @@ export class CorporateService {
     motivo: string,
     decidedBy: string,
   ): Promise<any> {
+    // Solicitud web → delegar a decideApplication (estado=rejected).
+    const app = await this.applicationRepo.findById(id).catch(() => null);
+    if (app) {
+      await this.decideApplication(id, 'rejected', decidedBy);
+      return { id, status: 'rejected', motivo, rejectedBy: decidedBy, rejectedAt: new Date().toISOString(), source: 'application' };
+    }
     this.logger.log(`Company ${id} rejected by ${decidedBy}: ${motivo}`);
     return {
       id,
