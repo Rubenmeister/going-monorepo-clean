@@ -18,6 +18,13 @@ import { COLORS } from '../components/design-tokens';
 import { completeAcademyCourse, completeAcademyLesson, CompleteCourseResult } from '../../lib/academy/api';
 import { nextCourse } from './course-nav';
 import { useIsAuthenticated } from '../../lib/providers/auth-client';
+import { CourseArt } from './CourseArt';
+
+const SCHOOL_KEY_BY_PREFIX: Record<string, string> = { c: 'conductores', a: 'anfitriones', g: 'guias', o: 'operadores', v: 'viajeros' };
+function schoolKeyOf(courseId: string): string {
+  if (courseId.startsWith('tc')) return 'tronco';
+  return SCHOOL_KEY_BY_PREFIX[courseId[0]] || 'viajeros';
+}
 
 export interface MfSlide { title: string; points: string[] }
 export interface MfQuiz { question: string; options: string[]; correct: number; explanation: string }
@@ -1500,9 +1507,9 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
             <h1 className="text-base font-black text-gray-900 truncate">{course.title}</h1>
           </div>
         </div>
-        {/* Tabs de formato */}
+        {/* Tabs de formato — oculta "Ver" si el curso no tiene video real */}
         <div className="max-w-3xl mx-auto px-4 pb-2 flex gap-1.5 overflow-x-auto">
-          {TABS.map(t => {
+          {TABS.filter(t => t.key !== 'ver' || !!course.videoUrl).map(t => {
             const active = fmt === t.key;
             return (
               <button key={t.key} onClick={() => setFmt(t.key)}
@@ -1516,6 +1523,18 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
+        {/* Cabecera ilustrada del curso */}
+        <div className="relative overflow-hidden rounded-2xl mb-4 p-5 flex items-center gap-4 border border-gray-100"
+          style={{ background: `radial-gradient(130% 150% at 90% -20%, ${accent}2E, ${accent}0A 70%)` }}>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide mb-0.5" style={{ color: accent }}>{course.subtitle}</p>
+            <h2 className="text-lg font-black text-gray-900 leading-snug">{course.title}</h2>
+            <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{course.description}</p>
+          </div>
+          <div className="flex-shrink-0 hidden sm:block">
+            <CourseArt courseId={courseId} school={schoolKeyOf(courseId)} accent={accent} className="drop-shadow-sm" />
+          </div>
+        </div>
         {/* Aviso suave para invitados: contenido abierto, progreso al iniciar sesión */}
         {!isAuthed && (
           <Link href={`/auth/login?from=/academy/${courseId}`}
