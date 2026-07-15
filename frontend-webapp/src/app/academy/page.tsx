@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { COLORS } from '../components/design-tokens';
 import { useIsAuthenticated } from '../../lib/providers/auth-client';
 import { getAcademyProgress, ProgressView } from '../../lib/academy/api';
+import { CourseArt } from './CourseArt';
 import {
   IconGlobe, IconMobile, IconLeaf, IconCar, IconUser, IconShield, IconTool,
   IconChat, IconHotel, IconCamera, IconCheck, IconPalette, IconStar,
   IconCompass, IconBook, IconUsers, IconMap, IconPackage, IconCard,
   IconClipboard, IconHeadphones, IconChart, IconPlay, IconQuiz, IconMedal,
-  IconGraduation, IconSearch, IconMoney, IconArrowRight, IconClock,
+  IconGraduation, IconSearch, IconMoney, IconArrowRight, IconClock, IconLock,
 } from '../components/icons';
 
 type IconComponent = ComponentType<{ size?: number; className?: string }>;
@@ -240,6 +241,13 @@ const SCHOOLS: Record<string, School> = {
 
 const SCHOOL_KEYS = Object.keys(SCHOOLS) as (keyof typeof SCHOOLS)[];
 
+/** Índice plano id → {title, color, school} para el banner "continúa donde quedaste". */
+const COURSE_INDEX: Record<string, { title: string; color: string; school: string }> = {};
+TRONCO_COMUN.forEach(c => { COURSE_INDEX[c.id] = { title: c.title, color: COLORS.brand.red, school: 'tronco' }; });
+SCHOOL_KEYS.forEach(k => SCHOOLS[k].courses.forEach(c => { COURSE_INDEX[c.id] = { title: c.title, color: SCHOOLS[k].color, school: String(k) }; }));
+
+const LEVEL_COLORS: Record<string, string> = { none: '#9CA3AF', bronce: '#B45309', plata: '#8E9BB0', oro: '#D9A006' };
+
 interface LevelDef {
   id: string;
   label: string;
@@ -254,6 +262,27 @@ const LEVELS: LevelDef[] = [
   { id: 'plata',  label: 'Aliado Plata',  desc: 'Tronco + 3 cursos de especialización',   req: '4.5★ o más de calificación',      color: '#6B7280', Icon: IconMedal },
   { id: 'oro',    label: 'Aliado Oro',    desc: 'Todas las rutas completadas',            req: '4.8★ y 50+ viajes/reservas',      color: '#D97706', Icon: IconMedal },
 ];
+
+/** Anillo de progreso pequeño para la banda de la tarjeta. */
+function ProgressRing({ pct, done, color }: { pct: number; done: boolean; color: string }) {
+  const r = 15;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+  const ring = done ? '#15803D' : color;
+  return (
+    <svg width="34" height="34" viewBox="0 0 36 36">
+      <circle cx="18" cy="18" r={r} fill="rgba(255,255,255,0.7)" />
+      <circle cx="18" cy="18" r={r} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="3.5" />
+      <circle cx="18" cy="18" r={r} fill="none" stroke={ring} strokeWidth="3.5" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={off} transform="rotate(-90 18 18)" />
+      {done ? (
+        <path d="M12 18 l4 4 8 -8" fill="none" stroke="#15803D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <text x="18" y="21.5" textAnchor="middle" fontSize="9" fontWeight="800" fill={color}>{pct}%</text>
+      )}
+    </svg>
+  );
+}
 
 export default function AcademyPage() {
   const [activeSchool, setActiveSchool] = useState<string>('conductores');
@@ -277,6 +306,14 @@ export default function AcademyPage() {
 
   // Set de courseIds completados para pintar ✓ en las tarjetas.
   const completedIds = new Set(progress?.courses.filter(c => c.completed).map(c => c.id) ?? []);
+  // Estado por curso (para anillo de progreso + "continuar").
+  const courseById = new Map((progress?.courses ?? []).map(c => [c.id, c]));
+  // Insignias ya ganadas (para la vitrina ganadas/bloqueadas).
+  const earnedBadgeCodes = new Set((progress?.badges ?? []).map(b => b.code));
+  // Curso a medias (para el banner "continúa donde quedaste").
+  const resumeCourse = (progress?.courses ?? [])
+    .filter(c => !c.completed && ((c.lessonsCompleted > 0) || (c.quizBestScore > 0)) && COURSE_INDEX[c.id])
+    .sort((a, b) => b.lessonsCompleted - a.lessonsCompleted)[0] ?? null;
 
   const school = SCHOOLS[activeSchool];
 
@@ -284,11 +321,33 @@ export default function AcademyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <style>{`
+        .academy-lights{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+        .academy-lights .al{position:absolute;border-radius:9999px;filter:blur(28px);opacity:.5;
+          background:radial-gradient(circle at 30% 30%, #FF7A5A, #FF4C41 60%, transparent 72%);
+          animation:academyFloat 14s ease-in-out infinite}
+        .al1{width:120px;height:120px;left:6%;top:18%;animation-delay:0s}
+        .al2{width:80px;height:80px;left:24%;top:62%;animation-delay:-3s;background:radial-gradient(circle at 30% 30%,#FFD27A,#F2A93C 60%,transparent 72%);opacity:.35}
+        .al3{width:150px;height:150px;right:10%;top:10%;animation-delay:-6s;opacity:.4}
+        .al4{width:60px;height:60px;right:26%;bottom:14%;animation-delay:-9s;background:radial-gradient(circle at 30% 30%,#8FD0FF,#4C93FF 60%,transparent 72%);opacity:.3}
+        .al5{width:90px;height:90px;left:48%;top:38%;animation-delay:-4.5s;opacity:.25}
+        @keyframes academyFloat{
+          0%,100%{transform:translate(0,0) scale(1)}
+          33%{transform:translate(14px,-20px) scale(1.08)}
+          66%{transform:translate(-12px,10px) scale(.95)}
+        }
+        @media (prefers-reduced-motion:reduce){.academy-lights .al{animation:none}}
+      `}</style>
 
       {/* ── Hero ── */}
       <div className="relative text-white py-16 px-6 overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1e293b 60%, ${COLORS.brand.red}30 100%)` }}>
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5 bg-white -translate-y-1/2 translate-x-1/3" />
+        {/* Luces flotantes ambientales */}
+        <div className="academy-lights" aria-hidden="true">
+          <span className="al al1" /><span className="al al2" /><span className="al al3" />
+          <span className="al al4" /><span className="al al5" />
+        </div>
         {/* Logo Going App — centrado arriba del hero */}
         <div className="max-w-6xl mx-auto relative z-10 flex justify-center mb-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -375,6 +434,55 @@ export default function AcademyPage() {
           })}
         </div>
 
+        {/* ── Tira de bienvenida (con sesión): continuar + riel de nivel ── */}
+        {isAuthed && progress && (progress.completedCount > 0 || resumeCourse) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+            {/* Continúa donde quedaste */}
+            {resumeCourse && (
+              <Link href={`/academy/${resumeCourse.id}`}
+                className="relative overflow-hidden rounded-2xl p-4 flex items-center gap-3 text-white shadow-sm hover:shadow-md transition-shadow"
+                style={{ background: `linear-gradient(115deg, ${COLORS.brand.black} 0%, #3A241F 55%, ${COLORS.brand.red} 135%)` }}>
+                <span className="flex-shrink-0 w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center">
+                  <IconPlay size={20} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Continúa donde quedaste</p>
+                  <p className="font-bold text-sm truncate">{COURSE_INDEX[resumeCourse.id].title}</p>
+                  <div className="h-1.5 rounded-full bg-white/20 mt-1.5 overflow-hidden">
+                    <div className="h-full rounded-full bg-white" style={{ width: `${Math.min(90, Math.round((resumeCourse.lessonsCompleted / 5) * 100))}%` }} />
+                  </div>
+                </div>
+                <span className="flex-shrink-0 bg-white text-sm font-bold px-3.5 py-2 rounded-xl" style={{ color: COLORS.brand.red }}>Seguir</span>
+              </Link>
+            )}
+            {/* Riel de nivel Aliado */}
+            <button onClick={() => setActiveTab('niveles')}
+              className="text-left rounded-2xl p-4 border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="inline-flex items-center gap-1.5 font-bold text-sm text-gray-900">
+                  <IconMedal size={15} style={{ color: LEVEL_COLORS[progress.level.level] }} />
+                  {progress.level.label}
+                </span>
+                <span className="text-xs font-semibold text-gray-400">{progress.completedCount}/{progress.totalCourses} cursos</span>
+              </div>
+              <div className="relative h-2 rounded-full bg-gray-100">
+                <div className="absolute left-0 top-0 bottom-0 rounded-full"
+                  style={{ width: `${Math.round((progress.completedCount / Math.max(1, progress.totalCourses)) * 100)}%`, background: `linear-gradient(90deg, ${LEVEL_COLORS.bronce}, ${COLORS.brand.red})` }} />
+                {['bronce', 'plata', 'oro'].map((lv, i) => (
+                  <span key={lv} className="absolute -top-1 w-4 h-4 rounded-full border-2 border-white"
+                    style={{ left: `${i * 50}%`, transform: 'translateX(-50%)', backgroundColor: LEVEL_COLORS[lv] }} />
+                ))}
+              </div>
+              <div className="flex justify-between mt-2 text-[10px] font-bold text-gray-400">
+                <span>Bronce</span><span>Plata</span><span>Oro</span>
+              </div>
+              {progress.level.next && (
+                <p className="text-xs text-gray-500 mt-2">Siguiente: <strong className="text-gray-700">{progress.level.next.label}</strong></p>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* ── ESCUELAS ── */}
         {activeTab === 'cursos' && (
           <div>
@@ -419,31 +527,32 @@ export default function AcademyPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {school.courses.map(course => (
+              {school.courses.map(course => {
+                const st = courseById.get(course.id);
+                const done = st?.completed ?? false;
+                const started = !done && (((st?.lessonsCompleted ?? 0) > 0) || ((st?.quizBestScore ?? 0) > 0));
+                const pct = done ? 100 : Math.min(90, Math.round(((st?.lessonsCompleted ?? 0) / 5) * 100));
+                return (
                 <div key={course.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                  <div className="h-1" style={{ backgroundColor: school.color }} />
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col">
+                  {/* Banda ilustrada */}
+                  <div className="relative h-24 flex items-center justify-center overflow-hidden"
+                    style={{ background: `radial-gradient(120% 120% at 80% -10%, ${school.color}2E, ${school.bg} 68%)` }}>
+                    <span className={`absolute top-2.5 left-2.5 z-10 text-xs font-bold px-2 py-0.5 rounded-full ${done ? 'bg-green-100 text-green-700' : course.levelColor}`}>
+                      {done ? 'Completado' : course.level}
+                    </span>
+                    {(done || started) && (
+                      <span className="absolute top-2 right-2 z-10">
+                        <ProgressRing pct={pct} done={done} color={school.color} />
+                      </span>
+                    )}
+                    <CourseArt courseId={course.id} school={activeSchool} accent={school.color}
+                      className="transition-transform duration-200 group-hover:scale-105 drop-shadow-sm" />
+                  </div>
+
                   <div className="p-5 flex-1 flex flex-col">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: school.bg, color: school.color }}>
-                        <course.Icon size={24} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${course.levelColor}`}>
-                            {course.level}
-                          </span>
-                          {completedIds.has(course.id) && (
-                            <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                              <IconCheck size={11} /> Completado
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="font-bold text-gray-900 text-sm leading-snug">{course.title}</h3>
-                        <p className="text-xs font-medium mt-0.5" style={{ color: school.color }}>{course.subtitle}</p>
-                      </div>
-                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm leading-snug">{course.title}</h3>
+                    <p className="text-xs font-medium mt-0.5 mb-2" style={{ color: school.color }}>{course.subtitle}</p>
                     <p className="text-gray-500 text-sm flex-1 mb-4 leading-relaxed">{course.desc}</p>
 
                     {/* Meta */}
@@ -467,13 +576,16 @@ export default function AcademyPage() {
 
                     <Link href={`/academy/${course.id}`}
                       className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
-                      style={{ backgroundColor: school.color, color: COLORS.brand.white }}>
-                      Comenzar curso
+                      style={done
+                        ? { backgroundColor: '#DCFCE7', color: '#15803D' }
+                        : { backgroundColor: school.color, color: COLORS.brand.white }}>
+                      {done ? 'Repasar curso' : started ? 'Continuar' : 'Comenzar curso'}
                       <IconArrowRight size={16} />
                     </Link>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -672,7 +784,14 @@ export default function AcademyPage() {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Insignias por escuela</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">{isAuthed && progress ? 'Insignias por ganar' : 'Insignias por escuela'}</h3>
+                {isAuthed && progress && (
+                  <span className="text-xs font-semibold text-gray-400">
+                    {[...SCHOOL_KEYS.map(k => `school:${k}`), 'course:c5', 'course:c4'].filter(c => earnedBadgeCodes.has(c)).length} de {SCHOOL_KEYS.length + 2}
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
                   ...SCHOOL_KEYS.map(key => ({
@@ -680,18 +799,33 @@ export default function AcademyPage() {
                     badge:  SCHOOLS[key].badge,
                     school: SCHOOLS[key].name,
                     color:  SCHOOLS[key].color,
+                    code:   `school:${key}`,
                   })),
-                  { Icon: IconShield, badge: 'Primeros Auxilios', school: 'Seguridad Certificada', color: COLORS.state.danger },
-                  { Icon: IconGlobe,  badge: 'Bilingüe Going App',    school: 'Inglés Turístico',      color: COLORS.state.success },
-                ].map(b => (
-                  <div key={b.badge} className="rounded-xl p-4 text-center border border-gray-100 bg-gray-50">
+                  { Icon: IconShield, badge: 'Primeros Auxilios', school: 'Seguridad Certificada', color: COLORS.state.danger,  code: 'course:c5' },
+                  { Icon: IconGlobe,  badge: 'Bilingüe Going App',    school: 'Inglés Turístico',   color: COLORS.state.success, code: 'course:c4' },
+                ].map(b => {
+                  const earned = earnedBadgeCodes.has(b.code);
+                  const showLock = isAuthed && !!progress && !earned;
+                  return (
+                  <div key={b.badge}
+                    className={`relative rounded-xl p-4 text-center border transition-all ${earned ? 'border-transparent' : 'border-gray-100 bg-gray-50'} ${showLock ? 'opacity-55 grayscale' : ''}`}
+                    style={earned ? { background: `${b.color}12`, borderColor: `${b.color}40` } : undefined}>
+                    {earned && (
+                      <span className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: b.color }}>
+                        <IconCheck size={11} />
+                      </span>
+                    )}
+                    {showLock && (
+                      <span className="absolute top-2 right-2 text-gray-400"><IconLock size={13} /></span>
+                    )}
                     <div className="flex justify-center mb-2" style={{ color: b.color }}>
                       <b.Icon size={28} />
                     </div>
                     <div className="text-xs font-bold text-gray-800">{b.badge}</div>
                     <div className="text-xs text-gray-400 mt-0.5">{b.school}</div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

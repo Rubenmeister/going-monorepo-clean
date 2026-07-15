@@ -15,7 +15,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { COLORS } from '../components/design-tokens';
-import { completeAcademyCourse, CompleteCourseResult } from '../../lib/academy/api';
+import { completeAcademyCourse, completeAcademyLesson, CompleteCourseResult } from '../../lib/academy/api';
 import { nextCourse } from './course-nav';
 
 export interface MfSlide { title: string; points: string[] }
@@ -1432,6 +1432,12 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
   useEffect(() => {
     if (fmt !== 'escuchar' && typeof window !== 'undefined') { window.speechSynthesis?.cancel(); setSpeaking(false); }
   }, [fmt]);
+
+  // Registra el formato abierto como "lección vista" → alimenta el anillo de
+  // progreso y el banner "continúa donde quedaste" del inicio. No bloquea la UI.
+  useEffect(() => {
+    if (course) completeAcademyLesson(courseId, `fmt:${fmt}`).catch(() => {});
+  }, [fmt, courseId, course]);
 
   if (!course) return null;
 
