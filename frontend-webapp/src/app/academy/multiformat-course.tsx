@@ -69,8 +69,9 @@ export interface MultiFormatCourseData {
   slides: MfSlide[];
   /** Guion del podcast: segmentos que la voz (TTS) lee en orden. */
   podcast: { intro: string; segments: { title: string; text: string }[] };
-  /** Audio real del curso (MP3 con voz del asistente). Si falta → voz TTS del navegador. */
-  audioUrl?: string;
+  /** Audio real del curso con voz del asistente. La persona elige timbre. */
+  audioFemale?: string;  // Coral
+  audioMale?: string;    // Echo
   /** Video incrustable (YouTube/hosted). Si falta → placeholder. */
   videoUrl?: string;
   quiz: MfQuiz[];
@@ -308,7 +309,8 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
   <li>Iniciar el viaje sin confirmar el nombre del pasajero.</li>
 </ul>
 `,
-    audioUrl: '/audio/academy/c1.mp3',
+    audioFemale: '/audio/academy/c1-coral.mp3',
+    audioMale: '/audio/academy/c1-echo.mp3',
     manualHtml: `
 <p>Imagina la escena: una viajera acaba de bajar de un vuelo de doce horas. Está cansada, quizá en una ciudad que no conoce, con el teléfono al 8% de batería. Abre la puerta de tu auto… y en los próximos <strong>treinta segundos</strong> decide, sin darse cuenta, qué tipo de viaje va a tener. Ese instante —antes de que digas una sola palabra sobre la ruta— es la Primera Impresión. Y en Going App, la primera impresión no la das solo tú: la da el Ecuador.</p>
 <p>Los estudios sobre confianza coinciden en algo: las personas formamos un juicio en los primeros segundos de un encuentro, y ese juicio cuesta revertirlo después. La buena noticia es que esos segundos se pueden preparar. Este manual te enseña cómo.</p>
@@ -1526,6 +1528,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
   const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>(course ? course.quiz.map(() => null) : []);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [completion, setCompletion] = useState<CompleteCourseResult | null>(null);
+  const [voiceSel, setVoiceSel] = useState<'f' | 'm'>('f');
   const isAuthed = useIsAuthenticated();
   const accent = course?.schoolColor || COLORS.brand.red;
 
@@ -1716,9 +1719,12 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
         )}
 
         {/* ESCUCHAR (audio real con voz Going, o TTS del navegador de respaldo) */}
-        {fmt === 'escuchar' && (
+        {fmt === 'escuchar' && (() => {
+          const audioUrl = voiceSel === 'm' ? (course.audioMale || course.audioFemale) : (course.audioFemale || course.audioMale);
+          const hasAudio = !!(course.audioFemale || course.audioMale);
+          return (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            {course.audioUrl ? (
+            {hasAudio ? (
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <span className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0" style={{ backgroundColor: accent }}>🎧</span>
@@ -1727,8 +1733,23 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
                     <p className="text-xs text-gray-500">Voz Going · escúchalo o descárgalo para el camino</p>
                   </div>
                 </div>
+                {/* Selector de voz */}
+                {course.audioFemale && course.audioMale && (
+                  <div className="flex gap-2 mb-3">
+                    <button onClick={() => setVoiceSel('f')}
+                      className="flex-1 py-2 rounded-xl text-sm font-bold transition-all border"
+                      style={voiceSel === 'f' ? { backgroundColor: accent, color: '#fff', borderColor: accent } : { backgroundColor: '#fff', color: '#6B7280', borderColor: '#E5E7EB' }}>
+                      ♀ Voz femenina
+                    </button>
+                    <button onClick={() => setVoiceSel('m')}
+                      className="flex-1 py-2 rounded-xl text-sm font-bold transition-all border"
+                      style={voiceSel === 'm' ? { backgroundColor: accent, color: '#fff', borderColor: accent } : { backgroundColor: '#fff', color: '#6B7280', borderColor: '#E5E7EB' }}>
+                      ♂ Voz masculina
+                    </button>
+                  </div>
+                )}
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                <audio controls preload="metadata" src={course.audioUrl} className="w-full mb-4" />
+                <audio key={audioUrl} controls preload="metadata" src={audioUrl} className="w-full mb-4" />
               </>
             ) : (
               <>
@@ -1760,7 +1781,8 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* VER (video) */}
         {fmt === 'ver' && (

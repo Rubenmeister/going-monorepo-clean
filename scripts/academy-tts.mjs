@@ -47,6 +47,6 @@ for (let i=0;i<chunks.length;i++){
   buffers.push(Buffer.from(await res.arrayBuffer()));
   process.stdout.write(`  trozo ${i+1}/${chunks.length} ✓\n`);
 }
-const out = `frontend-webapp/public/audio/academy/${courseId}.mp3`;
+const out = `frontend-webapp/public/audio/academy/${courseId}-${VOICE}.mp3`;
 fs.writeFileSync(out, Buffer.concat(buffers));
 console.log('OK →', out, (fs.statSync(out).size/1024).toFixed(0)+'KB');
