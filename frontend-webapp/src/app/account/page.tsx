@@ -13,6 +13,7 @@ import {
 import { enablePush } from '../lib/push';
 import { authFetch, clearStoredAuth } from '@/lib/providers/auth-client';
 import { LocationSelector } from '../components/features/ride/LocationSelector';
+import { AcademyMiniCard } from '../academy/AcademyMiniCard';
 import {
   loadSavedAddresses,
   upsertSavedAddress,
@@ -543,6 +544,7 @@ export default function AccountPage() {
 
             {/* Links adicionales */}
             <div className="pt-2 space-y-2">
+              <AcademyMiniCard />
               <Link href="/empresas"
                 className="flex items-center justify-between w-full py-3 px-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#0033A0] transition-colors">
                 <div className="flex items-center gap-3">

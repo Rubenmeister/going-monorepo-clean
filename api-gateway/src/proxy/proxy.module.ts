@@ -220,6 +220,7 @@ export class ProxyModule implements NestModule {
       emergency: this.configService.get<string>('EMERGENCY_SERVICE_URL', ''),
       voice:     this.configService.get<string>('VOICE_CALL_SERVICE_URL', ''),
       pricing:   this.configService.get<string>('PRICING_SERVICE_URL', ''),
+      academy:   this.configService.get<string>('ACADEMY_SERVICE_URL', 'http://localhost:3025'),
     };
 
     this.logger.log(`Proxy ready → auth: ${svc.auth}`);
@@ -390,6 +391,12 @@ export class ProxyModule implements NestModule {
     // alimentan estadísticas y toma de decisiones (admin-dashboard, app).
     guard('ratings', svc.ratings);
     guard('social', svc.social);
+    // /academy/* — Going Academy: progreso de cursos, insignias y niveles Aliado
+    // (academy-service). TODO protegido con JWT: guardar progreso y ganar
+    // insignias es por usuario autenticado (decisión de producto: los cursos
+    // requieren cuenta). El listado/catálogo de la webapp es estático (no pega
+    // al backend), así que aquí solo viven las rutas de progreso por usuario.
+    guard('academy', svc.academy);
     // /corporate/public/* — alta pública de empresas (prospectos B2B) SIN login.
     // El formulario del sitio postea aquí para persistir la solicitud. Se registra
     // ANTES que guard('corporate') para tener precedencia (igual que ratings/public):

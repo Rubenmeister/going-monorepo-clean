@@ -1,9 +1,11 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, ComponentType } from 'react';
+import { useState, useEffect, ComponentType } from 'react';
 import Link from 'next/link';
 import { COLORS } from '../components/design-tokens';
+import { useIsAuthenticated } from '../../lib/providers/auth-client';
+import { getAcademyProgress, ProgressView } from '../../lib/academy/api';
 import {
   IconGlobe, IconMobile, IconLeaf, IconCar, IconUser, IconShield, IconTool,
   IconChat, IconHotel, IconCamera, IconCheck, IconPalette, IconStar,
@@ -257,6 +259,25 @@ export default function AcademyPage() {
   const [activeSchool, setActiveSchool] = useState<string>('conductores');
   const [activeTab, setActiveTab] = useState<'cursos' | 'niveles' | 'tronco'>('cursos');
 
+  // Deep-link: /academy?tab=niveles abre directo esa pestaña (lo usa el botón
+  // "Ver mis insignias" al terminar un curso).
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get('tab');
+    if (t === 'niveles' || t === 'tronco' || t === 'cursos') setActiveTab(t);
+  }, []);
+
+  const isAuthed = useIsAuthenticated();
+  const [progress, setProgress] = useState<ProgressView | null>(null);
+  useEffect(() => {
+    if (!isAuthed) { setProgress(null); return; }
+    let active = true;
+    getAcademyProgress().then(p => { if (active) setProgress(p); });
+    return () => { active = false; };
+  }, [isAuthed]);
+
+  // Set de courseIds completados para pintar ✓ en las tarjetas.
+  const completedIds = new Set(progress?.courses.filter(c => c.completed).map(c => c.id) ?? []);
+
   const school = SCHOOLS[activeSchool];
 
   const totalCourses = TRONCO_COMUN.length + Object.values(SCHOOLS).flatMap(s => s.courses).length;
@@ -413,6 +434,11 @@ export default function AcademyPage() {
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${course.levelColor}`}>
                             {course.level}
                           </span>
+                          {completedIds.has(course.id) && (
+                            <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                              <IconCheck size={11} /> Completado
+                            </span>
+                          )}
                         </div>
                         <h3 className="font-bold text-gray-900 text-sm leading-snug">{course.title}</h3>
                         <p className="text-xs font-medium mt-0.5" style={{ color: school.color }}>{course.subtitle}</p>
@@ -539,6 +565,58 @@ export default function AcademyPage() {
         {/* ── NIVELES Y BADGES ── */}
         {activeTab === 'niveles' && (
           <div>
+            {/* Progreso personalizado del usuario autenticado */}
+            {isAuthed && progress && (
+              <div className="rounded-2xl p-6 mb-6 text-white" style={{ background: `linear-gradient(135deg, ${COLORS.brand.black}, #1e293b)` }}>
+                <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: COLORS.brand.redLight }}>Tu progreso</p>
+                    <h2 className="text-2xl font-black">{progress.level.label}</h2>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-black" style={{ color: COLORS.brand.redLight }}>
+                      {progress.completedCount}<span className="text-lg text-gray-400">/{progress.totalCourses}</span>
+                    </div>
+                    <div className="text-xs text-gray-400">cursos completados</div>
+                  </div>
+                </div>
+                <div className="h-2 rounded-full bg-white/15 overflow-hidden mb-2">
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${Math.round((progress.completedCount / Math.max(1, progress.totalCourses)) * 100)}%`, backgroundColor: COLORS.brand.redLight }} />
+                </div>
+                {progress.level.next && (
+                  <p className="text-sm text-gray-300">
+                    Siguiente: <strong className="text-white">{progress.level.next.label}</strong> — {progress.level.next.requirement}
+                  </p>
+                )}
+                {progress.badges.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Tus insignias ({progress.badges.length})</p>
+                    <div className="flex flex-wrap gap-2">
+                      {progress.badges.map(b => (
+                        <span key={b.code} className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white/10 border border-white/15">
+                          🏅 {b.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Invitación a iniciar sesión (sin cuenta no hay progreso) */}
+            {!isAuthed && (
+              <div className="rounded-2xl p-6 mb-6 border border-gray-100 bg-white shadow-sm flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 mb-1">Sigue tu progreso y gana insignias</h2>
+                  <p className="text-gray-500 text-sm">Inicia sesión para completar cursos, subir de nivel y ver tus insignias aquí.</p>
+                </div>
+                <Link href="/auth/login?from=/academy"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm hover:opacity-90"
+                  style={{ backgroundColor: COLORS.brand.red }}>
+                  Iniciar sesión
+                </Link>
+              </div>
+            )}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-2">Sistema de Niveles Going App</h2>
               <p className="text-gray-500 text-sm leading-relaxed">

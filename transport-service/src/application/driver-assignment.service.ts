@@ -209,10 +209,11 @@ export class DriverAssignmentService {
     const driverIds = [...new Set(committed.map((s) => s.driverId))];
     if (driverIds.length === 0) return [];
 
-    // 3) Insumos del scoring: equidad (viajes del día) + rating.
-    const [tripsToday, ratings] = await Promise.all([
+    // 3) Insumos del scoring: equidad (viajes del día) + rating + nivel Academia.
+    const [tripsToday, ratings, academy] = await Promise.all([
       this.tripsTodayByDriver(driverIds, scheduledAt),
       this.avgRatings(driverIds),
+      this.academyLevelsByDriver(driverIds),
     ]);
 
     return driverIds.map((id) => ({
@@ -221,7 +222,42 @@ export class DriverAssignmentService {
       rating: ratings[id] ?? 4.5,
       distanceKm: null, // v1: proximidad inherente al corredor comprometido
       available: true, // v1: comprometido = disponible (refinar: online/no doble-booked)
+      academyLevel: academy[id] ?? 0,
     }));
+  }
+
+  /**
+   * Nivel de la Academia por conductor (0=sin nivel … 3=Oro) — factor de ranking
+   * "más nivel = más reservas". S2S a academy-service con X-Internal-Token.
+   *
+   * OPT-IN + fail-open: solo consulta si ACADEMY_RANKING_ENABLED='true' y hay
+   * URL+token; ante CUALQUIER fallo/timeout devuelve {} (todos nivel 0) para NO
+   * degradar el hot-path de asignación. El scorer ignora el factor cuando es 0.
+   */
+  private async academyLevelsByDriver(driverIds: string[]): Promise<Record<string, number>> {
+    if (process.env.ACADEMY_RANKING_ENABLED !== 'true') return {};
+    const base = process.env.ACADEMY_SERVICE_URL;
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!base || !token || driverIds.length === 0) return {};
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 1500);
+      const res = await fetch(`${base}/academy/levels`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Internal-Token': token },
+        body: JSON.stringify({ userIds: driverIds }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      if (!res.ok) return {};
+      const data = (await res.json()) as Record<string, { level: string; rank: number }>;
+      const map: Record<string, number> = {};
+      for (const id of Object.keys(data)) map[id] = data[id]?.rank ?? 0;
+      return map;
+    } catch (e) {
+      this.logger.warn(`[assign] academyLevels falló (ignorado): ${(e as Error).message}`);
+      return {};
+    }
   }
 
   // Ecuador es UTC-5 fijo (sin horario de verano). El "día" para equidad debe

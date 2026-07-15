@@ -25,6 +25,12 @@ export interface DriverCandidate {
   distanceKm: number | null;
   /** ¿Disponible? (online / ventana de agenda / no en descanso / sin solape). */
   available: boolean;
+  /**
+   * Nivel de la Academia Going App: 0=sin nivel, 1=Bronce, 2=Plata, 3=Oro.
+   * Factor OPCIONAL — si el enriquecimiento está apagado o academy-service no
+   * responde, llega undefined y NO afecta el score (retrocompatible).
+   */
+  academyLevel?: number;
 }
 
 export interface ScoredDriver extends DriverCandidate {
@@ -35,7 +41,7 @@ export interface ScoredDriver extends DriverCandidate {
  * Pesos v1. La EQUIDAD domina (repartir el trabajo), luego proximidad, luego
  * rating como desempate. Ajustables sin tocar la lógica.
  */
-export const SCORING_WEIGHTS = { equity: 10, proximity: 2, rating: 1 };
+export const SCORING_WEIGHTS = { equity: 10, proximity: 2, rating: 1, academy: 1.5 };
 
 /**
  * Rankea a los candidatos de mejor a peor. Si hay candidatos "disponibles" solo
@@ -61,10 +67,16 @@ export function scoreDrivers(
       const proximity =
         c.distanceKm == null ? 0.5 : 1 - Math.min(1, c.distanceKm / maxDist);
       const ratingNorm = Math.max(0, Math.min(1, c.rating / 5));
+      // Academia: 0=sin nivel … 3=Oro. Normalizado a 0–1. Un conductor mejor
+      // capacitado sube posiciones ("más nivel = más reservas"). Peso moderado:
+      // desempata por debajo de equidad/proximidad, nunca las domina.
+      const academyNorm = Math.max(0, Math.min(1, (c.academyLevel ?? 0) / 3));
+      const academyW = (weights as any).academy ?? 0;
       const score =
         equity * weights.equity +
         proximity * weights.proximity +
-        ratingNorm * weights.rating;
+        ratingNorm * weights.rating +
+        academyNorm * academyW;
       return { ...c, score: Math.round(score * 1000) / 1000 };
     })
     .sort((a, b) => b.score - a.score);

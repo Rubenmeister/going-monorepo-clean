@@ -15,6 +15,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { COLORS } from '../components/design-tokens';
+import { completeAcademyCourse, CompleteCourseResult } from '../../lib/academy/api';
+import { nextCourse } from './course-nav';
 
 export interface MfSlide { title: string; points: string[] }
 export interface MfQuiz { question: string; options: string[]; correct: number; explanation: string }
@@ -1420,6 +1422,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
   const [speaking, setSpeaking] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>(course ? course.quiz.map(() => null) : []);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [completion, setCompletion] = useState<CompleteCourseResult | null>(null);
   const accent = course?.schoolColor || COLORS.brand.red;
 
   // Detener la voz al cambiar de formato/desmontar.
@@ -1462,6 +1465,21 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
 
   const score = quizSubmitted ? course.quiz.reduce((a, q, i) => a + (quizAnswers[i] === q.correct ? 1 : 0), 0) : 0;
   const passed = score >= Math.ceil(course.quiz.length * 0.67);
+  const upNext = nextCourse(courseId);
+
+  const submitQuiz = () => {
+    setQuizSubmitted(true);
+    const finalScore = course.quiz.reduce((a, q, i) => a + (quizAnswers[i] === q.correct ? 1 : 0), 0);
+    const didPass = finalScore >= Math.ceil(course.quiz.length * 0.67);
+    if (didPass) {
+      // Registra el resultado en el backend (otorga insignia + recalcula nivel).
+      // No bloquea la UI: si falla, el resultado del quiz igual se muestra.
+      completeAcademyCourse(courseId, finalScore, course.quiz.length)
+        .then(res => { if (res) setCompletion(res); })
+        .catch(() => {});
+    }
+  };
+  const retryQuiz = () => { setQuizSubmitted(false); setQuizAnswers(course.quiz.map(() => null)); setCompletion(null); };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1603,7 +1621,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
               </div>
             ))}
             {!quizSubmitted ? (
-              <button onClick={() => setQuizSubmitted(true)} disabled={quizAnswers.some(a => a === null)}
+              <button onClick={submitQuiz} disabled={quizAnswers.some(a => a === null)}
                 className="w-full py-3 rounded-xl text-white font-bold text-sm disabled:opacity-50" style={{ backgroundColor: accent }}>
                 Ver resultado
               </button>
@@ -1611,8 +1629,42 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
               <div className="text-center rounded-xl p-4" style={{ backgroundColor: passed ? '#ECFDF5' : '#FEF2F2' }}>
                 <p className="text-2xl font-black" style={{ color: passed ? '#15803d' : '#ef4444' }}>{score}/{course.quiz.length}</p>
                 <p className="text-sm font-semibold text-gray-700">{passed ? '¡Aprobado! 🎉' : 'Repasa y vuelve a intentar'}</p>
-                <button onClick={() => { setQuizSubmitted(false); setQuizAnswers(course.quiz.map(() => null)); }}
-                  className="mt-2 text-xs font-bold text-gray-500 hover:underline">Reintentar</button>
+
+                {/* Insignia ganada + subida de nivel (llega del backend) */}
+                {passed && completion && completion.newlyAwardedBadges.length > 0 && (
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    {completion.newlyAwardedBadges.map(b => (
+                      <span key={b.code} className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full text-white" style={{ backgroundColor: accent }}>
+                        🏅 {b.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {passed && completion?.leveledUp && (
+                  <p className="mt-2 text-sm font-bold" style={{ color: accent }}>
+                    ¡Subiste a {completion.progress.level.label}! 🎉
+                  </p>
+                )}
+
+                {passed ? (
+                  <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+                    {upNext && (
+                      <Link href={`/academy/${upNext.id}`}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm hover:opacity-90"
+                        style={{ backgroundColor: accent }}>
+                        Siguiente curso: {upNext.title} →
+                      </Link>
+                    )}
+                    <Link href="/academy?tab=niveles"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm border-2 hover:bg-gray-50"
+                      style={{ borderColor: accent, color: accent }}>
+                      Ver mis insignias
+                    </Link>
+                  </div>
+                ) : (
+                  <button onClick={retryQuiz}
+                    className="mt-2 text-xs font-bold text-gray-500 hover:underline">Reintentar</button>
+                )}
               </div>
             )}
           </div>
