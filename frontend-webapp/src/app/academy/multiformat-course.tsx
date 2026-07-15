@@ -2774,6 +2774,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [completion, setCompletion] = useState<CompleteCourseResult | null>(null);
   const [voiceSel, setVoiceSel] = useState<'f' | 'm'>('f');
+  const [verSlide, setVerSlide] = useState(0);
   const isAuthed = useIsAuthenticated();
   const accent = course?.schoolColor || COLORS.brand.red;
 
@@ -2885,7 +2886,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
         </div>
         {/* Tabs de formato — oculta "Ver" si el curso no tiene video real */}
         <div className="max-w-3xl mx-auto px-4 pb-2 flex gap-1.5 overflow-x-auto">
-          {TABS.filter(t => t.key !== 'ver' || !!course.videoUrl).map(t => {
+          {TABS.filter(t => t.key !== 'ver' || !!course.videoUrl || ((!!course.audioFemale || !!course.audioMale) && course.slides.length > 0)).map(t => {
             const active = fmt === t.key;
             return (
               <button key={t.key} onClick={() => setFmt(t.key)}
@@ -3029,14 +3030,67 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
           );
         })()}
 
-        {/* VER (video) */}
-        {fmt === 'ver' && (
+        {/* VER (video real, o video-lección = diapositivas + voz sincronizadas) */}
+        {fmt === 'ver' && (() => {
+          const verAudio = voiceSel === 'm' ? (course.audioMale || course.audioFemale) : (course.audioFemale || course.audioMale);
+          const canSlideshow = !!verAudio && course.slides.length > 0;
+          const slide = course.slides[Math.min(verSlide, course.slides.length - 1)];
+          return (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             {course.videoUrl ? (
               <div className="relative w-full rounded-xl overflow-hidden" style={{ paddingTop: '56.25%' }}>
                 <iframe src={course.videoUrl} title={course.title} className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
               </div>
+            ) : canSlideshow ? (
+              <>
+                {/* Escenario 16:9 con la diapositiva actual */}
+                <div className="relative w-full rounded-2xl overflow-hidden mb-3" style={{ paddingTop: '56.25%',
+                  background: `radial-gradient(120% 120% at 85% -10%, ${accent}26, ${accent}0A 70%)` }}>
+                  <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-center">
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: accent }}>
+                      {course.title} · {verSlide + 1}/{course.slides.length}
+                    </p>
+                    <h3 className="text-lg sm:text-2xl font-black text-gray-900 mb-3 leading-tight">{slide.title}</h3>
+                    <ul className="space-y-1.5">
+                      {slide.points.map((p, i) => (
+                        <li key={i} className="flex items-start gap-2 text-gray-700 text-sm sm:text-base">
+                          <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {/* Barra de progreso de diapositivas */}
+                  <div className="absolute bottom-0 left-0 right-0 flex gap-1 p-2">
+                    {course.slides.map((_, i) => (
+                      <span key={i} className="h-1 flex-1 rounded-full transition-colors"
+                        style={{ backgroundColor: i <= verSlide ? accent : `${accent}33` }} />
+                    ))}
+                  </div>
+                </div>
+                {/* Selector de voz */}
+                {course.audioFemale && course.audioMale && (
+                  <div className="flex gap-2 mb-2">
+                    <button onClick={() => setVoiceSel('f')} className="flex-1 py-2 rounded-xl text-sm font-bold border"
+                      style={voiceSel === 'f' ? { backgroundColor: accent, color: '#fff', borderColor: accent } : { backgroundColor: '#fff', color: '#6B7280', borderColor: '#E5E7EB' }}>♀ Voz femenina</button>
+                    <button onClick={() => setVoiceSel('m')} className="flex-1 py-2 rounded-xl text-sm font-bold border"
+                      style={voiceSel === 'm' ? { backgroundColor: accent, color: '#fff', borderColor: accent } : { backgroundColor: '#fff', color: '#6B7280', borderColor: '#E5E7EB' }}>♂ Voz masculina</button>
+                  </div>
+                )}
+                {/* Audio que dirige el pase de diapositivas */}
+                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                <audio key={verAudio} controls preload="metadata" src={verAudio} className="w-full"
+                  onTimeUpdate={(e) => {
+                    const t = e.currentTarget;
+                    if (t.duration > 0) {
+                      const idx = Math.min(course.slides.length - 1, Math.floor((t.currentTime / t.duration) * course.slides.length));
+                      setVerSlide(idx);
+                    }
+                  }}
+                  onEnded={() => setVerSlide(course.slides.length - 1)} />
+                <p className="text-xs text-gray-400 mt-2">Video-lección: las diapositivas avanzan con la narración. Toca play.</p>
+              </>
             ) : (
               <div className="rounded-xl bg-gray-50 border border-dashed border-gray-200 py-16 text-center">
                 <p className="text-4xl mb-2">🎬</p>
@@ -3045,7 +3099,8 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* EVALUACIÓN (quiz) */}
         {fmt === 'quiz' && (
