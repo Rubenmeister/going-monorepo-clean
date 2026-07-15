@@ -69,6 +69,8 @@ export interface MultiFormatCourseData {
   slides: MfSlide[];
   /** Guion del podcast: segmentos que la voz (TTS) lee en orden. */
   podcast: { intro: string; segments: { title: string; text: string }[] };
+  /** Audio real del curso (MP3 con voz del asistente). Si falta → voz TTS del navegador. */
+  audioUrl?: string;
   /** Video incrustable (YouTube/hosted). Si falta → placeholder. */
   videoUrl?: string;
   quiz: MfQuiz[];
@@ -306,6 +308,7 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
   <li>Iniciar el viaje sin confirmar el nombre del pasajero.</li>
 </ul>
 `,
+    audioUrl: '/audio/academy/c1.mp3',
     manualHtml: `
 <p>Imagina la escena: una viajera acaba de bajar de un vuelo de doce horas. Está cansada, quizá en una ciudad que no conoce, con el teléfono al 8% de batería. Abre la puerta de tu auto… y en los próximos <strong>treinta segundos</strong> decide, sin darse cuenta, qué tipo de viaje va a tener. Ese instante —antes de que digas una sola palabra sobre la ruta— es la Primera Impresión. Y en Going App, la primera impresión no la das solo tú: la da el Ecuador.</p>
 <p>Los estudios sobre confianza coinciden en algo: las personas formamos un juicio en los primeros segundos de un encuentro, y ese juicio cuesta revertirlo después. La buena noticia es que esos segundos se pueden preparar. Este manual te enseña cómo.</p>
@@ -1712,20 +1715,36 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
           </div>
         )}
 
-        {/* ESCUCHAR (podcast TTS) */}
+        {/* ESCUCHAR (audio real con voz Going, o TTS del navegador de respaldo) */}
         {fmt === 'escuchar' && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={speaking ? stopPodcast : playPodcast}
-                className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl" style={{ backgroundColor: accent }}>
-                {speaking ? '⏹' : '▶'}
-              </button>
-              <div>
-                <p className="font-bold text-gray-900">Podcast · {course.title}</p>
-                <p className="text-xs text-gray-500">{speaking ? 'Reproduciendo (voz del navegador)…' : 'Toca play para escuchar'}</p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mb-3">Voz generada por tu navegador. Narra el manual completo del curso.</p>
+            {course.audioUrl ? (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0" style={{ backgroundColor: accent }}>🎧</span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 truncate">Podcast · {course.title}</p>
+                    <p className="text-xs text-gray-500">Voz Going · escúchalo o descárgalo para el camino</p>
+                  </div>
+                </div>
+                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                <audio controls preload="metadata" src={course.audioUrl} className="w-full mb-4" />
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <button onClick={speaking ? stopPodcast : playPodcast}
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl" style={{ backgroundColor: accent }}>
+                    {speaking ? '⏹' : '▶'}
+                  </button>
+                  <div>
+                    <p className="font-bold text-gray-900">Podcast · {course.title}</p>
+                    <p className="text-xs text-gray-500">{speaking ? 'Reproduciendo (voz del navegador)…' : 'Toca play para escuchar'}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Voz generada por tu navegador. Narra el manual completo del curso.</p>
+              </>
+            )}
             {course.manualHtml ? (
               <div className="prose prose-sm max-w-none text-gray-700 academy-manual"
                 dangerouslySetInnerHTML={{ __html: course.manualHtml }} />
