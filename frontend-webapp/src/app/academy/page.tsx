@@ -348,23 +348,33 @@ export default function AcademyPage() {
           <span className="al al1" /><span className="al al2" /><span className="al al3" />
           <span className="al al4" /><span className="al al5" />
         </div>
-        {/* Logo Going App — centrado arriba del hero */}
-        <div className="max-w-6xl mx-auto relative z-10 flex justify-center mb-10">
+        {/* Logo Going App + bajada — centrado arriba del hero */}
+        <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/going-logo-h-trans.png"
             alt="Going App"
             className="h-14 md:h-16 w-auto object-contain"
           />
+          <p className="mt-3 text-xs md:text-sm font-semibold uppercase tracking-[0.18em] text-gray-300 text-center max-w-xl">
+            La primera superapp latinoamericana del turismo colaborativo
+          </p>
         </div>
+
+        {/* Banner grande ACADEMIA GOING */}
+        <div className="max-w-6xl mx-auto relative z-10 mb-10 text-center">
+          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl border border-white/10"
+            style={{ background: `linear-gradient(100deg, ${COLORS.brand.red}, #E23B30)` }}>
+            <IconGraduation size={30} />
+            <span className="text-3xl md:text-5xl font-black tracking-tight" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+              ACADEMIA GOING
+            </span>
+          </div>
+        </div>
+
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-center gap-10">
           {/* Texto */}
           <div className="flex-1 text-center md:text-left">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
-              style={{ backgroundColor: `${COLORS.brand.red}22`, color: COLORS.brand.redLight }}>
-              <IconGraduation size={14} />
-              Academia Going App
-            </span>
             <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
               Capacítate. Crece. Gana más.
             </h1>
