@@ -27,7 +27,8 @@ function htmlToNarration(html) {
     .replace(/\b(Clave Going|Escenario|Error com[uú]n)\s*:?/gi, '$1. ')
     .replace(/\s+([.,;:])/g, '$1').replace(/\.\s*\.(\s*\.)?/g, '. ').replace(/\s{2,}/g, ' ').trim();
 }
-const intro = 'Bienvenida y bienvenido a la Academia Going App. Curso: La Primera Impresión. Escucha este manual mientras conduces sin pasajeros. ';
+const title = (src.slice(idIdx, mIdx).match(/title:\s*'([^']+)'/) || [])[1] || 'este curso';
+const intro = `Bienvenida y bienvenido a la Academia Going App. Curso: ${title}. Escucha este manual mientras te preparas para dar lo mejor. `;
 const text = intro + htmlToNarration(manualHtml);
 console.log('narración:', text.length, 'caracteres');
 
@@ -47,6 +48,7 @@ for (let i=0;i<chunks.length;i++){
   buffers.push(Buffer.from(await res.arrayBuffer()));
   process.stdout.write(`  trozo ${i+1}/${chunks.length} ✓\n`);
 }
-const out = `frontend-webapp/public/audio/academy/${courseId}-${VOICE}.mp3`;
+const OUTDIR = process.env.ACADEMY_TTS_OUTDIR || 'frontend-webapp/public/audio/academy';
+const out = `${OUTDIR}/${courseId}-${VOICE}.mp3`;
 fs.writeFileSync(out, Buffer.concat(buffers));
 console.log('OK →', out, (fs.statSync(out).size/1024).toFixed(0)+'KB');
