@@ -26,6 +26,28 @@ function schoolKeyOf(courseId: string): string {
   return SCHOOL_KEY_BY_PREFIX[courseId[0]] || 'viajeros';
 }
 
+/**
+ * Convierte el manual HTML en texto hablado limpio para la voz (TTS):
+ * quita etiquetas, emojis y etiquetas de caja ("Clave Going:", "Escenario:"),
+ * pone una pausa tras cada título y colapsa espacios.
+ */
+function htmlToNarration(html: string): string {
+  return html
+    .replace(/<(h2|h3)[^>]*>/gi, ' … ')       // pausa antes del título
+    .replace(/<\/(h2|h3|p|li|blockquote)>/gi, '. ')
+    .replace(/<li[^>]*>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')                    // resto de etiquetas
+    .replace(/&aacute;/gi, 'á').replace(/&eacute;/gi, 'é').replace(/&iacute;/gi, 'í')
+    .replace(/&oacute;/gi, 'ó').replace(/&uacute;/gi, 'ú').replace(/&ntilde;/gi, 'ñ')
+    .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, 'y').replace(/&[a-z]+;/gi, ' ')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/gu, '') // emojis
+    .replace(/\b(Clave Going|Escenario|Error com[uú]n|El porqu[eé]|En la pr[aá]ctica)\s*:/gi, '$1. ')
+    .replace(/\s+([.,;:])/g, '$1')
+    .replace(/\.\s*\.(\s*\.)?/g, '. ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 export interface MfSlide { title: string; points: string[] }
 export interface MfQuiz { question: string; options: string[]; correct: number; explanation: string }
 export interface MultiFormatCourseData {
@@ -35,8 +57,14 @@ export interface MultiFormatCourseData {
   title: string;
   subtitle: string;
   description: string;
-  /** Texto largo en HTML para leer y exportar a PDF. */
+  /** Resumen en HTML que se muestra en pantalla (pestaña "Leer"). Conciso. */
   readingHtml: string;
+  /**
+   * Manual EN EXTENSO en HTML (narrativa, escenarios, el porqué, errores). Es la
+   * versión profunda: alimenta el PDF descargable y la narración de "Escuchar".
+   * Si falta, PDF y podcast caen al readingHtml / podcast.segments.
+   */
+  manualHtml?: string;
   /** Manual gráfico: slides con puntos clave. */
   slides: MfSlide[];
   /** Guion del podcast: segmentos que la voz (TTS) lee en orden. */
@@ -277,6 +305,70 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
   <li>Comentar sobre política o religión.</li>
   <li>Iniciar el viaje sin confirmar el nombre del pasajero.</li>
 </ul>
+`,
+    manualHtml: `
+<p>Imagina la escena: una viajera acaba de bajar de un vuelo de doce horas. Está cansada, quizá en una ciudad que no conoce, con el teléfono al 8% de batería. Abre la puerta de tu auto… y en los próximos <strong>treinta segundos</strong> decide, sin darse cuenta, qué tipo de viaje va a tener. Ese instante —antes de que digas una sola palabra sobre la ruta— es la Primera Impresión. Y en Going App, la primera impresión no la das solo tú: la da el Ecuador.</p>
+<p>Los estudios sobre confianza coinciden en algo: las personas formamos un juicio en los primeros segundos de un encuentro, y ese juicio cuesta revertirlo después. La buena noticia es que esos segundos se pueden preparar. Este manual te enseña cómo.</p>
+
+<h2>1. Tu vehículo habla antes que tú</h2>
+<p>Antes de encender el motor, tu auto ya está enviando un mensaje. Un interior limpio, ordenado y con buen olor comunica "aquí estás en buenas manos" sin que digas nada. Un auto descuidado comunica lo contrario, y ninguna sonrisa alcanza a borrar esa primera señal.</p>
+<h3>El checklist, y por qué importa cada punto</h3>
+<ul>
+  <li><strong>Interior impecable.</strong> Asientos sin migas, piso sin basura, ventanas sin marcas. No es solo estética: quien ve tu auto cuidado asume —con razón— que también cuidas tu manejo.</li>
+  <li><strong>Olor neutro.</strong> Una fragancia suave está bien; los perfumes intensos son un error frecuente. Muchas personas llegan con náuseas del vuelo o de la carretera, y un ambientador fuerte puede arruinarles el viaje. Menos es más.</li>
+  <li><strong>Seguridad revisada.</strong> Llantas, frenos, luces y combustible. Un auto seguro es la base de todo; sin eso, lo demás no cuenta.</li>
+  <li><strong>Temperatura lista.</strong> Si hace calor, enciende el aire antes de que suba la persona; si hace frío en la Sierra, la calefacción. Que entre a un espacio cómodo desde el primer segundo.</li>
+  <li><strong>Cargador a mano.</strong> Un cable USB accesible resuelve la ansiedad del teléfono en 12%. Un detalle pequeño que se agradece enormemente.</li>
+</ul>
+<div class="box escenario"><b>Escenario</b>Recoges a un ejecutivo en el aeropuerto de Quito a las 6 a.m. Sube, y lo primero que siente es un olor fuerte a pino. A los dos minutos te pide bajar la ventana. Ese ambientador, que pusiste con buena intención, jugó en tu contra. Un auto que huele a "limpio y neutro" nunca falla.</div>
+<div class="box clave"><b>Clave Going</b>Un auto limpio es el primer saludo que das antes de abrir la boca. Prepáralo como si fueras a recibir a alguien en tu casa.</div>
+
+<h2>2. El lanyard: tu insignia de confianza</h2>
+<p>Ponte en el lugar de quien viaja: está por subirse al auto de una persona desconocida, a veces de noche, a veces en una ciudad ajena. Tu <strong>lanyard de Going App</strong>, visible, responde en silencio la pregunta más importante que tiene en la cabeza: "¿es este el auto correcto y la persona correcta?".</p>
+<ul>
+  <li>Úsalo <strong>siempre visible</strong>, no guardado en la guantera.</li>
+  <li>Verifica que tu <strong>foto y placa en la app</strong> coincidan con la realidad. Cuando la persona compara lo que ve con lo que dice la app y todo cuadra, se relaja.</li>
+</ul>
+<div class="box error"><b>Error común</b>Llegar sin identificación visible y esperar a que la pasajera "adivine" que eres su conductor. Esa duda de diez segundos en la vereda es incomodidad pura, y muchas veces se traduce en una estrella menos. La confianza se construye antes de arrancar.</div>
+
+<h2>3. El saludo: los primeros 30 segundos</h2>
+<p>El momento del "hola" marca el tono de todo el viaje. No es un guion rígido, sino calidez genuina. Piensa en Carlos, conductor de Imbabura y uno de los mejor calificados de su zona: baja del auto, sonríe de verdad y dice siempre la misma frase.</p>
+<blockquote><strong>"¡Bienvenido a Going App! Soy [tu nombre], y estoy aquí para llevarte seguro."</strong></blockquote>
+<p>Esas pocas palabras, dichas con una sonrisa real, desarman la ansiedad de cualquiera. Pero el saludo es más que la frase; es un pequeño protocolo:</p>
+<ol>
+  <li><strong>Baja del vehículo.</strong> Mostrarte —en vez de esperar adentro— comunica respeto y proactividad. Es la diferencia entre un taxi cualquiera y un servicio Going.</li>
+  <li><strong>Sonríe de verdad.</strong> La sonrisa forzada se nota; la genuina se contagia. Si tuviste un mal día, respira antes de bajar: la persona no tiene la culpa.</li>
+  <li><strong>Muestra el lanyard.</strong> Confirma visualmente quién eres.</li>
+  <li><strong>Di la frase de bienvenida</strong> con el nombre de la persona si lo tienes en la app. Escuchar su propio nombre genera confianza al instante.</li>
+  <li><strong>Ofrece ayuda con el equipaje</strong> antes de que lo pida.</li>
+</ol>
+<div class="box escenario"><b>Escenario</b>Una viajera llega agotada tras un vuelo largo. No quiere conversación, solo llegar a su hotel. Tu saludo cálido y breve, sin exceso de charla, es justo lo que necesita. Leer a la persona —cuándo conversar y cuándo dar silencio— es parte del arte de recibir.</div>
+
+<h2>4. El equipaje: hospitalidad en acción</h2>
+<p>Ayudar con las maletas es una de las señales de servicio más apreciadas, y muchas conductoras y conductores la olvidan. Ofrécelo de forma natural: "¿Te ayudo con la maleta?". Si la persona prefiere hacerlo sola, respeta su decisión sin insistir. La intención de ayudar ya cuenta.</p>
+<div class="box clave"><b>Clave Going</b>Cargar una maleta pesada por alguien mayor, o abrir la puerta bajo la lluvia, son gestos que la gente recuerda mucho después de olvidar la ruta.</div>
+
+<h2>5. Cuando la persona no habla español</h2>
+<p>Ecuador recibe viajeras y viajeros de todo el mundo, y muchas veces tú eres el primer ecuatoriano con quien conversan. Esa es una responsabilidad hermosa: eres embajador del país. No necesitas ser bilingüe para recibir bien.</p>
+<ul>
+  <li>Usa la <strong>traducción del chat de la app</strong> para coordinar cualquier detalle.</li>
+  <li>Aprende un puñado de frases de bienvenida. Un simple <em>"Welcome! I'm your Going App driver"</em> con una sonrisa vale muchísimo.</li>
+</ul>
+<blockquote><em>"Welcome to Ecuador! I'm [tu nombre], your Going driver. You're safe with me."</em></blockquote>
+<p>En el curso de <strong>Inglés Turístico Básico</strong> aprenderás las frases más útiles para cada momento del viaje.</p>
+
+<h2>6. Los errores que cuestan estrellas</h2>
+<p>Estos son los descuidos más comunes, y cada uno tiene una consecuencia concreta en la confianza y en tu calificación:</p>
+<ul>
+  <li><strong>Estar en el teléfono cuando llega la persona.</strong> Comunica desinterés desde el primer segundo.</li>
+  <li><strong>Pedir datos personales</strong> (número privado, redes). Cruza un límite de privacidad y genera incomodidad. Todo se coordina por la app.</li>
+  <li><strong>Comentar sobre política o religión.</strong> Son temas que dividen; tu rol es que la persona se sienta cómoda, no debatir.</li>
+  <li><strong>Arrancar sin confirmar el nombre.</strong> Confirmar el nombre evita recoger a la persona equivocada y demuestra atención.</li>
+</ul>
+<div class="box error"><b>Error común</b>Terminar una llamada personal justo cuando la pasajera sube, sin siquiera saludarla. Esos primeros segundos distraídos pesan más que veinte minutos de buen manejo después.</div>
+
+<h2>En resumen</h2>
+<p>La Primera Impresión no depende de la suerte: se prepara. Un auto listo, una identificación visible, un saludo cálido y unos gestos de hospitalidad convierten un simple traslado en una experiencia de cinco estrellas que la gente recomienda. Y cada una de esas experiencias construye, viaje a viaje, la reputación del Ecuador.</p>
 `,
     slides: [
       { title: 'Vehículo Going App-ready', points: ['Interior impecable, sin olores fuertes', 'Llantas, frenos, luces revisados', 'Temperatura lista antes de subir', 'Cargador USB a mano'] },
@@ -1450,7 +1542,10 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
 
   if (!course) return null;
 
-  const fullScript = [course.podcast.intro, ...course.podcast.segments.map(s => `${s.title}. ${s.text}`)].join('\n\n');
+  // "Escuchar" narra el MANUAL en extenso si existe; si no, el guion por segmentos.
+  const fullScript = course.manualHtml
+    ? htmlToNarration(course.manualHtml)
+    : [course.podcast.intro, ...course.podcast.segments.map(s => `${s.title}. ${s.text}`)].join('\n\n');
 
   const playPodcast = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -1468,11 +1563,31 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
   const downloadPdf = () => {
     const w = window.open('', '_blank');
     if (!w) return;
+    const body = course.manualHtml || course.readingHtml;
     w.document.write(
       `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${course.title} — Academia Going App</title>` +
-      `<style>body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:720px;margin:40px auto;padding:0 24px;line-height:1.6;color:#111}` +
-      `h1{color:${accent}}h2,h3{color:#0033A0}ul{padding-left:20px}</style></head><body>` +
-      `<h1>${course.title}</h1><p><em>${course.subtitle} · Academia Going App</em></p>${course.readingHtml}` +
+      `<style>` +
+      `@page{margin:22mm 18mm}` +
+      `*{box-sizing:border-box}` +
+      `body{font-family:Georgia,'Times New Roman',serif;max-width:720px;margin:0 auto;padding:0 8px;line-height:1.7;color:#1c1917;font-size:12pt}` +
+      `.cover{border-bottom:3px solid ${accent};padding-bottom:14px;margin-bottom:22px}` +
+      `.eyebrow{font-family:system-ui,sans-serif;font-size:9pt;letter-spacing:.16em;text-transform:uppercase;color:${accent};font-weight:700;margin:0}` +
+      `h1{font-family:system-ui,sans-serif;color:#1c1917;font-size:24pt;margin:6px 0 2px;line-height:1.1}` +
+      `.sub{font-family:system-ui,sans-serif;color:#6b615c;margin:0;font-size:11pt}` +
+      `h2{font-family:system-ui,sans-serif;color:${accent};font-size:15pt;margin:24px 0 6px;border-left:4px solid ${accent};padding-left:10px}` +
+      `h3{font-family:system-ui,sans-serif;color:#1c1917;font-size:12.5pt;margin:16px 0 4px}` +
+      `ul,ol{padding-left:22px}li{margin:4px 0}` +
+      `blockquote{margin:14px 0;padding:12px 16px;background:${accent}0F;border-left:4px solid ${accent};font-style:italic;border-radius:0 8px 8px 0}` +
+      `.box{margin:14px 0;padding:12px 16px;border-radius:10px;font-family:system-ui,sans-serif;font-size:11pt;page-break-inside:avoid}` +
+      `.box b{display:block;margin-bottom:3px;font-size:9.5pt;letter-spacing:.04em;text-transform:uppercase}` +
+      `.box.clave{background:#ECFDF5;border:1px solid #A7F3D0}.box.clave b{color:#047857}` +
+      `.box.escenario{background:#FFF7ED;border:1px solid #FED7AA}.box.escenario b{color:#B45309}` +
+      `.box.error{background:#FEF2F2;border:1px solid #FECACA}.box.error b{color:#B91C1C}` +
+      `.foot{margin-top:30px;padding-top:12px;border-top:1px solid #e7e5e4;font-family:system-ui,sans-serif;font-size:9pt;color:#9c948e;text-align:center}` +
+      `</style></head><body>` +
+      `<div class="cover"><p class="eyebrow">Academia Going · Manual del curso</p><h1>${course.title}</h1><p class="sub">${course.subtitle}</p></div>` +
+      `${body}` +
+      `<div class="foot">Academia Going App · Formación gratuita para la comunidad Going · goingec.com</div>` +
       `<script>window.onload=function(){window.print()}</script></body></html>`,
     );
     w.document.close();
@@ -1498,6 +1613,16 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <style>{`
+        .academy-manual h2{font-size:1.05rem;font-weight:800;color:#1f2937;border-left:4px solid ${accent};padding-left:.6rem;margin:1.4rem 0 .5rem}
+        .academy-manual h3{font-size:.95rem;font-weight:800;color:#111827;margin:1rem 0 .3rem}
+        .academy-manual blockquote{margin:.9rem 0;padding:.7rem 1rem;background:${accent}0F;border-left:4px solid ${accent};font-style:italic;border-radius:0 .6rem .6rem 0;color:#374151}
+        .academy-manual .box{margin:.9rem 0;padding:.7rem 1rem;border-radius:.7rem;font-size:.9rem}
+        .academy-manual .box b{display:block;margin-bottom:.15rem;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase}
+        .academy-manual .box.clave{background:#ECFDF5;border:1px solid #A7F3D0}.academy-manual .box.clave b{color:#047857}
+        .academy-manual .box.escenario{background:#FFF7ED;border:1px solid #FED7AA}.academy-manual .box.escenario b{color:#B45309}
+        .academy-manual .box.error{background:#FEF2F2;border:1px solid #FECACA}.academy-manual .box.error b{color:#B91C1C}
+      `}</style>
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -1600,16 +1725,21 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
                 <p className="text-xs text-gray-500">{speaking ? 'Reproduciendo (voz del navegador)…' : 'Toca play para escuchar'}</p>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mb-3">Voz generada por tu navegador. Lee el guion completo del episodio.</p>
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600 italic">{course.podcast.intro}</p>
-              {course.podcast.segments.map((s, i) => (
-                <div key={i}>
-                  <p className="text-sm font-bold text-gray-800">{s.title}</p>
-                  <p className="text-sm text-gray-600">{s.text}</p>
-                </div>
-              ))}
-            </div>
+            <p className="text-xs text-gray-400 mb-3">Voz generada por tu navegador. Narra el manual completo del curso.</p>
+            {course.manualHtml ? (
+              <div className="prose prose-sm max-w-none text-gray-700 academy-manual"
+                dangerouslySetInnerHTML={{ __html: course.manualHtml }} />
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600 italic">{course.podcast.intro}</p>
+                {course.podcast.segments.map((s, i) => (
+                  <div key={i}>
+                    <p className="text-sm font-bold text-gray-800">{s.title}</p>
+                    <p className="text-sm text-gray-600">{s.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
