@@ -319,11 +319,11 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
     audioFemale: 'https://storage.googleapis.com/going-academy-audio/academy/tc1-coral.mp3',
     audioMale: 'https://storage.googleapis.com/going-academy-audio/academy/tc1-echo.mp3',
     slides: [
-      { title: 'Nuestra misión', points: ['Conectar al Ecuador con tecnología simple', 'Una red de personas que se cuidan', 'Cada interacción muestra lo mejor del país'] },
-      { title: 'Hospitalidad ecuatoriana', points: ['Recibir bien, escuchar y resolver', 'Calidez, puntualidad y limpieza', 'La persona siempre primero'] },
-      { title: 'Empatía y resolución', points: ['Escucha sin interrumpir', 'Reconoce la molestia', 'Propón una solución', 'Usa soporte, nunca la confrontación'] },
-      { title: 'Regla de oro', points: ['Nada de política ni religión', 'Trato amable y profesional', 'Honestidad en todo acuerdo'] },
-      { title: 'Embajadores del país', points: ['Eres la primera impresión de Ecuador', 'Tu amabilidad invita a volver', 'Cuidas la reputación de la comunidad'] },
+      { title: 'Nuestra misión', points: ['Conectar al Ecuador con tecnología simple', 'Una red de personas que se cuidan', 'Cada interacción muestra lo mejor del país'], image: 'https://storage.googleapis.com/going-academy-audio/img/tc1-s0.png' },
+      { title: 'Hospitalidad ecuatoriana', points: ['Recibir bien, escuchar y resolver', 'Calidez, puntualidad y limpieza', 'La persona siempre primero'], image: 'https://storage.googleapis.com/going-academy-audio/img/tc1-s1.png' },
+      { title: 'Empatía y resolución', points: ['Escucha sin interrumpir', 'Reconoce la molestia', 'Propón una solución', 'Usa soporte, nunca la confrontación'], image: 'https://storage.googleapis.com/going-academy-audio/img/tc1-s2.png' },
+      { title: 'Regla de oro', points: ['Nada de política ni religión', 'Trato amable y profesional', 'Honestidad en todo acuerdo'], image: 'https://storage.googleapis.com/going-academy-audio/img/tc1-s3.png' },
+      { title: 'Embajadores del país', points: ['Eres la primera impresión de Ecuador', 'Tu amabilidad invita a volver', 'Cuidas la reputación de la comunidad'], image: 'https://storage.googleapis.com/going-academy-audio/img/tc1-s4.png' },
     ],
     podcast: {
       intro: 'Bienvenido al primer episodio de la Academia Going App. Hoy hablamos del ADN de Going App: quiénes somos, por qué existimos y cómo cada persona de nuestra comunidad se convierte en embajadora del Ecuador.',
@@ -1538,11 +1538,11 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
     audioFemale: 'https://storage.googleapis.com/going-academy-audio/academy/a3-coral.mp3',
     audioMale: 'https://storage.googleapis.com/going-academy-audio/academy/a3-echo.mp3',
     slides: [
-      { title: 'Menos es más', points: ['Espacios limpios y con intención', 'Antes de comprar, quita', 'Despeja superficies'] },
-      { title: 'Iluminación barata', points: ['Luz cálida (2700–3000 K)', 'Varias fuentes, no un solo foco', 'Una lámpara transforma un rincón'] },
-      { title: 'Lo local', points: ['Artesanía y textiles ecuatorianos', 'Apoya a productores', 'Auténtico = memorable y fotografiable'] },
-      { title: 'Plantas y textiles', points: ['Plantas dan vida', 'Cojines, manta, cortinas', 'Paleta de 2–3 colores'] },
-      { title: 'Detalles 5★', points: ['Bienvenida: agua, café, nota', 'Wi-Fi fácil y cargadores', 'Ganchos y espacio para maletas'] },
+      { title: 'Menos es más', points: ['Espacios limpios y con intención', 'Antes de comprar, quita', 'Despeja superficies'], image: 'https://storage.googleapis.com/going-academy-audio/img/a3-s0.png' },
+      { title: 'Iluminación barata', points: ['Luz cálida (2700–3000 K)', 'Varias fuentes, no un solo foco', 'Una lámpara transforma un rincón'], image: 'https://storage.googleapis.com/going-academy-audio/img/a3-s1.png' },
+      { title: 'Lo local', points: ['Artesanía y textiles ecuatorianos', 'Apoya a productores', 'Auténtico = memorable y fotografiable'], image: 'https://storage.googleapis.com/going-academy-audio/img/a3-s2.png' },
+      { title: 'Plantas y textiles', points: ['Plantas dan vida', 'Cojines, manta, cortinas', 'Paleta de 2–3 colores'], image: 'https://storage.googleapis.com/going-academy-audio/img/a3-s3.png' },
+      { title: 'Detalles 5★', points: ['Bienvenida: agua, café, nota', 'Wi-Fi fácil y cargadores', 'Ganchos y espacio para maletas'], image: 'https://storage.googleapis.com/going-academy-audio/img/a3-s4.png' },
     ],
     podcast: {
       intro: 'Bienvenido a Diseño con Bajo Presupuesto. Verás cómo pequeños cambios de luz, color y detalles locales hacen que los huéspedes recomienden tu lugar sin gastar de más.',
@@ -3050,9 +3050,17 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
                   background: slide.image ? '#1c1917' : `radial-gradient(120% 120% at 85% -10%, ${accent}26, ${accent}0A 70%)` }}>
                   {slide.image && (
                     <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img key={slide.image} src={slide.image} alt={slide.title}
-                        className="absolute inset-0 w-full h-full object-cover animate-[fadeIn_.4s_ease]" />
+                      {/* Imágenes apiladas: cross-fade + zoom lento (movimiento tipo Ken Burns) */}
+                      {course.slides.map((s, i) => s.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={i} src={s.image} alt={i === verSlide ? s.title : ''} aria-hidden={i !== verSlide}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{
+                            opacity: i === verSlide ? 1 : 0,
+                            transform: i === verSlide ? 'scale(1.07)' : 'scale(1)',
+                            transition: 'opacity .8s ease, transform 8s ease-out',
+                          }} />
+                      ) : null)}
                       <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.45) 40%, rgba(0,0,0,0) 68%)' }} />
                     </>
                   )}
