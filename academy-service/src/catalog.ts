@@ -109,43 +109,80 @@ export interface LevelInfo {
   next: { level: AcademyLevel; label: string; requirement: string } | null;
 }
 
+/** Umbrales de calificación de los niveles (diseño). */
+export const PLATA_MIN_STARS = 4.5;
+export const ORO_MIN_STARS = 4.8;
+export const ORO_MIN_TRIPS = 50;
+
+/** Métricas de reputación del proveedor (del ratings-service). undefined = desconocido. */
+export interface ReputationStats {
+  /** Calificación promedio 0–5. */
+  rating?: number;
+  /** Viajes/servicios completados. */
+  trips?: number;
+}
+
 /**
- * Deriva el nivel Aliado a partir de los cursos completados.
+ * Deriva el nivel Aliado a partir de los cursos completados Y la reputación.
  *   - Bronce: Tronco Común completo (los 3 cursos obligatorios).
- *   - Plata:  Bronce + ≥3 cursos de especialización.
- *   - Oro:    todos los cursos completados.
+ *   - Plata:  Bronce + ≥3 especialización + 4.5★ o más.
+ *   - Oro:    todos los cursos + 4.8★ + 50+ viajes/reservas.
  *
- * (Los requisitos de estrellas 4.5★/4.8★ del diseño se muestran en la UI pero
- * el nivel por CURSOS es lo que este servicio computa y persiste.)
+ * Fail-open: si el rating/trips es desconocido (ratings-service caído o sin
+ * datos aún) la puerta de estrellas NO bloquea — se otorga por cursos. Así una
+ * caída del ratings-service nunca degrada el nivel de alguien que se lo ganó.
  */
-export function deriveLevel(completedCourseIds: string[]): LevelInfo {
+export function deriveLevel(
+  completedCourseIds: string[],
+  reputation: ReputationStats = {},
+): LevelInfo {
   const done = new Set(completedCourseIds.filter((id) => CATALOG[id]));
   const troncoDone = REQUIRED_COURSE_IDS.every((id) => done.has(id));
   const specCount = SPECIALIZATION_COURSE_IDS.filter((id) => done.has(id)).length;
   const allDone = ALL_COURSE_IDS.every((id) => done.has(id));
 
-  if (allDone) {
+  const { rating, trips } = reputation;
+  const pass45 = rating == null || rating >= PLATA_MIN_STARS;
+  const pass48 = rating == null || rating >= ORO_MIN_STARS;
+  const pass50 = trips == null || trips >= ORO_MIN_TRIPS;
+
+  // ── Oro ──
+  if (allDone && pass48 && pass50) {
     return { level: 'oro', label: 'Aliado Oro', next: null };
   }
-  if (troncoDone && specCount >= 3) {
+  // ── Plata ──
+  if (troncoDone && specCount >= 3 && pass45) {
+    const missing: string[] = [];
+    if (!allDone) missing.push('completa todas las rutas de tu escuela');
+    if (!pass48) missing.push(`sube tu calificación a ${ORO_MIN_STARS}★`);
+    if (!pass50) missing.push(`suma ${ORO_MIN_TRIPS}+ viajes/reservas`);
     return {
       level: 'plata',
       label: 'Aliado Plata',
-      next: { level: 'oro', label: 'Aliado Oro', requirement: 'Completa todas las rutas de tu escuela' },
+      next: { level: 'oro', label: 'Aliado Oro', requirement: capitalize(missing.join(' + ')) },
     };
   }
+  // ── Bronce ── (tronco hecho, pero falta especialización y/o 4.5★)
   if (troncoDone) {
-    const faltan = Math.max(0, 3 - specCount);
+    const missing: string[] = [];
+    const faltanSpec = Math.max(0, 3 - specCount);
+    if (faltanSpec > 0) missing.push(`completa ${faltanSpec} curso(s) de especialización`);
+    if (!pass45) missing.push(`mantén ${PLATA_MIN_STARS}★ o más${rating != null ? ` (tienes ${rating.toFixed(2)}★)` : ''}`);
     return {
       level: 'bronce',
       label: 'Aliado Bronce',
-      next: { level: 'plata', label: 'Aliado Plata', requirement: `Completa ${faltan} curso(s) de especialización` },
+      next: { level: 'plata', label: 'Aliado Plata', requirement: capitalize(missing.join(' + ')) },
     };
   }
+  // ── Sin nivel ──
   const faltanTronco = REQUIRED_COURSE_IDS.filter((id) => !done.has(id)).length;
   return {
     level: 'none',
     label: 'Sin nivel',
     next: { level: 'bronce', label: 'Aliado Bronce', requirement: `Completa el Tronco Común (${faltanTronco} restante(s))` },
   };
+}
+
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }

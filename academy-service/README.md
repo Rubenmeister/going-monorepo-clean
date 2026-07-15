@@ -33,6 +33,9 @@ S2S por VPC.
 
 - `JWT_SECRET`, `MONGO_URL`, `RS256_PUBLIC_KEY` (base del cloudbuild).
 - `INTERNAL_SERVICE_TOKEN` (para `/academy/levels`).
+- `RATINGS_SERVICE_URL` (para la puerta de estrellas Plata≥4.5★ / Oro≥4.8★+50 viajes;
+  S2S a `ratings-service`, fail-open si no está). Sin él, el nivel se computa solo por
+  cursos.
 - `MONGO_DB_NAME=going-academy` (opcional; default en código).
 
 ## Build & deploy

@@ -10,6 +10,7 @@ import {
   ALL_COURSE_IDS,
   deriveLevel,
   LevelInfo,
+  ReputationStats,
   SchoolKey,
 } from './catalog';
 
@@ -59,7 +60,9 @@ export class AcademyService {
   // ── Lecturas ────────────────────────────────────────────────────────
   async getProgress(userId: string): Promise<ProgressView> {
     const doc = (await this.repo.findByUserId(userId)) ?? this.emptyDoc(userId);
-    return this.toView(doc);
+    const reputation = await this.reputationIfEligible(doc.completedCourseIds, userId);
+    const levelInfo = deriveLevel(doc.completedCourseIds, reputation);
+    return this.toView(doc, levelInfo);
   }
 
   /**
@@ -94,7 +97,9 @@ export class AcademyService {
     }
     doc.courses[courseId] = cp;
     const saved = await this.repo.save(userId, doc);
-    return this.toView(saved);
+    // Una lección no cambia el nivel (el nivel sale de cursos con quiz aprobado);
+    // el nivel por cursos es suficiente aquí sin traer reputación.
+    return this.toView(saved, deriveLevel(saved.completedCourseIds));
   }
 
   // ── Escritura: aprobar el curso (quiz) → insignias + nivel ──────────
@@ -111,7 +116,7 @@ export class AcademyService {
     const passed = score / total >= PASS_RATIO;
 
     const doc = (await this.repo.findByUserId(userId)) ?? this.emptyDoc(userId);
-    const levelBefore = doc.level;
+    const completedBefore = [...doc.completedCourseIds];
     const cp = this.courseProgress(doc, courseId);
 
     // Guardar mejor score siempre; marcar aprobado (idempotente).
@@ -134,17 +139,25 @@ export class AcademyService {
     }
     doc.courses[courseId] = cp;
 
-    // Recalcular nivel.
-    const levelInfo = deriveLevel(doc.completedCourseIds);
-    doc.level = levelInfo.level;
-
+    // Nivel por CURSOS (ceiling, sin rating) → es lo que se PERSISTE y lo que
+    // usa el ranking (barato, determinista).
+    const courseLevel = deriveLevel(doc.completedCourseIds);
+    doc.level = courseLevel.level;
     const saved = await this.repo.save(userId, doc);
+
+    // Nivel EFECTIVO mostrado al usuario = cursos + puerta de estrellas. Solo
+    // trae la reputación si ya es elegible por cursos para Plata+ (evita el hop).
+    const reputation = await this.reputationIfEligible(doc.completedCourseIds, userId);
+    const effBefore = deriveLevel(completedBefore, reputation);
+    const effAfter = deriveLevel(doc.completedCourseIds, reputation);
+    const RANK: Record<string, number> = { none: 0, bronce: 1, plata: 2, oro: 3 };
+
     return {
-      progress: this.toView(saved),
+      progress: this.toView(saved, effAfter),
       newlyAwardedBadges: passed ? newlyAwarded : [],
-      leveledUp: levelInfo.level !== levelBefore,
-      levelBefore,
-      levelAfter: levelInfo.level,
+      leveledUp: (RANK[effAfter.level] ?? 0) > (RANK[effBefore.level] ?? 0),
+      levelBefore: effBefore.level,
+      levelAfter: effAfter.level,
     };
   }
 
@@ -197,7 +210,44 @@ export class AcademyService {
     return code;
   }
 
-  private toView(doc: AcademyProgressDoc): ProgressView {
+  /**
+   * Trae la reputación (rating + viajes) SOLO si el usuario ya es elegible por
+   * cursos para Plata+ (para Bronce/none el rating no cambia el nivel → evita el
+   * hop). Fail-open: {} si el ratings-service no responde.
+   */
+  private async reputationIfEligible(
+    completedCourseIds: string[],
+    userId: string,
+  ): Promise<ReputationStats> {
+    const ceiling = deriveLevel(completedCourseIds);
+    if (ceiling.level !== 'plata' && ceiling.level !== 'oro') return {};
+    return (await this.fetchReputation(userId)) ?? {};
+  }
+
+  /** S2S al ratings-service: GET /ratings/driver/:id/stats → {rating, trips}. */
+  private async fetchReputation(userId: string): Promise<ReputationStats | null> {
+    const base = process.env.RATINGS_SERVICE_URL;
+    if (!base) return null;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 1500);
+      const res = await fetch(`${base}/ratings/driver/${encodeURIComponent(userId)}/stats`, {
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      if (!res.ok) return null;
+      const body: any = await res.json();
+      const s = body?.data?.summary ?? {};
+      const rating = typeof s.averageRating === 'number' ? s.averageRating : undefined;
+      const trips = typeof s.completedTrips === 'number' ? s.completedTrips : undefined;
+      return { rating, trips };
+    } catch (e) {
+      this.logger.warn(`fetchReputation falló (ignorado): ${(e as Error).message}`);
+      return null;
+    }
+  }
+
+  private toView(doc: AcademyProgressDoc, levelInfo: LevelInfo): ProgressView {
     const courses: CourseStatusView[] = ALL_COURSE_IDS.map((id) => {
       const meta = CATALOG[id];
       const cp = doc.courses[id];
@@ -215,7 +265,7 @@ export class AcademyService {
     });
     return {
       userId: doc.userId,
-      level: deriveLevel(doc.completedCourseIds),
+      level: levelInfo,
       badges: doc.badges.map((code) => ({ code, label: this.badgeLabel(code) })),
       completedCount: doc.completedCourseIds.length,
       totalCourses: ALL_COURSE_IDS.length,
