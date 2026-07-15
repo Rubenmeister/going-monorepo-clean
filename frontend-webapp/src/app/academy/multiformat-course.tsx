@@ -48,7 +48,7 @@ function htmlToNarration(html: string): string {
     .trim();
 }
 
-export interface MfSlide { title: string; points: string[] }
+export interface MfSlide { title: string; points: string[]; image?: string }
 export interface MfQuiz { question: string; options: string[]; correct: number; explanation: string }
 export interface MultiFormatCourseData {
   id: string;
@@ -579,11 +579,11 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
 <p>La Primera Impresión no depende de la suerte: se prepara. Un auto listo, una identificación visible, un saludo cálido y unos gestos de hospitalidad convierten un simple traslado en una experiencia de cinco estrellas que la gente recomienda. Y cada una de esas experiencias construye, viaje a viaje, la reputación del Ecuador.</p>
 `,
     slides: [
-      { title: 'Vehículo Going App-ready', points: ['Interior impecable, sin olores fuertes', 'Llantas, frenos, luces revisados', 'Temperatura lista antes de subir', 'Cargador USB a mano'] },
-      { title: 'Identificación visible', points: ['Lanyard siempre visible', 'Foto y placa coinciden con la app', 'Eres tu insignia de confianza'] },
-      { title: 'El saludo Going App', points: ['Sal del auto', 'Sonríe genuinamente', 'Muestra el lanyard', '“¡Bienvenido a Going App! Soy…”'] },
-      { title: 'Equipaje y empatía', points: ['Ayuda activamente con maletas', 'Confirma el nombre del pasajero', 'Usa traducción si no habla español'] },
-      { title: 'Lo que NO hacer', points: ['Nada de teléfono al recibir', 'No pedir datos personales', 'Nada de política ni religión'] },
+      { title: 'Vehículo Going App-ready', points: ['Interior impecable, sin olores fuertes', 'Llantas, frenos, luces revisados', 'Temperatura lista antes de subir', 'Cargador USB a mano'], image: 'https://storage.googleapis.com/going-academy-audio/img/c1-s0.png' },
+      { title: 'Identificación visible', points: ['Lanyard siempre visible', 'Foto y placa coinciden con la app', 'Eres tu insignia de confianza'], image: 'https://storage.googleapis.com/going-academy-audio/img/c1-s1.png' },
+      { title: 'El saludo Going App', points: ['Sal del auto', 'Sonríe genuinamente', 'Muestra el lanyard', '“¡Bienvenido a Going App! Soy…”'], image: 'https://storage.googleapis.com/going-academy-audio/img/c1-s2.png' },
+      { title: 'Equipaje y empatía', points: ['Ayuda activamente con maletas', 'Confirma el nombre del pasajero', 'Usa traducción si no habla español'], image: 'https://storage.googleapis.com/going-academy-audio/img/c1-s3.png' },
+      { title: 'Lo que NO hacer', points: ['Nada de teléfono al recibir', 'No pedir datos personales', 'Nada de política ni religión'], image: 'https://storage.googleapis.com/going-academy-audio/img/c1-s4.png' },
     ],
     podcast: {
       intro: 'Bienvenido a la Ruta del Volante. En este primer módulo hablamos de la primera impresión: cómo recibir a tu pasajero de forma que los primeros treinta segundos jueguen a tu favor.',
@@ -2874,6 +2874,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
         .academy-manual .box.clave{background:#ECFDF5;border:1px solid #A7F3D0}.academy-manual .box.clave b{color:#047857}
         .academy-manual .box.escenario{background:#FFF7ED;border:1px solid #FED7AA}.academy-manual .box.escenario b{color:#B45309}
         .academy-manual .box.error{background:#FEF2F2;border:1px solid #FECACA}.academy-manual .box.error b{color:#B91C1C}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
       `}</style>
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
@@ -3046,26 +3047,34 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
               <>
                 {/* Escenario 16:9 con la diapositiva actual */}
                 <div className="relative w-full rounded-2xl overflow-hidden mb-3" style={{ paddingTop: '56.25%',
-                  background: `radial-gradient(120% 120% at 85% -10%, ${accent}26, ${accent}0A 70%)` }}>
-                  <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-center">
-                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: accent }}>
+                  background: slide.image ? '#1c1917' : `radial-gradient(120% 120% at 85% -10%, ${accent}26, ${accent}0A 70%)` }}>
+                  {slide.image && (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img key={slide.image} src={slide.image} alt={slide.title}
+                        className="absolute inset-0 w-full h-full object-cover animate-[fadeIn_.4s_ease]" />
+                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.45) 40%, rgba(0,0,0,0) 68%)' }} />
+                    </>
+                  )}
+                  <div className={`absolute inset-0 p-5 sm:p-8 flex flex-col ${slide.image ? 'justify-end' : 'justify-center'}`}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: slide.image ? '#fff' : accent, opacity: slide.image ? 0.85 : 1 }}>
                       {course.title} · {verSlide + 1}/{course.slides.length}
                     </p>
-                    <h3 className="text-lg sm:text-2xl font-black text-gray-900 mb-3 leading-tight">{slide.title}</h3>
-                    <ul className="space-y-1.5">
+                    <h3 className={`text-lg sm:text-2xl font-black mb-2 leading-tight ${slide.image ? 'text-white' : 'text-gray-900'}`}>{slide.title}</h3>
+                    <ul className="space-y-1">
                       {slide.points.map((p, i) => (
-                        <li key={i} className="flex items-start gap-2 text-gray-700 text-sm sm:text-base">
-                          <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
+                        <li key={i} className={`flex items-start gap-2 text-sm sm:text-[15px] ${slide.image ? 'text-gray-100' : 'text-gray-700'}`}>
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: slide.image ? '#fff' : accent }} />
                           <span>{p}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   {/* Barra de progreso de diapositivas */}
-                  <div className="absolute bottom-0 left-0 right-0 flex gap-1 p-2">
+                  <div className="absolute bottom-0 left-0 right-0 flex gap-1 p-2 z-10">
                     {course.slides.map((_, i) => (
                       <span key={i} className="h-1 flex-1 rounded-full transition-colors"
-                        style={{ backgroundColor: i <= verSlide ? accent : `${accent}33` }} />
+                        style={{ backgroundColor: i <= verSlide ? (slide.image ? '#fff' : accent) : 'rgba(255,255,255,.35)' }} />
                     ))}
                   </div>
                 </div>
