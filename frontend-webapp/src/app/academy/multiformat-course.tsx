@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { COLORS } from '../components/design-tokens';
 import { completeAcademyCourse, completeAcademyLesson, CompleteCourseResult } from '../../lib/academy/api';
 import { nextCourse } from './course-nav';
+import { useIsAuthenticated } from '../../lib/providers/auth-client';
 
 export interface MfSlide { title: string; points: string[] }
 export interface MfQuiz { question: string; options: string[]; correct: number; explanation: string }
@@ -1423,6 +1424,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
   const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>(course ? course.quiz.map(() => null) : []);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [completion, setCompletion] = useState<CompleteCourseResult | null>(null);
+  const isAuthed = useIsAuthenticated();
   const accent = course?.schoolColor || COLORS.brand.red;
 
   // Detener la voz al cambiar de formato/desmontar.
@@ -1514,6 +1516,17 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
+        {/* Aviso suave para invitados: contenido abierto, progreso al iniciar sesión */}
+        {!isAuthed && (
+          <Link href={`/auth/login?from=/academy/${courseId}`}
+            className="flex items-center gap-3 mb-4 rounded-xl border px-4 py-3 hover:shadow-sm transition-shadow"
+            style={{ borderColor: `${accent}44`, backgroundColor: `${accent}0D` }}>
+            <span className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: accent }}>🎓</span>
+            <span className="text-sm text-gray-600 flex-1">
+              Estás explorando de invitado. <strong className="text-gray-800">Inicia sesión</strong> para guardar tu progreso y ganar insignias.
+            </span>
+          </Link>
+        )}
         {/* LEER */}
         {fmt === 'leer' && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -1650,6 +1663,11 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
                   <p className="mt-2 text-sm font-bold" style={{ color: accent }}>
                     ¡Subiste a {completion.progress.level.label}! 🎉
                   </p>
+                )}
+                {passed && !isAuthed && (
+                  <Link href={`/auth/login?from=/academy/${courseId}`} className="mt-2 inline-block text-sm font-bold hover:underline" style={{ color: accent }}>
+                    Inicia sesión para guardar tu insignia →
+                  </Link>
                 )}
 
                 {passed ? (

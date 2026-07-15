@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { COLORS } from '../../components/design-tokens';
 import { MULTIFORMAT_COURSES, MultiFormatCourse } from '../multiformat-course';
-import { useIsAuthenticated } from '../../../lib/providers/auth-client';
 import {
   IconUser, IconGlobe, IconMobile, IconCamera, IconBook, IconMap,
   IconBook as IconReading, IconHeadphones, IconPlay, IconChart, IconQuiz,
@@ -1205,55 +1204,12 @@ function LegacyCourseView() {
 export default function CoursePage() {
   const params = useParams();
   const courseId = params?.courseId as string;
-  const isAuthed = useIsAuthenticated();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
-  // Los cursos REQUIEREN cuenta (decisión de producto): guardar el progreso y
-  // ganar insignias es por usuario. Mientras hidrata mostramos un placeholder
-  // neutro para evitar parpadeo; si no hay sesión, invitamos a iniciarla.
-  if (!mounted) {
-    return <div className="min-h-screen bg-gray-50" />;
-  }
-  if (!isAuthed) {
-    return <AcademyLoginGate courseId={courseId} />;
-  }
-
+  // Cursos ABIERTOS para leer (los capítulos se ven sin cuenta). El progreso y
+  // las insignias se guardan al iniciar sesión — el curso muestra un aviso suave
+  // y las llamadas de progreso degradan a null para quien no tiene sesión.
   if (courseId && MULTIFORMAT_COURSES[courseId]) {
     return <MultiFormatCourse courseId={courseId} />;
   }
   return <LegacyCourseView />;
-}
-
-/** Pantalla de invitación a iniciar sesión para tomar un curso. */
-function AcademyLoginGate({ courseId }: { courseId: string }) {
-  const from = `/academy/${courseId || ''}`;
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="text-center max-w-md bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl mb-4 text-white text-2xl" style={{ backgroundColor: COLORS.brand.red }}>
-          🎓
-        </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Inicia sesión para capacitarte</h1>
-        <p className="text-gray-500 text-sm mb-6">
-          Crea tu cuenta gratis o inicia sesión para tomar los cursos, guardar tu progreso y ganar tus insignias de la Academia Going App.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 justify-center">
-          <Link href={`/auth/login?from=${encodeURIComponent(from)}`}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-bold text-sm hover:opacity-90"
-            style={{ backgroundColor: COLORS.brand.red }}>
-            Iniciar sesión
-          </Link>
-          <Link href={`/auth/register?from=${encodeURIComponent(from)}`}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm border-2 hover:bg-gray-50"
-            style={{ borderColor: COLORS.brand.red, color: COLORS.brand.red }}>
-            Crear cuenta gratis
-          </Link>
-        </div>
-        <Link href="/academy" className="inline-block mt-4 text-xs font-bold text-gray-400 hover:text-gray-600">
-          ← Volver a la Academia
-        </Link>
-      </div>
-    </div>
-  );
 }
