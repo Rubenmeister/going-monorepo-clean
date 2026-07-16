@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRideStore, type Ride } from '../stores/rideStore';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { getStoredToken, authFetch } from '@/lib/providers/auth-client';
+import { authFetch } from '@/lib/providers/auth-client';
 import { COLORS } from '../components/design-tokens';
 import { IconUsers, IconVan, IconPackage, IconArrowRight } from '../components/icons';
 import { StaticRouteMap } from '../components/features/tracking/StaticRouteMap';
@@ -173,12 +173,24 @@ interface ConfirmationPanelProps {
   pickup?: { lat: number; lon: number };
   dropoff?: { lat: number; lon: number };
   onContinue: () => void;
+  /* 'reserva' = el pasajero ACABA de reservar un asiento en una salida futura
+   * (modelo programado): el viaje aún NO ocurre. 'completado' = el viaje real
+   * ya terminó (fallback sin driverInfo). El copy cambia para no mentir. */
+  variant?: 'reserva' | 'completado';
 }
 
 function ConfirmationPanel({
   rideToken, driverName, driverPlate, driverPhoto,
   origin, destination, estimatedFare, pickup, dropoff, onContinue,
+  variant = 'reserva',
 }: ConfirmationPanelProps) {
+  const isReserva = variant === 'reserva';
+  const statusLabel   = isReserva ? 'Asiento reservado' : 'Viaje completado';
+  const headingLabel  = isReserva ? '¡Reserva confirmada!' : '¡Viaje completado!';
+  const proofSubtitle = isReserva
+    ? 'Este es el comprobante de tu reserva. Guárdalo como referencia antes de pagar.'
+    : 'Este es el comprobante de tu viaje. Guárdalo como referencia antes de pagar.';
+  const driverLabel   = isReserva ? 'Conductora o conductor' : 'Conductor asignado';
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(rideToken)}&size=200x200&margin=10&color=0033A0`;
   const shortToken = rideToken.length > 8 ? rideToken.slice(-8).toUpperCase() : rideToken.toUpperCase();
   // El QR viene de una API externa (api.qrserver.com). Si falla, ocultamos
@@ -210,7 +222,7 @@ function ConfirmationPanel({
             </div>
           )}
           <div className="flex-1">
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">Conductor asignado</p>
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{driverLabel}</p>
             <p className="text-lg font-bold text-gray-900">{driverName}</p>
             {driverPlate && (
               <span className="inline-block mt-1 bg-[#0033A0] text-white text-xs font-bold px-3 py-1 rounded-lg tracking-widest">
@@ -220,7 +232,7 @@ function ConfirmationPanel({
           </div>
           <div className="flex flex-col items-end gap-1">
             <span className="w-3 h-3 rounded-full bg-green-400" />
-            <span className="text-xs text-green-600 font-semibold">Viaje completado</span>
+            <span className="text-xs text-green-600 font-semibold">{statusLabel}</span>
           </div>
         </div>
       </div>
@@ -251,8 +263,8 @@ function ConfirmationPanel({
       {/* ── QR Code ── */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col items-center gap-4">
         <div>
-          <p className="text-center text-sm font-semibold text-gray-700 mb-1">¡Viaje completado!</p>
-          <p className="text-center text-xs text-gray-400">Este es el comprobante de tu viaje. Guárdalo como referencia antes de pagar.</p>
+          <p className="text-center text-sm font-semibold text-gray-700 mb-1">{headingLabel}</p>
+          <p className="text-center text-xs text-gray-400">{proofSubtitle}</p>
         </div>
 
         {!qrFailed && (
@@ -319,32 +331,15 @@ function RidePageInner() {
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
-  /* Auth guard INICIAL — redirige antes de mostrar el formulario.
+  /* NAVEGACIÓN PÚBLICA (Rubén 15-jul): el pasajero puede ELEGIR servicio, ver
+   * la ruta, los horarios compartidos y la TARIFA sin registrarse — "dar certeza
+   * al cliente" antes de pedir cuenta. El gate de login se movió al momento de
+   * RESERVAR (RideRequestForm.handleSubmit), que es cuando de verdad se necesita
+   * la identidad. Ya NO redirigimos al entrar a /ride.
    *
-   * Lectura DIRECTA de localStorage para evitar race conditions con la
-   * hidratación del Zustand store (que es async via useEffect en
-   * RootLayoutClient). En el primer render post-navegación hard, el store
-   * puede estar vacío aunque haya token persistido. Leyendo localStorage
-   * directamente garantizamos que no haya falsos negativos que causen el
-   * loop /ride <-> /auth/login.
+   * (El backend /search es ahora OptionalJwtAuthGuard: sin token cotiza precio
+   * público; con token respeta el segmento corporativo.)
    */
-  useEffect(() => {
-    if (auth.isLoading) return;
-    if (typeof window === 'undefined') return;
-
-    const hasLocalToken =
-      !!localStorage.getItem('authToken') ||
-      !!localStorage.getItem('auth_token') ||
-      !!getStoredToken();
-
-    if (!auth.user && !hasLocalToken) {
-      // Preservar la ruta COMPLETA (incl. ?type=shared|van|city) para que al
-      // volver del login/registro caiga directo en el tipo de viaje elegido,
-      // sin pasar otra vez por el selector ("dar vueltas").
-      const current = `${window.location.pathname}${window.location.search}`;
-      router.replace(`/auth/login?from=${encodeURIComponent(current)}`);
-    }
-  }, [auth.isLoading, auth.user, router]);
 
   /* Avanzar a tracking cuando el viaje se crea.
    * NO requerimos auth.user del store porque puede ser null por race con
@@ -558,6 +553,7 @@ function RidePageInner() {
         {/* Paso 3: Confirmación con QR / token */}
         {step === 'confirmation' && activeRide && (
           <ConfirmationPanel
+            variant={activeRide.status === 'completed' ? 'completado' : 'reserva'}
             rideToken={activeRide.tripId}
             driverName={activeRide.driverInfo?.name ?? 'Tu conductor'}
             driverPlate={activeRide.driverInfo?.licensePlate}

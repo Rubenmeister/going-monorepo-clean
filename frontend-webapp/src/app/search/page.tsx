@@ -108,6 +108,35 @@ async function searchAPI(q: string): Promise<Result[]> {
   return out;
 }
 
+/**
+ * Transporte NO tiene búsqueda de texto por catálogo (a diferencia de
+ * tours/experiencias/hospedaje). Antes, buscar una ciudad ("Riobamba",
+ * "Ibarra", "Santo Domingo" — las 3 rutas de lanzamiento) daba "Sin resultados"
+ * bajo Transporte. Sintetizamos accesos directos a RESERVAR el viaje a ese
+ * destino, para que las rutas SÍ aparezcan en la búsqueda global y lleven
+ * directo al flujo /ride con el destino pre-cargado.
+ */
+function transportResultsFor(term: string): Result[] {
+  const q = term.trim();
+  if (!q) return [];
+  const to = encodeURIComponent(q);
+  return [
+    {
+      id: `tr-shared-${q}`, category: 'transport', icon: '🚍',
+      title: `Viaje compartido a ${q}`,
+      subtitle: 'Paga solo tu asiento · entre ciudades',
+      priceLabel: 'ver salidas', href: `/ride?type=shared&to=${to}`,
+      badge: 'Más popular',
+    },
+    {
+      id: `tr-priv-${q}`, category: 'transport', icon: '🚗',
+      title: `Viaje privado a ${q}`,
+      subtitle: 'SUV, VAN o BUS · horario flexible',
+      priceLabel: 'cotizar', href: `/ride?type=private&to=${to}`,
+    },
+  ];
+}
+
 function SearchInner() {
   const searchParams = useSearchParams();
   const router       = useRouter();
@@ -132,7 +161,13 @@ function SearchInner() {
   const runSearch = useCallback(async (q: string) => {
     setLoading(true);
     const apiResults = await searchAPI(q);
-    setResults(apiResults.length > 0 ? apiResults : getLocalResults(q));
+    const base = apiResults.length > 0 ? apiResults : getLocalResults(q);
+    const term = q.trim();
+    // Transporte se sintetiza para cualquier destino buscado (ver arriba). Si lo
+    // agregamos, quitamos el transporte genérico del fallback para no duplicar.
+    const transport = transportResultsFor(term);
+    const rest = transport.length ? base.filter(r => r.category !== 'transport') : base;
+    setResults([...transport, ...rest]);
     setLoading(false);
   }, [getLocalResults]);
 

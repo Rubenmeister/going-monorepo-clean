@@ -221,8 +221,8 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-4">
               {[
                 { val: 'PIN', label: 'Seguridad verificada' },
-                { val: 'En vivo', label: 'Seguí tu viaje' },
-                { val: 'Sin efectivo', label: 'Pagá con tarjeta' },
+                { val: 'En vivo', label: 'Sigue tu viaje' },
+                { val: 'Sin efectivo', label: 'Paga con tarjeta' },
               ].map((stat) => (
                 <div key={stat.val} className="bg-white/[0.05] rounded-2xl p-4 text-center">
                   <div className="text-2xl font-black text-white mb-1">{stat.val}</div>

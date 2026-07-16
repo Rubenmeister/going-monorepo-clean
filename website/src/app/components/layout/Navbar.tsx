@@ -44,10 +44,13 @@ export function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center gap-8">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+        {/* Logo + tagline */}
+        <Link href="/" className="flex flex-col justify-center flex-shrink-0 leading-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/going-logo-h.png" alt="Going App" className="h-11 w-auto" />
+          <img src="/going-logo-h.png" alt="Going App" className="h-10 w-auto" />
+          <span className="hidden sm:block text-[9.5px] font-bold tracking-[0.3px] text-[#ff4c41] mt-1 whitespace-nowrap">
+            Primera Superapp Latinoamericana de Turismo Colaborativo
+          </span>
         </Link>
 
         {/* Desktop nav */}

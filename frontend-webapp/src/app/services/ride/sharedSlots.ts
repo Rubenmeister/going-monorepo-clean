@@ -112,11 +112,9 @@ export async function searchScheduledTrips(
     // El UnifiedSearchUseCase cascadea horarios del día + ±1 día. Si no hay
     // fecha (privado consultando cobertura), omitimos scheduledDateTime.
     const scheduledDateTime = date ? `${date}T00:00:00.000Z` : undefined;
-    // /search está protegido por JwtAuthGuard — leemos token de localStorage
-    // si existe. Si el usuario NO está logueado, el backend devuelve 401 y
-    // mostramos lista vacía con CTA a login (el carpool browsing público
-    // requiere que el usuario se registre primero — aceptable porque
-    // /reserve también lo requiere).
+    // /search usa OptionalJwtAuthGuard (Rubén 15-jul): navegación PÚBLICA.
+    // Sin token cotiza precio público y lista las salidas compartidas igual;
+    // con token respeta el segmento corporativo. Mandamos el token si existe.
     // La key 'authToken' es la canónica (frontend-webapp/src/lib/providers/auth-client.ts).
     const token = typeof window !== 'undefined'
       ? localStorage.getItem('authToken') || ''

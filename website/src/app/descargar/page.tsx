@@ -75,7 +75,7 @@ export default function DescargarPage() {
         <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-16">
           {[
             { val: 'PIN', label: 'Seguridad verificada' },
-            { val: 'En vivo', label: 'Seguí tu viaje' },
+            { val: 'En vivo', label: 'Sigue tu viaje' },
             { val: 'Gratis', label: 'Sin costo' },
           ].map((s) => (
             <div key={s.val} className="bg-white/[0.05] rounded-2xl p-4 text-center">

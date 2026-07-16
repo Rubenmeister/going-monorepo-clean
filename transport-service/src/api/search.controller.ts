@@ -7,7 +7,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser } from '../domain/ports';
+import { OptionalJwtAuthGuard, CurrentUser } from '../domain/ports';
 import { UnifiedSearchUseCase } from '../application/use-cases';
 import { SearchQueryDto, SearchResponseDto } from './dtos/search-query.dto';
 
@@ -33,7 +33,9 @@ interface AuthUser {
  * POST /search   → buscar opciones de viaje
  */
 @Controller('search')
-@UseGuards(JwtAuthGuard)
+// Navegación pública: sin token cotiza como público; con token respeta el
+// segmento corporativo (audit #29). La reserva sigue exigiendo login.
+@UseGuards(OptionalJwtAuthGuard)
 export class SearchController {
   private readonly logger = new Logger(SearchController.name);
 
@@ -42,16 +44,17 @@ export class SearchController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async search(
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser | null,
     @Body() dto: SearchQueryDto,
   ): Promise<SearchResponseDto> {
     // Server-side enforcement (audit #29): clientSegment se DERIVA del JWT
     // (user.companyId), no del body del cliente. Empresa que no marca el
     // segment NO puede evitar el +25%. Admin puede sobreescribir para QA.
-    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    // Anónimo (navegación pública sin login) → siempre segmento 'public'.
+    const isAdmin = !!user && (user.roles ?? [user.role]).includes('admin');
     const effective = isAdmin
-      ? { ...dto, clientSegment: dto.clientSegment ?? (user.companyId ? 'corporate' : 'public') }
-      : { ...dto, clientSegment: (user.companyId ? 'corporate' : 'public') as 'corporate' | 'public' };
+      ? { ...dto, clientSegment: dto.clientSegment ?? (user!.companyId ? 'corporate' : 'public') }
+      : { ...dto, clientSegment: (user?.companyId ? 'corporate' : 'public') as 'corporate' | 'public' };
 
     const result = await this.unifiedSearch.execute(effective);
     this.logger.debug(

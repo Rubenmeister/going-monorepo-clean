@@ -21,6 +21,26 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 }
 
 /**
+ * Optional JWT Auth Guard
+ *
+ * Para endpoints de NAVEGACIÓN PÚBLICA (ej. POST /search): si viene un token
+ * válido, popula `req.user` (para derivar segmento corporativo, audit #29); si
+ * NO viene token o es inválido, deja pasar como ANÓNIMO (req.user = null) en vez
+ * de tirar 401. Así el pasajero ve viajes y precios (segmento público) ANTES de
+ * registrarse; la RESERVA/creación de viaje sigue exigiendo JwtAuthGuard.
+ *
+ * Fail-open a propósito y SOLO acá: no protege ningún dato privado — sólo cotiza
+ * rutas públicas. No usar en rutas que devuelvan datos de usuario.
+ */
+@Injectable()
+export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
+  handleRequest(err: any, user: any) {
+    // Sin token / token inválido → anónimo (null), NO 401. Con token válido → user.
+    return user || null;
+  }
+}
+
+/**
  * @CurrentUser decorator
  */
 export const CurrentUser = createParamDecorator(

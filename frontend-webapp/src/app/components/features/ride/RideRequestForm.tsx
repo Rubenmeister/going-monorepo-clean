@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useRideService } from '@/hooks/features/useRideService';
 import { LocationSelector } from './LocationSelector';
 import { DateTimePicker } from './DateTimePicker';
@@ -125,6 +125,7 @@ function suggestSimpleVehicle(pax: number): SimpleVehicle {
 // ─────────────────────────────────────────────────────────────────────────
 function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) {
   const searchParams = useSearchParams();
+  const router       = useRouter();
 
   const {
     pickupLocation,
@@ -406,6 +407,18 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     e.preventDefault();
     if (!pickupLocation || !dropoffLocation) return;
     setReserveError(null);
+
+    // Gate de login AL RESERVAR (navegación pública, Rubén 15-jul): el pasajero
+    // llegó hasta acá viendo ruta, horarios y tarifa SIN cuenta. Recién ahora,
+    // al confirmar la reserva, exigimos sesión. Preservamos toda la intención
+    // (?type/from/to/date/time/seats) para volver directo al confirmar.
+    if (!getStoredToken()) {
+      const from = encodeURIComponent(
+        `${window.location.pathname}${window.location.search}`,
+      );
+      router.push(`/auth/login?from=${from}`);
+      return;
+    }
 
     // Si es un slot scheduled, reservar asiento ANTES de crear ride.
     if (selectedSlot) {

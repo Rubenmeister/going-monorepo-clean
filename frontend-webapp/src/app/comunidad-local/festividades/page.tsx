@@ -188,7 +188,7 @@ export default function FestividadesPage() {
               <div className="text-6xl mb-6">🎉</div>
               <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-4">Tu próxima festividad, sin sorpresas</h2>
               <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                Reservá con anticipación para Carnaval, Mama Negra, Inti Raymi y más. Conductoras y conductores
+                Reserva con anticipación para Carnaval, Mama Negra, Inti Raymi y más. Conductoras y conductores
                 verificados, precio fijo desde el primer momento y seguimiento en vivo. Going App está por arrancar:
                 sé de las primeras personas en vivir las fiestas del Ecuador con nosotros.
               </p>
