@@ -2,6 +2,7 @@ packages:
   # Applications
   - 'website'            # goingec.com — sitio público de comunicación
   - 'frontend-webapp'
+  - 'empresas-webapp'    # empresas.goingec.com — portal corporativo B2B (app propia)
   - 'admin-dashboard'
   # mobile apps managed independently with npm (not pnpm workspace)
   # - 'mobile-driver-app'
