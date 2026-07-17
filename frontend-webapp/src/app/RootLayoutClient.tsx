@@ -69,6 +69,16 @@ const MARKETING_LANDINGS = new Set([
 
 function useIsAppRoute() {
   const pathname = usePathname();
+  // Host corporativo (empresas.goingec.com): el middleware reescribe
+  // '/'→'/empresas' PERO usePathname ve el path del browser ('/', '/panel',
+  // '/solicitud'…), no el reescrito. Sin esto, las URLs limpias del portal
+  // empresas mostraban el Navbar/Footer de marketing encima de su propio header
+  // (bug "doble navbar"). Todo el host empresas.* tiene su propio chrome, así que
+  // ocultamos el de marketing en todo el host. Seguro en cliente sin hydration
+  // mismatch: el Navbar/Footer viven en <ClientOnly> (no renderizan hasta montar).
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('empresas.')) {
+    return true;
+  }
   if (MARKETING_LANDINGS.has(pathname)) return false;
   return APP_PREFIXES.some(
     prefix => pathname === prefix || pathname.startsWith(prefix + '/')
