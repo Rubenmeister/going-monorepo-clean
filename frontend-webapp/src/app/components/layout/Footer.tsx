@@ -61,7 +61,7 @@ export function Footer() {
     { name: 'Tours',              href: '/services/tours' },
     { name: 'Experiencias',       href: '/services/experiences' },
     { name: 'Envíos',             href: '/envios' },
-    { name: 'Para Empresas',      href: '/empresas/auth/login' },
+    { name: 'Para Empresas',      href: 'https://empresas.goingec.com' },
   ];
 
   const proveedores = [
@@ -133,7 +133,7 @@ export function Footer() {
                   { icon: '🏡', label: 'Anfitrión',       href: '/services/anfitriones' },
                   { icon: '🏺', label: 'Promotor Local',  href: '/services/promotores-locales' },
                   { icon: '🧗', label: 'Operador',        href: '/services/operadores' },
-                  { icon: '🏢', label: 'Empresas',        href: '/empresas/auth/login' },
+                  { icon: '🏢', label: 'Empresas',        href: 'https://empresas.goingec.com' },
                 ].map(item => (
                   <Link key={item.href} href={item.href}
                     className="flex items-center gap-1.5 text-gray-300 hover:text-white text-xs font-medium transition-colors">
