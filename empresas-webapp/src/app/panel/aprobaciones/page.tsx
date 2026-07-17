@@ -12,13 +12,17 @@ import { useEffect, useState } from "react";
 import { useAuthRedirect } from "@/lib/auth";
 import { fetchApprovals, approveBooking, rejectBooking } from "@/lib/api";
 
+// Item del workflow de aprobación (GET /corporate/approvals/pending).
 interface Booking {
   id: string;
-  serviceType: "transport" | "accommodation" | "tour" | "experience";
-  totalPrice: { amount: number; currency: string };
-  startDate: string;
-  endDate?: string;
-  createdAt: string;
+  _id?: string;
+  requesterName?: string;       // quién solicitó
+  serviceType: string;
+  amount: number;               // monto a aprobar
+  description?: string;         // "servicio — destino (motivo de aprobación)"
+  currentLevel?: number;        // nivel actual en la cadena multinivel
+  approvalChain?: { level: number; status: string }[];
+  createdAt?: string;
 }
 
 const SERVICE_LABELS: Record<string, string> = {
@@ -26,6 +30,7 @@ const SERVICE_LABELS: Record<string, string> = {
   accommodation: "Alojamiento",
   tour: "Tour",
   experience: "Experiencia",
+  parcel: "Encomienda",
 };
 
 function fmtDate(d: string) {
@@ -53,7 +58,7 @@ export default function AprobacionesPage() {
   useEffect(() => {
     if (!session?.accessToken) return;
     fetchApprovals(session!.accessToken)
-      .then(setPendientes)
+      .then((items) => setPendientes((items ?? []).map((x) => ({ ...x, id: x.id ?? x._id }))))
       .catch(() => setError("No se pudieron cargar las aprobaciones."))
       .finally(() => setLoading(false));
   }, [session?.accessToken]);
@@ -167,15 +172,22 @@ export default function AprobacionesPage() {
                           {SERVICE_LABELS[b.serviceType] ?? b.serviceType}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500">
-                        ID: {b.id.slice(0, 8)}… · Solicitado: {fmtDate(b.createdAt)}
-                      </p>
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        Inicio: {fmtDate(b.startDate)}
-                        {b.endDate ? ` → ${fmtDate(b.endDate)}` : ""}
+                      {b.requesterName && (
+                        <p className="text-sm text-slate-700 mt-0.5">
+                          Solicita: <span className="font-semibold">{b.requesterName}</span>
+                        </p>
+                      )}
+                      {b.description && (
+                        <p className="text-xs text-slate-600 mt-0.5">{b.description}</p>
+                      )}
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {b.createdAt ? `Solicitado: ${fmtDate(b.createdAt)}` : ""}
+                        {b.currentLevel != null && b.approvalChain?.length
+                          ? ` · Nivel ${b.currentLevel} de ${b.approvalChain.length}`
+                          : ""}
                       </p>
                       <p className="text-base font-bold text-slate-900 mt-2">
-                        {fmtMoney(b.totalPrice.amount, b.totalPrice.currency)}
+                        {fmtMoney(b.amount ?? 0)}
                       </p>
                     </div>
 

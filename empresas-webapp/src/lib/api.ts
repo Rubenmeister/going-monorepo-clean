@@ -171,29 +171,48 @@ export async function crearBooking(
   });
 }
 
-// Aprobaciones
-// Las aprobaciones son bookings con status "pending".
-// No hay servicio dedicado — se usan los endpoints del booking-service.
+// Aprobaciones — workflow de aprobación MULTINIVEL del corporate-service.
+// Antes esta pantalla usaba /bookings/my (bookings PROPIOS del aprobador) +
+// /bookings/:id/confirm|cancel, así que el aprobador no veía las solicitudes de
+// su equipo y el multinivel nunca avanzaba. Se reconecta al workflow real:
+//  - GET  /corporate/approvals/pending      → items que esperan MI aprobación
+//    (traen requesterName, serviceType, amount, description [destino+motivo],
+//    approvalChain, currentLevel).
+//  - PATCH /corporate/approvals/:id/decide  → aprueba/rechaza y AVANZA el nivel.
 export async function fetchApprovals(
   token: string,
   _companyId?: string
 ): Promise<any[]> {
-  const all = await corpFetch<any[]>("/bookings/my", token);
-  return all.filter((b) => b.status === "pending");
+  return corpFetch<any[]>("/corporate/approvals/pending", token);
+}
+
+async function decideApproval(
+  token: string,
+  approvalId: string,
+  decision: "approved" | "rejected",
+  comments = ""
+): Promise<any> {
+  return corpFetch(`/corporate/approvals/${approvalId}/decide`, token, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ decision, comments }),
+  });
 }
 
 export async function approveBooking(
   token: string,
-  bookingId: string
+  approvalId: string,
+  comments = ""
 ): Promise<any> {
-  return corpFetch(`/bookings/${bookingId}/confirm`, token, { method: "PATCH" });
+  return decideApproval(token, approvalId, "approved", comments);
 }
 
 export async function rejectBooking(
   token: string,
-  bookingId: string
+  approvalId: string,
+  comments = ""
 ): Promise<any> {
-  return corpFetch(`/bookings/${bookingId}/cancel`, token, { method: "PATCH" });
+  return decideApproval(token, approvalId, "rejected", comments);
 }
 
 // Facturación
