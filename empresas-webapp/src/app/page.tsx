@@ -42,7 +42,7 @@ export default function EmpresasLanding() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/going-logo-h.png" alt="Going App" className="h-9 w-auto" />
+            <img src="/going-logo-h.png" alt="Going App" className="h-12 w-auto" />
             <span className="ml-3 hidden border-l border-slate-200 pl-3 text-sm font-semibold text-slate-500 sm:inline">
               para Empresas
             </span>
@@ -74,7 +74,7 @@ export default function EmpresasLanding() {
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/90 to-blue-900/70" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/going-logo-white-h.png" alt="Going App" className="h-10 w-auto" />
+          <img src="/going-logo-white-h.png" alt="Going App" className="h-16 w-auto" />
           <div className="mt-8 max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/80">
               🇪🇨 Movilidad corporativa · Ecuador
@@ -183,7 +183,7 @@ export default function EmpresasLanding() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-8 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/going-logo-h.png" alt="Going App" className="h-7 w-auto opacity-80" />
+          <img src="/going-logo-h.png" alt="Going App" className="h-10 w-auto opacity-80" />
           <p className="text-xs text-slate-500">
             © 2026 Going App · Movilidad corporativa · Hecho en Ecuador
           </p>
