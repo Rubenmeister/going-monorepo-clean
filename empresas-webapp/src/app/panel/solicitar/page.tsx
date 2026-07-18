@@ -100,6 +100,7 @@ export default function SolicitarViajePage() {
   const tipoCuenta = session?.user.tipoCuenta as string | undefined;
   const isAgencia  = tipoCuenta === "agencia";
   const isGrande   = tipoCuenta === "grande";
+  const isNegocio  = tipoCuenta === "negocio";
 
   // ── Paso actual ───────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2>(1);
@@ -545,10 +546,20 @@ export default function SolicitarViajePage() {
         )}
       </div>
 
-      {/* Banners */}
+      {/* Banners contextuales por tipo de cuenta (Fase 6) */}
       {isAgencia && (
         <div className="mb-5 px-4 py-3 bg-indigo-50 border border-indigo-200 rounded-lg text-sm text-indigo-800">
           Como Agencia puedes reservar a nombre de terceros. La comisión del <strong>10%</strong> aplica sobre el valor del viaje ejecutado.
+        </div>
+      )}
+      {isGrande && (
+        <div className="mb-5 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <strong>Empresa Grande</strong> · Facturación a crédito (40 días). Los viajes que superen el umbral o la política de tu empresa —o los que marques como <strong>“Enviar para aprobación”</strong>— pasan por <strong>aprobación multinivel</strong> antes de confirmarse.
+        </div>
+      )}
+      {isNegocio && (
+        <div className="mb-5 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800">
+          <strong>Negocio/PyME</strong> · Pago por viaje (inmediato), sin aprobaciones ni línea de crédito. Cada solicitud se coordina y factura al confirmarse.
         </div>
       )}
 
