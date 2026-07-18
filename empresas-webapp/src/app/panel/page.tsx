@@ -200,7 +200,7 @@ export default function DashboardPage() {
         />
         <div className="px-6 py-3 text-xs text-slate-500 border-t border-slate-100">
           Abre{" "}
-          <Link href="/panel/mapa" className="text-blue-600 hover:underline">Mapa en Vivo</Link>{" "}
+          <Link href="/panel/mapa" className="text-blue-600 hover:underline">Seguimiento en Vivo</Link>{" "}
           para ver la posición de tus empleados en viaje, en tiempo real y con filtro por departamento.
         </div>
       </div>

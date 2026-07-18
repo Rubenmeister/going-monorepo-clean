@@ -31,8 +31,10 @@ const NAV_CONFIG:       NavItem = { href: "/panel/configuracion", label: "Config
 const NAV_CONDICIONES:  NavItem = { href: "/panel/condiciones",   label: "Mis Condiciones" };
 const NAV_PRESUPUESTO:  NavItem = { href: "/panel/presupuesto",   label: "Presupuesto" };
 const NAV_FAVORITOS:    NavItem = { href: "/panel/favoritos",     label: "Favoritos" };
-const NAV_TRACKING:     NavItem = { href: "/panel/tracking",      label: "Tracking en Vivo" };
-const NAV_MAPA:         NavItem = { href: "/panel/mapa",          label: "Mapa en Vivo" };
+// Seguimiento en Vivo unifica la vista de flota (todos los empleados en un mapa)
+// con el detalle por viaje (clic en un viaje → el mapa vuela a su posición).
+// Antes eran dos entradas ("Tracking en Vivo" + "Mapa en Vivo") que confundían.
+const NAV_SEGUIMIENTO:  NavItem = { href: "/panel/mapa",          label: "Seguimiento en Vivo" };
 const NAV_SEGURIDAD:    NavItem = { href: "/panel/seguridad",      label: "Seguridad" };
 const NAV_POLITICA:     NavItem = { href: "/panel/politica",       label: "Política de Viajes" };
 const NAV_SOSTENIB:     NavItem = { href: "/panel/sostenibilidad",  label: "Sostenibilidad" };
@@ -53,8 +55,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_PRESUPUESTO,    // ✅ control de gasto por área
     NAV_FACTURACION,
     NAV_REPORTES,
-    NAV_TRACKING,
-    NAV_MAPA,
+    NAV_SEGUIMIENTO,
     NAV_SEGURIDAD,
     NAV_POLITICA,
     NAV_SOSTENIB,
@@ -75,8 +76,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_PRESUPUESTO,
     NAV_FACTURACION,
     NAV_REPORTES,
-    NAV_TRACKING,
-    NAV_MAPA,
+    NAV_SEGUIMIENTO,
     NAV_SEGURIDAD,
     NAV_POLITICA,
     NAV_SOSTENIB,
@@ -96,8 +96,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_ADMINS,
     { href: "/panel/facturacion", label: "Comisiones" }, // mismo endpoint, label distinto
     NAV_REPORTES,
-    NAV_TRACKING,
-    NAV_MAPA,
+    NAV_SEGUIMIENTO,
     NAV_SEGURIDAD,
     NAV_POLITICA,
     NAV_SOSTENIB,
@@ -112,7 +111,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
 export const NAV_DEFAULT: NavItem[] = [
   NAV_PANEL, NAV_VIAJES, NAV_SOLICITAR, NAV_FAVORITOS, NAV_RECURRENTES,
   NAV_APROBACIONES, NAV_EQUIPO, NAV_ADMINS, NAV_PRESUPUESTO, NAV_FACTURACION,
-  NAV_REPORTES, NAV_TRACKING, NAV_MAPA, NAV_SEGURIDAD, NAV_POLITICA, NAV_SOSTENIB, NAV_COTIZACION, NAV_CONDICIONES, NAV_LEGAL, NAV_CONFIG,
+  NAV_REPORTES, NAV_SEGUIMIENTO, NAV_SEGURIDAD, NAV_POLITICA, NAV_SOSTENIB, NAV_COTIZACION, NAV_CONDICIONES, NAV_LEGAL, NAV_CONFIG,
 ];
 
 export function getNavItems(tipoCuenta?: string): NavItem[] {

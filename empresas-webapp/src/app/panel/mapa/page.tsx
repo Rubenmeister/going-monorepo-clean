@@ -227,7 +227,7 @@ export default function MapaEmpresaPage() {
       <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-slate-900">Mapa en Vivo</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Seguimiento en Vivo</h1>
             {activeCount > 0 && (
               <span className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
