@@ -793,12 +793,46 @@ export class AuthController {
       // Normalizar contrato: incluir `accessToken` además de `token` para
       // compatibilidad con clientes web (frontend-webapp/empresas/auth.ts).
       const normalized = result as any;
-      const authToken = normalized.accessToken || normalized.token;
+      const companyId = (result.user as any).companyId || undefined;
+
+      // Re-generar el par access+refresh INCLUYENDO companyId en el access token.
+      // LoginUserUseCase (CORE) firma el access SIN companyId (la entidad User del
+      // dominio no lo modela). Sin este paso el JWT corporativo no lleva companyId
+      // y corporate-service lanza 401 en TODOS los /corporate/* (extractCompanyId),
+      // enmascarado por los fallbacks demo de las pantallas. El login regular ya
+      // hacía esta regeneración; el corporativo se la había saltado.
+      let accessTokenFinal = normalized.accessToken || normalized.token;
+      let refreshToken: string | undefined;
+      let expiresIn: number | undefined;
+      try {
+        const tokenPairResult = await this.tokenManager.createTokenPair(
+          result.user.id,
+          result.user.email,
+          roles,
+          companyId,
+        );
+        if (tokenPairResult.isOk()) {
+          accessTokenFinal = tokenPairResult.value.accessToken;
+          refreshToken = tokenPairResult.value.refreshToken;
+          expiresIn = tokenPairResult.value.expiresIn;
+        } else {
+          this.logger.warn(
+            `corporateLogin OK pero regen de token falló: ${tokenPairResult.error.message}. Degradando a access-only sin companyId.`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `corporateLogin TokenManager.createTokenPair threw: ${err instanceof Error ? err.message : err}.`,
+        );
+      }
+
       return {
         ...normalized,
-        token: authToken,
-        accessToken: authToken,
-        companyId: (result.user as any).companyId ?? null,
+        token: accessTokenFinal,
+        accessToken: accessTokenFinal,
+        refreshToken,
+        expiresIn,
+        companyId: companyId ?? null,
         companyName: (result.user as any).companyName ?? null,
       };
     } catch (error) {
