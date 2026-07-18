@@ -181,6 +181,29 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Seguimiento en vivo — mapa visible en la portada del panel.
+          Vista general (Quito) + acceso al mapa completo con los empleados
+          en viaje en tiempo real. Iframe OSM: sin token ni dependencias JS. */}
+      <div className="mt-6 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-900">Seguimiento en vivo</h2>
+          <Link href="/panel/mapa" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+            Ver mapa completo →
+          </Link>
+        </div>
+        <iframe
+          title="Seguimiento en vivo"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=-78.60,-0.35,-78.40,-0.05&layer=mapnik"
+          className="w-full h-72 border-0"
+          loading="lazy"
+        />
+        <div className="px-6 py-3 text-xs text-slate-500 border-t border-slate-100">
+          Abre{" "}
+          <Link href="/panel/mapa" className="text-blue-600 hover:underline">Mapa en Vivo</Link>{" "}
+          para ver la posición de tus empleados en viaje, en tiempo real y con filtro por departamento.
+        </div>
+      </div>
     </div>
   );
 }
