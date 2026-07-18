@@ -37,6 +37,16 @@ interface Stop {
   date: string;
   time: string;
 }
+
+/** Envío: a un solo destino, o distribución de varios paquetes a varios puntos. */
+type ParcelMode = "single" | "multi";
+
+/** Punto de entrega de una distribución: dónde, qué y para quién. */
+interface Drop {
+  address: string;
+  description: string;
+  contact: string;
+}
 type CatalogType  = "tour" | "accommodation" | "experience";
 type CatalogItem  = TourItem | AccommodationItem | ExperienceItem;
 
@@ -64,6 +74,11 @@ const TRIP_TYPES: { key: TripType; label: string; desc: string }[] = [
   { key: "ida",        label: "Solo ida",       desc: "Un trayecto" },
   { key: "ida_vuelta", label: "Ida y regreso",  desc: "Con fecha de retorno" },
   { key: "multi",      label: "Con paradas",    desc: "Varios puntos" },
+];
+
+const PARCEL_MODES: { key: ParcelMode; label: string; desc: string }[] = [
+  { key: "single", label: "Un destino",     desc: "Recogida → una entrega" },
+  { key: "multi",  label: "Varios destinos", desc: "Distribución en ruta" },
 ];
 
 const VEHICLES: { key: VehicleType; label: string; cap: string }[] = [
@@ -157,6 +172,11 @@ export default function SolicitarViajePage() {
   const [parcelOrigin, setParcelOrigin]       = useState("");
   const [parcelDest, setParcelDest]           = useState("");
   const [parcelDescription, setParcelDescription] = useState("");
+
+  // Distribución: un envío con varios paquetes que se reparten en varios puntos.
+  // Capturar los puntos es el prerequisito del batching/optimización de ruta.
+  const [parcelMode, setParcelMode] = useState<ParcelMode>("single");
+  const [drops, setDrops]           = useState<Drop[]>([]);
 
   // ── Importe estimado ──────────────────────────────────────────────────────
   const [estimatedAmount, setEstimatedAmount] = useState("");
@@ -293,8 +313,18 @@ export default function SolicitarViajePage() {
       rememberAddress(origin); rememberAddress(destination);
       cleanStops.forEach((s) => rememberAddress(s.address));
     } else {
-      Object.assign(meta, { origin: parcelOrigin, destination: parcelDest, description: parcelDescription });
-      rememberAddress(parcelOrigin); rememberAddress(parcelDest);
+      const cleanDrops = drops.filter((d) => d.address.trim());
+      Object.assign(meta, {
+        origin: parcelOrigin,
+        // En distribución no hay UN destino: se resume y el detalle va en drops[].
+        destination: parcelMode === "multi" ? `${cleanDrops.length} destinos` : parcelDest,
+        description: parcelDescription,
+        parcelMode,
+        ...(parcelMode === "multi" && { drops: cleanDrops, dropCount: cleanDrops.length }),
+      });
+      rememberAddress(parcelOrigin);
+      if (parcelMode === "multi") cleanDrops.forEach((d) => rememberAddress(d.address));
+      else rememberAddress(parcelDest);
     }
 
     try {
@@ -876,25 +906,124 @@ export default function SolicitarViajePage() {
 
           {/* PARCEL */}
           {serviceType === "parcel" && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
+
+              {/* ── Tipo de envío — un destino o distribución ── */}
+              <div>
+                <p className="text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                  Tipo de envío <span className="text-red-500">*</span>
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PARCEL_MODES.map((m) => (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => setParcelMode(m.key)}
+                      className={`p-2.5 rounded-lg border text-left transition-colors ${
+                        parcelMode === m.key
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      <p className={`text-sm font-semibold ${parcelMode === m.key ? "text-blue-700" : "text-slate-800"}`}>
+                        {m.label}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5 leading-tight">{m.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Recogida ── */}
+              <div className="space-y-3 border-l-2 border-blue-200 pl-3">
+                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">📦 Recogida</p>
                 <Field label="Dirección de recogida" required>
                   <AddressAutocomplete className={INPUT} value={parcelOrigin} onChange={setParcelOrigin}
                     placeholder="Origen" required />
                 </Field>
-                <Field label="Dirección de entrega" required>
-                  <AddressAutocomplete className={INPUT} value={parcelDest} onChange={setParcelDest}
-                    placeholder="Destino" required />
+                <Field label="Fecha de recogida" required>
+                  <input type="date" className={INPUT} value={startDate} min={today}
+                    onChange={(e) => setStartDate(e.target.value)} required />
                 </Field>
               </div>
-              <Field label="Fecha de recogida" required>
-                <input type="date" className={INPUT} value={startDate} min={today}
-                  onChange={(e) => setStartDate(e.target.value)} required />
-              </Field>
-              <Field label="Descripción del contenido">
-                <input className={INPUT} value={parcelDescription} onChange={(e) => setParcelDescription(e.target.value)}
-                  placeholder="Ej: Documentos, 2 cajas, 3 kg…" />
-              </Field>
+
+              {/* ── Entrega única ── */}
+              {parcelMode === "single" && (
+                <div className="space-y-3 border-l-2 border-red-200 pl-3">
+                  <p className="text-xs font-bold text-red-700 uppercase tracking-wide">📍 Entrega</p>
+                  <Field label="Dirección de entrega" required>
+                    <AddressAutocomplete className={INPUT} value={parcelDest} onChange={setParcelDest}
+                      placeholder="Destino" required />
+                  </Field>
+                  <Field label="Descripción del contenido">
+                    <input className={INPUT} value={parcelDescription}
+                      onChange={(e) => setParcelDescription(e.target.value)}
+                      placeholder="Ej: Documentos, 2 cajas, 3 kg…" />
+                  </Field>
+                </div>
+              )}
+
+              {/* ── Distribución a varios puntos ── */}
+              {parcelMode === "multi" && (
+                <div className="space-y-3 border-l-2 border-amber-200 pl-3">
+                  <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">
+                    🚚 Puntos de entrega {drops.length > 0 && `· ${drops.length}`}
+                  </p>
+                  <Field label="Descripción general de la carga">
+                    <input className={INPUT} value={parcelDescription}
+                      onChange={(e) => setParcelDescription(e.target.value)}
+                      placeholder="Ej: 12 cajas de catálogos, 40 kg en total" />
+                  </Field>
+
+                  {drops.length === 0 && (
+                    <p className="text-xs text-slate-400">
+                      Agrega cada punto de entrega con su paquete. Going App organiza la ruta de reparto.
+                    </p>
+                  )}
+
+                  {drops.map((d, i) => (
+                    <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-slate-500">Entrega {i + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() => setDrops(drops.filter((_, j) => j !== i))}
+                          className="text-xs text-red-600 hover:underline font-medium"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                      <AddressAutocomplete
+                        className={INPUT}
+                        value={d.address}
+                        onChange={(v) => setDrops(drops.map((x, j) => (j === i ? { ...x, address: v } : x)))}
+                        placeholder="Dirección de entrega"
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <input className={INPUT} value={d.description}
+                          onChange={(e) => setDrops(drops.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))}
+                          placeholder="Paquete (ej: 2 cajas)" />
+                        <input className={INPUT} value={d.contact}
+                          onChange={(e) => setDrops(drops.map((x, j) => (j === i ? { ...x, contact: e.target.value } : x)))}
+                          placeholder="Quién recibe (opcional)" />
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => setDrops([...drops, { address: "", description: "", contact: "" }])}
+                    className="w-full py-2 border border-dashed border-slate-300 rounded-lg text-sm font-medium text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  >
+                    + Agregar punto de entrega
+                  </button>
+
+                  <p className="text-xs text-slate-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                    Una sola recogida, varias entregas. Going App agrupa y ordena el reparto según las
+                    direcciones cargadas.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
