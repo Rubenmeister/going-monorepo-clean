@@ -62,7 +62,13 @@ export class CorporateService {
     this.bookingUrl  = process.env.BOOKING_SERVICE_URL  || 'http://localhost:3005';
     this.billingUrl  = process.env.BILLING_SERVICE_URL  || 'http://localhost:3008';
     this.analyticsUrl = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3009';
-    this.authUrl     = process.env.AUTH_SERVICE_URL     || 'http://localhost:3001';
+    // OJO: en Cloud Run la env se llama USER_AUTH_SERVICE_URL. Leer solo
+    // AUTH_SERVICE_URL hacía caer al fallback localhost:3001 → "fetch failed"
+    // al aprobar una empresa, y el approve NO provisionaba la cuenta (quedaba
+    // provisioned:false en silencio, con la solicitud igual marcada aprobada).
+    this.authUrl     = process.env.AUTH_SERVICE_URL
+                    || process.env.USER_AUTH_SERVICE_URL
+                    || 'http://localhost:3001';
     this.notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || process.env.NOTIFICATION_SERVICE_URL || '';
   }
 
