@@ -1,0 +1,40 @@
+name: Smoke test de producción
+
+# Verifica INVARIANTES DE NEGOCIO contra producción, no solo que la API responda.
+# Existe porque llegamos a tener seis fallos conviviendo en producción sin que
+# nadie los viera: las pantallas mostraban ceros en vez de errores, y un health
+# check habría dicho "todo bien" en los seis casos.
+on:
+  schedule:
+    # 07:00 y 19:00 hora Ecuador (UTC-5) — antes de la jornada y al cierre.
+    - cron: '0 12 * * *'
+    - cron: '0 0 * * *'
+  workflow_dispatch: {}
+  # También en cada push a main: si un deploy rompe una regla de negocio,
+  # queremos saberlo en minutos, no a la mañana siguiente.
+  push:
+    branches: [main]
+    paths:
+      - 'pricing-service/**'
+      - 'corporate-service/**'
+      - 'booking-service/**'
+      - 'libs/pricing/**'
+      - 'scripts/smoke-test.mjs'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Invariantes de negocio en producción
+        run: node scripts/smoke-test.mjs
+        env:
+          GOING_API: https://api.goingec.com
+          # Opcional: si se configura el secret, además prueba el flujo
+          # corporativo autenticado (facturas y reservas).
+          GOING_TOKEN: ${{ secrets.GOING_SMOKE_TOKEN }}
