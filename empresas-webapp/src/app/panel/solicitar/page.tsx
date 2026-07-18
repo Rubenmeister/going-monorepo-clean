@@ -752,20 +752,14 @@ export default function SolicitarViajePage() {
         {!isCatalog(serviceType) && (
           <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-3">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Presupuesto y notas</p>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Monto estimado (USD)">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-                  <input type="number" min="0" step="0.01" className={INPUT + " pl-7"} value={estimatedAmount}
-                    onChange={(e) => setEstimatedAmount(e.target.value)} placeholder="0.00" />
-                </div>
-              </Field>
-              <div className="flex items-end">
-                <div className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 w-full">
-                  Tarifas corporativas Going App incluyen IVA y cargo B2B
-                </div>
+            <Field label="Monto (USD)">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                <input type="number" min="0" step="0.01" className={INPUT + " pl-7"} value={estimatedAmount}
+                  onChange={(e) => setEstimatedAmount(e.target.value)} placeholder="0.00" />
               </div>
-            </div>
+              <p className="text-xs text-slate-400 mt-1.5">Lo define tu empresa según la tarifa acordada.</p>
+            </Field>
             <Field label="Notas adicionales">
               <textarea rows={2} className={INPUT + " resize-none"} value={notes} onChange={(e) => setNotes(e.target.value)}
                 placeholder="Motivo del viaje, requerimientos especiales…" />
