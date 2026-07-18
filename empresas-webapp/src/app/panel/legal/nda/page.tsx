@@ -13,7 +13,7 @@ export default function NdaPage() {
         {
           title: "Partes",
           body: [
-            "Este Acuerdo de Confidencialidad (el “Acuerdo”) se celebra entre tu empresa (la “Empresa Cliente”), identificada con la cuenta corporativa activa en Going App, y Thorn AI Technologies S.A.S. (“Thorn AI”), operadora de la plataforma Going App. En adelante, cada una una “Parte” y conjuntamente las “Partes”.",
+            "Este Acuerdo de Confidencialidad (el “Acuerdo”) se celebra entre tu empresa (la “Empresa Cliente”), identificada con la cuenta corporativa activa en Going App, y Thorn AI Technologies S.A.S. (“Thorn AI”), operadora de la plataforma Going App. En adelante, cada una de ellas una “Parte” y, conjuntamente, las “Partes”.",
           ],
         },
         {
