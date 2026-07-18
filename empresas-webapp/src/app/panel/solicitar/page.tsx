@@ -9,10 +9,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthRedirect } from "@/lib/auth";
 import AddressAutocomplete, { rememberAddress } from "@/components/AddressAutocomplete";
+import { quoteCorporateFare, placeLabel, type QuoteOutcome } from "@/lib/pricing";
 import {
   crearBooking,
   searchTours,
@@ -178,8 +179,15 @@ export default function SolicitarViajePage() {
   const [parcelMode, setParcelMode] = useState<ParcelMode>("single");
   const [drops, setDrops]           = useState<Drop[]>([]);
 
-  // ── Importe estimado ──────────────────────────────────────────────────────
+  // ── Importe ───────────────────────────────────────────────────────────────
   const [estimatedAmount, setEstimatedAmount] = useState("");
+
+  // ── Tarifa corporativa automática ─────────────────────────────────────────
+  // El valor no debe teclearlo quien opera: sale de la tabla corporativa del
+  // motor de tarifas. Si la ruta no está tarifada, el campo queda manual.
+  const [fareQuote, setFareQuote] = useState<QuoteOutcome | null>(null);
+  const [quoting, setQuoting]     = useState(false);
+  const fareAbort                 = useRef<AbortController | null>(null);
 
   // ── Catálogo paso 2 ───────────────────────────────────────────────────────
   const [catalogResults, setCatalogResults] = useState<CatalogItem[]>([]);
@@ -191,6 +199,33 @@ export default function SolicitarViajePage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess]        = useState(false);
+
+  // Cotiza al motor cuando cambia la ruta o el vehículo (con debounce, para no
+  // pegarle en cada tecla del autocompletado).
+  useEffect(() => {
+    if (serviceType !== "transport" || !origin.trim() || !destination.trim()) {
+      setFareQuote(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      fareAbort.current?.abort();
+      const ctrl = new AbortController();
+      fareAbort.current = ctrl;
+      setQuoting(true);
+      const out = await quoteCorporateFare({
+        origin,
+        destination,
+        vehicleType,
+        dateTime: startDate ? `${startDate}T${startTime || "00:00"}:00` : undefined,
+        signal: ctrl.signal,
+      });
+      setQuoting(false);
+      setFareQuote(out);
+      // La tarifa de la tabla manda; el campo queda editable como excepción.
+      if (out.status === "ok") setEstimatedAmount(String(out.quote.total));
+    }, 600);
+    return () => clearTimeout(t);
+  }, [serviceType, origin, destination, vehicleType, startDate, startTime]);
 
   if (!session) return null;
 
@@ -1032,13 +1067,59 @@ export default function SolicitarViajePage() {
         {!isCatalog(serviceType) && (
           <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-3">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Presupuesto y notas</p>
+
+            {/* Tarifa corporativa traída del motor (solo transporte) */}
+            {serviceType === "transport" && quoting && (
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <div className="w-4 h-4 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
+                <p className="text-sm text-slate-500">Consultando tarifa corporativa…</p>
+              </div>
+            )}
+
+            {serviceType === "transport" && !quoting && fareQuote?.status === "ok" && (
+              <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                  <p className="text-sm font-semibold text-green-900">Tarifa corporativa</p>
+                  <p className="text-2xl font-bold text-green-700">
+                    ${fareQuote.quote.total.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <p className="text-xs text-green-800 mt-1">
+                  {placeLabel(fareQuote.originSlug)} → {placeLabel(fareQuote.destinationSlug)} ·{" "}
+                  {VEHICLES.find((v) => v.key === vehicleType)?.label ?? vehicleType}
+                  {tripType === "ida_vuelta" && " · por trayecto"}
+                </p>
+                <p className="text-xs text-green-700/70 mt-1">
+                  Precio de la tabla corporativa de tu empresa. Puedes ajustarlo abajo si hay una
+                  excepción acordada.
+                </p>
+              </div>
+            )}
+
+            {serviceType === "transport" && !quoting && fareQuote &&
+              (fareQuote.status === "no_fare" || fareQuote.status === "unknown_place") && (
+              <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm font-semibold text-amber-900">Ruta sin tarifa fija</p>
+                <p className="text-xs text-amber-800 mt-1">
+                  {fareQuote.status === "unknown_place"
+                    ? `No reconocemos ${fareQuote.which === "origin" ? "el origen" : "el destino"} dentro de las rutas tarifadas.`
+                    : "Esta combinación de origen y destino no está en la tabla corporativa."}{" "}
+                  Escribe el monto acordado y Going App lo confirma al coordinar el servicio.
+                </p>
+              </div>
+            )}
+
             <Field label="Monto (USD)">
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
                 <input type="number" min="0" step="0.01" className={INPUT + " pl-7"} value={estimatedAmount}
                   onChange={(e) => setEstimatedAmount(e.target.value)} placeholder="0.00" />
               </div>
-              <p className="text-xs text-slate-400 mt-1.5">Lo define tu empresa según la tarifa acordada.</p>
+              <p className="text-xs text-slate-400 mt-1.5">
+                {serviceType === "transport" && fareQuote?.status === "ok"
+                  ? "Traído de la tabla corporativa. Edítalo solo si hay una excepción acordada."
+                  : "Lo define tu empresa según la tarifa acordada."}
+              </p>
             </Field>
             <Field label="Notas adicionales">
               <textarea rows={2} className={INPUT + " resize-none"} value={notes} onChange={(e) => setNotes(e.target.value)}
