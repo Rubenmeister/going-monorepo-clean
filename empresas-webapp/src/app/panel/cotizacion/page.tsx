@@ -103,7 +103,7 @@ export default function CotizacionPage() {
   // Cargar historial
   useEffect(() => {
     if (!accessToken) return;
-    corpFetch<Quote[] | { quotes: Quote[] }>("/corporate/quotes", accessToken)
+    corpFetch<Quote[] | { quotes: Quote[] }>("/corporate/quotes", accessToken, { silent401: true })
       .then((res) => setQuotes(Array.isArray(res) ? res : (res as any).quotes ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));

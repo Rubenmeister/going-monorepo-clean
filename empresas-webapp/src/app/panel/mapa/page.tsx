@@ -61,11 +61,10 @@ const SERVICE_LABELS: Record<string, string> = {
 };
 
 async function safeGet<T>(path: string, token: string): Promise<T | null> {
-  // Usamos corpFetch para que aproveche el manejo automático de 401 +
-  // refresh token. Si el refresh falla, corpFetch redirige a login y tira
-  // un error que capturamos para devolver null y no romper la UI del mapa.
+  // silent401: un 401 de este widget de mapa NO debe desloguear al usuario ni
+  // rotar el refresh token; devolvemos null y mostramos estado vacío/demo.
   try {
-    return await corpFetch<T>(path, token);
+    return await corpFetch<T>(path, token, { silent401: true });
   } catch {
     return null;
   }

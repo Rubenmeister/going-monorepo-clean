@@ -99,7 +99,7 @@ export default function SostenibilidadPage() {
   const fetchData = useCallback(async () => {
     if (!session?.accessToken) return;
     try {
-      const res = await corpFetch<ESGSummary>(`/corporate/sustainability?period=${period}`, session.accessToken);
+      const res = await corpFetch<ESGSummary>(`/corporate/sustainability?period=${period}`, session.accessToken, { silent401: true });
       if (res?.totalTrips) setData(res);
     } catch {}
     setLoading(false);

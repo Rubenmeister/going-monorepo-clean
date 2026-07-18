@@ -70,7 +70,7 @@ export default function PoliticaPage() {
   const fetchPolicy = useCallback(async () => {
     if (!session?.accessToken) return;
     try {
-      const data = await corpFetch<TravelPolicy>('/corporate/policy', session.accessToken);
+      const data = await corpFetch<TravelPolicy>('/corporate/policy', session.accessToken, { silent401: true });
       if (data) setPolicy({ ...DEFAULT_POLICY, ...data });
     } catch {}
     setLoading(false);

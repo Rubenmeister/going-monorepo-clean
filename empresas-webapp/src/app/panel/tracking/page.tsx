@@ -99,7 +99,7 @@ export default function TrackingPage() {
     if (!accessToken) return;
     try {
       const loc = await corpFetch<DriverLocation>(
-        `/tracking/booking/${bookingId}`, accessToken
+        `/tracking/booking/${bookingId}`, accessToken, { silent401: true }
       );
       setLocations((prev) => ({ ...prev, [bookingId]: loc }));
       setLastUpdate((prev) => ({ ...prev, [bookingId]: new Date().toISOString() }));

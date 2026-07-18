@@ -109,8 +109,8 @@ export default function SeguridadEmpresaPage() {
     if (!session?.accessToken) return;
     try {
       const [tripsData, incData] = await Promise.all([
-        corpFetch<any>('/corporate/trips/safety', session.accessToken),
-        corpFetch<any>('/corporate/dashcam/incidents', session.accessToken),
+        corpFetch<any>('/corporate/trips/safety', session.accessToken, { silent401: true }),
+        corpFetch<any>('/corporate/dashcam/incidents', session.accessToken, { silent401: true }),
       ]);
       const tRaw: any[] = Array.isArray(tripsData) ? tripsData : tripsData?.data ?? [];
       const iRaw: any[] = Array.isArray(incData) ? incData : incData?.data ?? [];
