@@ -75,21 +75,53 @@ export class CorporateController {
   }
 
   /** POST /corporate/billing/invoices/generate?month=YYYY-MM — materializa la factura del mes */
+  /**
+   * POST /corporate/billing/invoices/generate
+   *
+   * Factura el mes de la empresa del TOKEN. Un admin de plataforma (rol `admin`)
+   * puede además facturar OTRA empresa pasando `companyId` — necesario para
+   * operar la cartera de todos los clientes desde el panel de administración.
+   *
+   * SEGURIDAD: el `companyId` del body se honra SOLO si quien llama es admin de
+   * plataforma. Para cualquier otro usuario se ignora y se usa el de su token,
+   * para que un usuario corporativo no pueda facturar a otra empresa.
+   */
   @Post('billing/invoices/generate')
   async generateInvoice(
     @Req() req: Request,
     @Query('month') queryMonth?: string,
-    @Body() body?: { month?: string },
+    @Body() body?: { month?: string; companyId?: string },
   ) {
-    const companyId = this.extractCompanyId(req);
+    const propio = this.extractCompanyId(req);
+    const solicitado = body?.companyId?.trim();
+    const companyId =
+      solicitado && this.isPlatformAdmin(req) ? solicitado : propio;
+    if (solicitado && solicitado !== propio && !this.isPlatformAdmin(req)) {
+      this.logger.warn(
+        `Intento de facturar empresa ajena bloqueado: ${propio} → ${solicitado}`,
+      );
+    }
     const token = this.extractToken(req);
     return this.svc.generateMonthlyInvoice(companyId, token, body?.month ?? queryMonth);
   }
 
   /** GET /corporate/billing/invoices — facturas consolidadas persistidas */
+  /**
+   * Facturas corporativas de la empresa del token. Un admin de plataforma puede
+   * consultar las de OTRA empresa con ?companyId=... (mismo criterio que
+   * generate): sin esto no hay forma de ver la cartera de cada cliente desde
+   * administración. Para no-admins el parámetro se ignora.
+   */
   @Get('billing/invoices')
-  async listCorporateInvoices(@Req() req: Request) {
-    return this.svc.listCorporateInvoices(this.extractCompanyId(req));
+  async listCorporateInvoices(
+    @Req() req: Request,
+    @Query('companyId') companyIdQuery?: string,
+  ) {
+    const propio = this.extractCompanyId(req);
+    const solicitado = companyIdQuery?.trim();
+    const companyId =
+      solicitado && this.isPlatformAdmin(req) ? solicitado : propio;
+    return this.svc.listCorporateInvoices(companyId);
   }
 
   /** GET /corporate/billing/invoices/:id */
