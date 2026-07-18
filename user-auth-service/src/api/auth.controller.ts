@@ -198,13 +198,26 @@ export class AuthController {
     const id = randomUUID();
     const randomPass = randomBytes(24).toString('hex');
     const passwordHash = await bcrypt.hash(randomPass, 10);
+
+    // `lastName` es REQUERIDO por el schema y '' no lo satisface: el alta de
+    // toda empresa NUEVA fallaba con 500 (el approve quedaba provisioned:false
+    // y la cuenta nunca recibía companyId). Solo funcionaba si el usuario ya
+    // existía, porque esa rama hace update y no pasa por esta validación.
+    // El portal manda el nombre de contacto completo en firstName, así que se
+    // parte en nombre + apellido y nunca se envía vacío.
+    const partesNombre = String(body.firstName ?? '').trim().split(/\s+/).filter(Boolean);
+    const firstName = partesNombre[0] || 'Empresa';
+    const lastName =
+      (body.lastName && body.lastName.trim()) ||
+      (partesNombre.length > 1 ? partesNombre.slice(1).join(' ') : 'Contacto');
+
     await this.userModel.create({
       _id: id,
       id,
       email,
       passwordHash,
-      firstName: body.firstName || 'Empresa',
-      lastName: body.lastName || '',
+      firstName,
+      lastName,
       roles: ['corporate'],
       status: 'active',
       companyId: body.companyId,
