@@ -12,6 +12,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthRedirect } from "@/lib/auth";
+import AddressAutocomplete, { rememberAddress } from "@/components/AddressAutocomplete";
 import {
   crearBooking,
   searchTours,
@@ -248,8 +249,10 @@ export default function SolicitarViajePage() {
     };
     if (serviceType === "transport") {
       Object.assign(meta, { origin, destination, passengers: +passengers, vehicleType, roundTrip });
+      rememberAddress(origin); rememberAddress(destination);
     } else {
       Object.assign(meta, { origin: parcelOrigin, destination: parcelDest, description: parcelDescription });
+      rememberAddress(parcelOrigin); rememberAddress(parcelDest);
     }
 
     try {
@@ -682,11 +685,11 @@ export default function SolicitarViajePage() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Origen" required>
-                  <input className={INPUT} value={origin} onChange={(e) => setOrigin(e.target.value)}
+                  <AddressAutocomplete className={INPUT} value={origin} onChange={setOrigin}
                     placeholder="Dirección de recogida" required />
                 </Field>
                 <Field label="Destino" required>
-                  <input className={INPUT} value={destination} onChange={(e) => setDestination(e.target.value)}
+                  <AddressAutocomplete className={INPUT} value={destination} onChange={setDestination}
                     placeholder="Dirección de llegada" required />
                 </Field>
               </div>
@@ -725,11 +728,11 @@ export default function SolicitarViajePage() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Dirección de recogida" required>
-                  <input className={INPUT} value={parcelOrigin} onChange={(e) => setParcelOrigin(e.target.value)}
+                  <AddressAutocomplete className={INPUT} value={parcelOrigin} onChange={setParcelOrigin}
                     placeholder="Origen" required />
                 </Field>
                 <Field label="Dirección de entrega" required>
-                  <input className={INPUT} value={parcelDest} onChange={(e) => setParcelDest(e.target.value)}
+                  <AddressAutocomplete className={INPUT} value={parcelDest} onChange={setParcelDest}
                     placeholder="Destino" required />
                 </Field>
               </div>
