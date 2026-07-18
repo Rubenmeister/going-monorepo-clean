@@ -21,6 +21,7 @@ import { ChatGateway } from './infrastructure/gateways/chat.gateway';
 import { IChatGateway } from '@going-monorepo-clean/domains-notification-core';
 import { FirebasePushNotificationGateway } from './infrastructure/gateways/push-notification.gateway';
 import { TwilioSmsGateway } from './infrastructure/gateways/sms-notification.gateway';
+import { WhatsAppNotificationGateway } from './infrastructure/gateways/whatsapp-notification.gateway';
 import { SendGridEmailGateway } from './infrastructure/gateways/email-notification.gateway';
 import { CompositeNotificationGateway } from './infrastructure/gateways/composite-notification.gateway';
 import { INotificationGateway } from '@going-monorepo-clean/domains-notification-core';
@@ -77,6 +78,7 @@ import { DeviceTokenRepository } from './infrastructure/persistence/device-token
     // Gateway Providers (for Composite Gateway to inject)
     FirebasePushNotificationGateway,
     TwilioSmsGateway,
+    WhatsAppNotificationGateway,
     SendGridEmailGateway,
 
     // WebSocket Gateway

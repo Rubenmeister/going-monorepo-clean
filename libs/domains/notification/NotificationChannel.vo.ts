@@ -4,6 +4,8 @@ export enum NotificationChannelType {
   PUSH = 'PUSH',
   EMAIL = 'EMAIL',
   SMS = 'SMS',
+  /** Meta Cloud API — el canal de mayor alcance en Ecuador. */
+  WHATSAPP = 'WHATSAPP',
 }
 
 export class NotificationChannel {

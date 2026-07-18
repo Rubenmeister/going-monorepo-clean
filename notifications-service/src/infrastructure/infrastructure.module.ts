@@ -12,6 +12,7 @@ import {
 } from './persistence/schemas/notification.schema';
 import { SendGridEmailGateway } from './gateways/email-notification.gateway';
 import { TwilioSmsGateway } from './gateways/sms-notification.gateway';
+import { WhatsAppNotificationGateway } from './gateways/whatsapp-notification.gateway';
 import { FirebasePushNotificationGateway } from './gateways/push-notification.gateway';
 import { CompositeNotificationGateway } from './gateways/composite-notification.gateway';
 import { DeviceTokenRepository } from './persistence/device-token.repository';
@@ -45,6 +46,7 @@ import { Message, MessageSchema } from './schemas/message.schema';
     // Channel-specific gateways
     SendGridEmailGateway,
     TwilioSmsGateway,
+    WhatsAppNotificationGateway,
     FirebasePushNotificationGateway,
     // Composite gateway routes to the correct channel gateway
     {

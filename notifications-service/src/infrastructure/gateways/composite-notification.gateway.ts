@@ -7,6 +7,7 @@ import {
 import { SendGridEmailGateway } from './email-notification.gateway';
 import { TwilioSmsGateway } from './sms-notification.gateway';
 import { FirebasePushNotificationGateway } from './push-notification.gateway';
+import { WhatsAppNotificationGateway } from './whatsapp-notification.gateway';
 
 /**
  * Composite gateway that routes notifications to the appropriate
@@ -19,7 +20,8 @@ export class CompositeNotificationGateway implements INotificationGateway {
   constructor(
     private readonly emailGateway: SendGridEmailGateway,
     private readonly smsGateway: TwilioSmsGateway,
-    private readonly pushGateway: FirebasePushNotificationGateway
+    private readonly pushGateway: FirebasePushNotificationGateway,
+    private readonly whatsappGateway: WhatsAppNotificationGateway
   ) {}
 
   async send(notification: Notification): Promise<Result<void, Error>> {
@@ -33,6 +35,8 @@ export class CompositeNotificationGateway implements INotificationGateway {
         return this.smsGateway.send(notification);
       case 'PUSH':
         return this.pushGateway.send(notification);
+      case 'WHATSAPP':
+        return this.whatsappGateway.send(notification);
       default:
         this.logger.warn(`Unknown notification channel: ${channel}`);
         return err(new Error(`Unsupported notification channel: ${channel}`));
