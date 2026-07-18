@@ -1083,9 +1083,21 @@ export default function SolicitarViajePage() {
                     + Agregar punto de entrega
                   </button>
 
-                  <p className="text-xs text-slate-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                  <p className="text-xs text-slate-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                     Una sola recogida, varias entregas. Going App agrupa y ordena el reparto según las
-                    direcciones cargadas.
+                    direcciones cargadas.{" "}
+                    <span className="font-medium text-amber-800">
+                      La primera entrega va incluida en la tarifa; cada dirección adicional suma un
+                      recargo (USD 5,00).
+                    </span>
+                    {drops.filter((d) => d.address.trim()).length > 1 && (
+                      <span className="block mt-1 text-amber-900 font-semibold">
+                        {drops.filter((d) => d.address.trim()).length - 1} dirección
+                        {drops.filter((d) => d.address.trim()).length - 1 !== 1 ? "es" : ""} adicional
+                        {drops.filter((d) => d.address.trim()).length - 1 !== 1 ? "es" : ""} · +$
+                        {((drops.filter((d) => d.address.trim()).length - 1) * 5).toFixed(2)}
+                      </span>
+                    )}
                   </p>
                 </div>
               )}

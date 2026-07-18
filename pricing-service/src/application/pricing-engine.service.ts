@@ -472,10 +472,24 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
           destinationCity: input.destination,
           isOverVolume: input.isOverVolume,
         } as any);
+        // Distribución: cada DIRECCIÓN EXTRA de entrega (más allá de la primera)
+        // suma el recargo de la regla `stop_surcharge`. El cliente manda en
+        // `stops` cuántas direcciones extra hay.
+        const stopFee = this.stopSurcharge(input, dt, 'envio');
+        const extraSplit = this.feeSplit(stopFee.total);
         return {
-          total: r.total, currency, base: r.subtotal, platformFee: r.platformFee,
-          providerAmount: r.providerAmount, listVersion,
-          breakdown: { ...r.breakdown },
+          total: round(r.total + stopFee.total),
+          currency,
+          base: r.subtotal,
+          platformFee: round(r.platformFee + extraSplit.platformFee),
+          providerAmount: round(r.providerAmount + extraSplit.providerAmount),
+          listVersion,
+          breakdown: {
+            ...r.breakdown,
+            stops: stopFee.count,
+            stopSurchargeUnit: stopFee.unit,
+            stopSurchargeTotal: stopFee.total,
+          },
         };
       }
 
