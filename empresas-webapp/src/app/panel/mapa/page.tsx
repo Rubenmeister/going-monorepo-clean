@@ -158,7 +158,7 @@ export default function MapaEmpresaPage() {
     setTrips(list.length > 0 ? list : DEMO_TRIPS);
     setLoading(false);
     setLastUpd(new Date());
-  }, [session!.accessToken]);
+  }, [session?.accessToken]);
 
   // ── Redibujar marcadores ──────────────────────────────────────────────────
   useEffect(() => {
