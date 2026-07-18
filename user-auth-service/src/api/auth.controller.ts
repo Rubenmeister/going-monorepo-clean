@@ -760,10 +760,17 @@ export class AuthController {
       // MFA challenge: si el user tiene mfaEnabled, NO devolvemos los tokens
       // reales — devolvemos un mfaToken efímero (5min) que el frontend debe
       // intercambiar en POST /auth/mfa/verify-login junto con el código TOTP.
-      const userMfa = await this.userModel
+      //
+      // Se leen también companyId/companyName del DOCUMENTO de Mongo: la entidad
+      // User del dominio NO los modela, así que `result.user.companyId` llega
+      // undefined aunque el documento sí los tenga. Ese era el motivo de que el
+      // access token saliera sin companyId y corporate-service respondiera 401
+      // en TODOS los /corporate/* (extractCompanyId).
+      const userDoc: any = await this.userModel
         .findOne({ id: result.user.id })
-        .select('mfaEnabled')
+        .select('mfaEnabled companyId companyName')
         .lean();
+      const userMfa = userDoc;
       if (userMfa?.mfaEnabled) {
         const mfaToken = jwt.sign(
           {
@@ -793,7 +800,7 @@ export class AuthController {
       // Normalizar contrato: incluir `accessToken` además de `token` para
       // compatibilidad con clientes web (frontend-webapp/empresas/auth.ts).
       const normalized = result as any;
-      const companyId = (result.user as any).companyId || undefined;
+      const companyId = userDoc?.companyId || (result.user as any).companyId || undefined;
 
       // Re-generar el par access+refresh INCLUYENDO companyId en el access token.
       // LoginUserUseCase (CORE) firma el access SIN companyId (la entidad User del
@@ -833,7 +840,7 @@ export class AuthController {
         refreshToken,
         expiresIn,
         companyId: companyId ?? null,
-        companyName: (result.user as any).companyName ?? null,
+        companyName: userDoc?.companyName ?? (result.user as any).companyName ?? null,
       };
     } catch (error) {
       if (error instanceof UnauthorizedException || error instanceof HttpException) throw error;
