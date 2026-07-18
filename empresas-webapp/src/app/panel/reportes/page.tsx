@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthRedirect } from "@/lib/auth";
-import { fetchBookings, fetchInvoices, corpFetch } from "@/lib/api";
+import { fetchBookings, fetchInvoices, fetchCorporateBilling } from "@/lib/api";
 
 // ─── Export helpers ───────────────────────────────────────────────────────────
 
@@ -110,9 +110,11 @@ export default function ReportesPage() {
       try {
         // Datos corporativos (scope propio). silent401 → si algo se restringe,
         // degradamos sin desloguear.
-        const [bookings, invoiceStats] = await Promise.all([
+        // Facturación desde el corporativo, NO desde billing-service: son dos
+        // almacenes distintos y el de billing devuelve ceros para empresas.
+        const [bookings, billing] = await Promise.all([
           fetchBookings(session!.accessToken).catch(() => [] as any[]),
-          corpFetch<any>("/invoices/stats/summary", session!.accessToken, { silent401: true }).catch(() => null),
+          fetchCorporateBilling(session!.accessToken).catch(() => null),
         ]);
 
         const now = new Date();
@@ -127,8 +129,8 @@ export default function ReportesPage() {
           if (st === "pending") pendingApprovals++;
         });
 
-        const billedAmount      = Number(invoiceStats?.totalAmount ?? 0) || 0;
-        const outstandingAmount = Number(invoiceStats?.dueAmount ?? 0) || 0;
+        const billedAmount      = billing?.totalFacturado ?? 0;
+        const outstandingAmount = billing?.saldoPendiente ?? 0;
 
         if (alive) setKpis({ totalTrips, tripsThisMonth, completedTrips, pendingApprovals, billedAmount, outstandingAmount });
       } catch {

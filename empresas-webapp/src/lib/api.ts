@@ -94,14 +94,49 @@ export interface DashboardStats {
 }
 
 /**
+ * Resumen de facturación CORPORATIVA (total facturado y saldo por cobrar).
+ *
+ * ⚠️ Fuente: /corporate/billing/invoices (corporate-service). NO /invoices ni
+ * /invoices/stats/summary (billing-service): son dos almacenes distintos y la
+ * facturación de empresas vive en el corporativo. Leer el de billing devolvía
+ * SIEMPRE ceros aunque la factura del mes existiera, y por eso el panel mostraba
+ * "Total facturado $0 / Saldo pendiente $0" con facturas emitidas.
+ */
+export async function fetchCorporateBilling(
+  token: string,
+): Promise<{ totalFacturado: number; saldoPendiente: number; vencidas: number; facturas: any[] }> {
+  const raw = await corpFetch<any>("/corporate/billing/invoices", token, { silent401: true });
+  const list: any[] = Array.isArray(raw) ? raw : (raw?.invoices ?? []);
+  const ahora = Date.now();
+  let totalFacturado = 0;
+  let saldoPendiente = 0;
+  let vencidas = 0;
+  for (const inv of list) {
+    const monto = Number(inv?.total) || 0;
+    totalFacturado += monto;
+    const pagada = inv?.status === "paid" || !!inv?.paidAt;
+    if (!pagada) {
+      saldoPendiente += monto;
+      if (inv?.dueDate && new Date(inv.dueDate).getTime() < ahora) vencidas++;
+    }
+  }
+  return {
+    totalFacturado: +totalFacturado.toFixed(2),
+    saldoPendiente: +saldoPendiente.toFixed(2),
+    vencidas,
+    facturas: list,
+  };
+}
+
+/**
  * Obtiene los KPIs del dashboard en paralelo.
- * - GET /bookings/my       → viajes del mes + pendientes de aprobación
- * - GET /invoices/stats/summary → gasto y saldo
+ * - GET /bookings/my                 → viajes del mes + pendientes de aprobación
+ * - GET /corporate/billing/invoices  → gasto facturado y saldo por cobrar
  */
 export async function fetchDashboardStats(token: string): Promise<DashboardStats> {
-  const [bookings, invoiceStats] = await Promise.allSettled([
+  const [bookings, billing] = await Promise.allSettled([
     corpFetch<any[]>("/bookings/my", token),
-    corpFetch<any>("/invoices/stats/summary", token),
+    fetchCorporateBilling(token),
   ]);
 
   // Bookings
@@ -122,12 +157,12 @@ export async function fetchDashboardStats(token: string): Promise<DashboardStats
     });
   }
 
-  // Invoices
+  // Facturación corporativa
   let gastoAcumulado = 0;
   let saldoPendiente = 0;
-  if (invoiceStats.status === "fulfilled" && invoiceStats.value) {
-    gastoAcumulado = invoiceStats.value.totalAmount ?? 0;
-    saldoPendiente = invoiceStats.value.dueAmount ?? 0;
+  if (billing.status === "fulfilled" && billing.value) {
+    gastoAcumulado = billing.value.totalFacturado;
+    saldoPendiente = billing.value.saldoPendiente;
   }
 
   return { viajesEsteMes, gastoAcumulado, aprobacionesPendientes, saldoPendiente };
