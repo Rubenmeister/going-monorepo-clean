@@ -14,6 +14,9 @@ import { QuoteRepository } from '../infrastructure/persistence/quote.repository'
 import { DashcamClipRequestRepository } from '../infrastructure/persistence/dashcam-clip-request.repository';
 import { randomUUID } from 'node:crypto';
 import { CompanyApplicationRepository } from '../infrastructure/persistence/company-application.repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CorporateFavoriteSchema } from '../infrastructure/schemas/corporate-favorite.schema';
 import { isValidEcuadorianRuc } from './ruc.validator';
 import {
   computePeriodSpend,
@@ -53,12 +56,50 @@ export class CorporateService {
     private readonly quoteRepo: QuoteRepository,
     private readonly clipRequestRepo: DashcamClipRequestRepository,
     private readonly applicationRepo: CompanyApplicationRepository,
+    @InjectModel(CorporateFavoriteSchema.name)
+    private readonly favModel: Model<CorporateFavoriteSchema>,
   ) {
     this.bookingUrl  = process.env.BOOKING_SERVICE_URL  || 'http://localhost:3005';
     this.billingUrl  = process.env.BILLING_SERVICE_URL  || 'http://localhost:3008';
     this.analyticsUrl = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3009';
     this.authUrl     = process.env.AUTH_SERVICE_URL     || 'http://localhost:3001';
     this.notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || process.env.NOTIFICATION_SERVICE_URL || '';
+  }
+
+  // ── Favoritos corporativos (rutas/lugares guardados por usuario) ─────────
+
+  async listFavorites(companyId: string, userId: string): Promise<any[]> {
+    const docs = await this.favModel
+      .find({ companyId, userId })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+    // Aplanamos: { id, name, ...payload } para que el front reciba el favorito
+    // completo tal como lo guardó.
+    return docs.map((d: any) => ({
+      id: String(d._id),
+      name: d.name,
+      ...(d.payload ?? {}),
+    }));
+  }
+
+  async addFavorite(
+    companyId: string,
+    userId: string,
+    body: Record<string, any>,
+  ): Promise<any> {
+    const name = (body?.name ?? '').trim();
+    if (!name) throw new BadRequestException('name es requerido');
+    // Guardamos el resto de campos en payload (sin id/name/_id).
+    const { name: _n, id: _i, _id: _mid, ...payload } = body ?? {};
+    const doc = await this.favModel.create({ companyId, userId, name, payload });
+    return { id: String(doc._id), name: doc.name, ...(doc.payload as any) };
+  }
+
+  async removeFavorite(companyId: string, userId: string, id: string): Promise<{ ok: boolean }> {
+    // Scoped: solo borra si el favorito es de ESTE usuario+empresa.
+    const res = await this.favModel.deleteOne({ _id: id, companyId, userId }).exec();
+    return { ok: res.deletedCount > 0 };
   }
 
   // ── Solicitudes de alta (embudo B2B — antes se perdían in-memory) ────────

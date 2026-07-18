@@ -13,6 +13,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthRedirect } from "@/lib/auth";
+import { fetchFavorites, addFavoriteApi, removeFavoriteApi } from "@/lib/api";
 import Link from "next/link";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -52,24 +53,6 @@ const TYPE_LABELS: Record<ServiceType, string> = {
   experience:    "Experiencia",
   parcel:        "Encomienda",
 };
-
-// ─── Helpers localStorage ─────────────────────────────────────────────────────
-
-function storageKey(userId: string) {
-  return `going_favoritos_${userId}`;
-}
-
-function loadFavorites(userId: string): Favorite[] {
-  try {
-    return JSON.parse(localStorage.getItem(storageKey(userId)) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveFavorites(userId: string, favs: Favorite[]) {
-  localStorage.setItem(storageKey(userId), JSON.stringify(favs));
-}
 
 // ─── Modal para crear / editar favorito ───────────────────────────────────────
 
@@ -200,36 +183,40 @@ export default function FavoritosPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const userId = session?.user.id ?? "";
+  const token  = session?.accessToken ?? "";
+
+  // Carga desde el backend (sincroniza entre dispositivos). Antes era
+  // localStorage local por navegador.
+  async function reload() {
+    if (!token) return;
+    try {
+      const favs = await fetchFavorites(token);
+      setFavorites(Array.isArray(favs) ? favs : []);
+    } catch { /* corpFetch ya maneja 401→login; si falla, dejamos la lista */ }
+  }
 
   useEffect(() => {
-    if (userId) setFavorites(loadFavorites(userId));
-  }, [userId]);
+    if (token) reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   if (!session) return null;
 
-  function persist(favs: Favorite[]) {
-    setFavorites(favs);
-    saveFavorites(userId, favs);
-  }
-
-  function handleSave(data: Omit<Favorite, "id" | "createdAt">) {
-    if (editTarget) {
-      persist(favorites.map((f) => f.id === editTarget.id ? { ...editTarget, ...data } : f));
-    } else {
-      const newFav: Favorite = {
-        ...data,
-        id:        crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-      persist([newFav, ...favorites]);
-    }
+  async function handleSave(data: Omit<Favorite, "id" | "createdAt">) {
+    // El backend no tiene UPDATE: editar = borrar el viejo + crear el nuevo.
+    try {
+      if (editTarget?.id) await removeFavoriteApi(token, editTarget.id);
+      await addFavoriteApi(token, data as any);
+      await reload();
+    } catch { /* noop — corpFetch maneja auth; error de red no rompe la UI */ }
     setShowModal(false);
     setEditTarget(null);
   }
 
-  function handleDelete(id: string) {
-    persist(favorites.filter((f) => f.id !== id));
+  async function handleDelete(id: string) {
+    setFavorites((prev) => prev.filter((f) => f.id !== id)); // optimista
     setDeleteConfirm(null);
+    try { await removeFavoriteApi(token, id); } catch { await reload(); }
   }
 
   function handleBook(fav: Favorite) {

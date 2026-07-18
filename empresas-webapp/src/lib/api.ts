@@ -643,6 +643,26 @@ export async function deleteRecurringTrip(token: string, id: string): Promise<vo
   await corpFetch(`/recurring-trips/${id}`, token, { method: "DELETE" });
 }
 
+// ── Favoritos corporativos (backend — sincroniza entre dispositivos) ─────────
+export async function fetchFavorites(token: string): Promise<any[]> {
+  return corpFetch<any[]>("/corporate/favorites", token);
+}
+
+export async function addFavoriteApi(
+  token: string,
+  fav: { name: string; serviceType?: string; origin?: string; destination?: string },
+): Promise<any> {
+  return corpFetch("/corporate/favorites", token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fav),
+  });
+}
+
+export async function removeFavoriteApi(token: string, id: string): Promise<void> {
+  await corpFetch(`/corporate/favorites/${id}`, token, { method: "DELETE" });
+}
+
 export async function pauseRecurringTrip(
   token: string,
   id: string,

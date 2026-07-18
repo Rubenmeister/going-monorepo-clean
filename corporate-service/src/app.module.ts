@@ -13,6 +13,7 @@ import { TeamInvitationSchema, TeamInvitationSchemaDefinition } from './infrastr
 import { QuoteSchema, QuoteSchemaDefinition } from './infrastructure/schemas/quote.schema';
 import { DashcamClipRequestSchema, DashcamClipRequestSchemaDefinition } from './infrastructure/schemas/dashcam-clip-request.schema';
 import { CompanyApplicationSchema, CompanyApplicationSchemaDefinition } from './infrastructure/schemas/company-application.schema';
+import { CorporateFavoriteSchema, CorporateFavoriteSchemaDefinition } from './infrastructure/schemas/corporate-favorite.schema';
 import { CompanySettingsRepository } from './infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from './infrastructure/persistence/approval-workflow.repository';
 import { SpendingLimitRepository } from './infrastructure/persistence/spending-limit.repository';
@@ -50,6 +51,7 @@ import { CompanyApplicationRepository } from './infrastructure/persistence/compa
       { name: QuoteSchema.name, schema: QuoteSchemaDefinition },
       { name: DashcamClipRequestSchema.name, schema: DashcamClipRequestSchemaDefinition },
       { name: CompanyApplicationSchema.name, schema: CompanyApplicationSchemaDefinition },
+      { name: CorporateFavoriteSchema.name, schema: CorporateFavoriteSchemaDefinition },
     ]),
   ],
   controllers: [CorporateController, CorporatePublicController, HealthController],

@@ -141,6 +141,24 @@ export class CorporateController {
     return this.svc.decideApproval(companyId, id, body.decision, decidedBy, body.comments ?? '');
   }
 
+  /** GET /corporate/favorites — favoritos del usuario (rutas/lugares guardados) */
+  @Get('favorites')
+  async listFavorites(@Req() req: Request) {
+    return this.svc.listFavorites(this.extractCompanyId(req), this.extractUserId(req));
+  }
+
+  /** POST /corporate/favorites — { name, origin?, destination? } */
+  @Post('favorites')
+  async addFavorite(@Req() req: Request, @Body() body: any) {
+    return this.svc.addFavorite(this.extractCompanyId(req), this.extractUserId(req), body);
+  }
+
+  /** DELETE /corporate/favorites/:id */
+  @Delete('favorites/:id')
+  async removeFavorite(@Req() req: Request, @Param('id') id: string) {
+    return this.svc.removeFavorite(this.extractCompanyId(req), this.extractUserId(req), id);
+  }
+
   /** GET /corporate/reports/summary */
   @Get('reports/summary')
   async getReportsSummary(@Req() req: Request) {
