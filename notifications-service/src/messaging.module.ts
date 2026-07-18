@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 // Controllers
 import { ChatController } from './api/chat.controller';
 import { NotificationController } from './api/notification.controller';
+import { NotificationInternalController } from './api/notification-internal.controller';
 
 // Use Cases
 import { SendMessageUseCase } from '@going-monorepo-clean/domains-notification-application';
@@ -47,7 +48,7 @@ import { DeviceTokenRepository } from './infrastructure/persistence/device-token
       { name: DeviceToken.name, schema: DeviceTokenSchema },
     ]),
   ],
-  controllers: [ChatController, NotificationController],
+  controllers: [ChatController, NotificationController, NotificationInternalController],
   providers: [
     // Use Cases
     SendMessageUseCase,

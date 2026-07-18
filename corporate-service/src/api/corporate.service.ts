@@ -38,6 +38,13 @@ function numOrNull(v: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/** Monto legible para los avisos ("USD 343,75"). */
+function currencyFmt(v: unknown, currency = 'USD'): string {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return `${currency} 0,00`;
+  return `${currency} ${n.toLocaleString('es-EC', { minimumFractionDigits: 2 })}`;
+}
+
 @Injectable()
 export class CorporateService {
   private readonly logger = new Logger(CorporateService.name);
@@ -181,20 +188,55 @@ export class CorporateService {
   }
 
   /** Envío best-effort de una alerta a ventas vía notifications-service. */
-  private async notifySales(message: string): Promise<void> {
+  /**
+   * Emite un aviso vía notifications-service.
+   *
+   * Usa el endpoint INTERNO con X-Internal-Token: /notifications/send exige rol
+   * admin|system y aquí no hay usuario detrás. Antes se llamaba sin token (y a
+   * un endpoint inexistente), así que ningún aviso corporativo salió nunca.
+   *
+   * Best-effort: un aviso que falla NO debe tumbar la operación de negocio que
+   * lo originó (aprobar, facturar). Pero sí se registra con detalle.
+   */
+  private async notify(params: {
+    userId: string;
+    channel: 'EMAIL' | 'SMS' | 'PUSH' | 'WHATSAPP';
+    title: string;
+    body: string;
+    data?: Record<string, unknown>;
+  }): Promise<void> {
     if (!this.notificationsUrl) {
-      this.logger.warn(`NOTIFICATIONS_SERVICE_URL no configurada — aviso a ventas solo en log: ${message}`);
+      this.logger.warn(
+        `NOTIFICATIONS_SERVICE_URL no configurada — aviso solo en log: ${params.title}`,
+      );
+      return;
+    }
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!token) {
+      this.logger.warn('INTERNAL_SERVICE_TOKEN no configurado — no se envía el aviso');
       return;
     }
     try {
-      await fetch(`${this.notificationsUrl}/notifications/internal/sales`, {
+      const res = await fetch(`${this.notificationsUrl}/notifications/internal/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: 'sales', message }),
+        headers: { 'Content-Type': 'application/json', 'X-Internal-Token': token },
+        body: JSON.stringify(params),
       });
+      if (!res.ok) {
+        const detalle = await res.text().catch(() => '');
+        this.logger.warn(
+          `Aviso "${params.title}" rechazado (${res.status}): ${detalle.slice(0, 200)}`,
+        );
+      }
     } catch (e) {
-      this.logger.warn(`notifySales falló (best-effort): ${(e as Error).message}`);
+      this.logger.warn(`Aviso "${params.title}" falló: ${(e as Error).message}`);
     }
+  }
+
+  private async notifySales(message: string): Promise<void> {
+    // Ventas no es un usuario del sistema: por ahora queda en log estructurado
+    // hasta definir a qué número/correo del equipo comercial se enruta.
+    this.logger.log(`[ventas] ${message}`);
   }
 
   // ── Stats ──────────────────────────────────────────────────────────────
@@ -325,6 +367,33 @@ export class CorporateService {
         currentLevel: chain[0]?.level ?? 1,
         bookingDetails: booking as any,
       } as any);
+
+      // Avisar a quien tiene que aprobar. Una solicitud que espera sin que el
+      // aprobador se entere es una solicitud que se cae por vencimiento.
+      const nivelActual = chain[0];
+      const aprobadorId = (nivelActual as any)?.approverId ?? (nivelActual as any)?.userId;
+      const aprobadorTel = (nivelActual as any)?.approverPhone ?? (nivelActual as any)?.phone;
+      if (aprobadorId) {
+        void this.notify({
+          userId: String(aprobadorId),
+          channel: aprobadorTel ? 'WHATSAPP' : 'EMAIL',
+          title: 'Viaje pendiente de tu aprobación',
+          body:
+            `${body.employeeName || 'Un colaborador'} solicitó ${body.serviceType ?? 'un servicio'}` +
+            `${body.destination ? ` a ${body.destination}` : ''} por ${currencyFmt(chainAmount)}.` +
+            ` Requiere tu aprobación.`,
+          data: {
+            ...(aprobadorTel ? { phone: aprobadorTel } : {}),
+            url: `${process.env.EMPRESAS_URL ?? 'https://empresas.goingec.com'}/panel/aprobaciones`,
+            bookingId: (booking as any).id,
+            companyId,
+          },
+        }).catch(() => undefined);
+      } else {
+        this.logger.warn(
+          `Aprobación creada sin aprobador identificable (companyId=${companyId}) — nadie será avisado`,
+        );
+      }
     }
 
     return booking;
