@@ -226,6 +226,8 @@ export default function SolicitarViajePage() {
         origin,
         destination,
         vehicleType,
+        // Solo cuentan las paradas intermedias con dirección cargada.
+        stops: tripType === "multi" ? stops.filter((s) => s.address.trim()).length : 0,
         dateTime: startDate ? `${startDate}T${startTime || "00:00"}:00` : undefined,
         signal: ctrl.signal,
       });
@@ -235,7 +237,7 @@ export default function SolicitarViajePage() {
       if (out.status === "ok") setEstimatedAmount(String(out.quote.total));
     }, 600);
     return () => clearTimeout(t);
-  }, [serviceType, origin, destination, vehicleType, startDate, startTime]);
+  }, [serviceType, origin, destination, vehicleType, startDate, startTime, tripType, stops]);
 
   if (!session) return null;
 
@@ -862,11 +864,15 @@ export default function SolicitarViajePage() {
                   <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">
                     🟡 Paradas intermedias
                   </p>
-                  {stops.length === 0 && (
-                    <p className="text-xs text-slate-400">
-                      Agrega los lugares por los que debe pasar, con su fecha y hora.
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-500">
+                    Agrega los lugares por los que debe pasar, con su fecha y hora.{" "}
+                    <span className="text-amber-700 font-medium">
+                      Cada parada intermedia tiene un recargo que se suma a la tarifa de ruta
+                      {!!fareQuote && fareQuote.status === "ok" && !!fareQuote.quote.stopSurchargeUnit &&
+                        ` ($${fareQuote.quote.stopSurchargeUnit.toFixed(2)} por parada)`}
+                      .
+                    </span>
+                  </p>
                   {stops.map((s, i) => (
                     <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
                       <div className="flex items-center justify-between">
@@ -1113,6 +1119,24 @@ export default function SolicitarViajePage() {
                   {VEHICLES.find((v) => v.key === vehicleType)?.label ?? vehicleType}
                   {tripType === "ida_vuelta" && " · por trayecto"}
                 </p>
+
+                {/* Desglose cuando hay recargo por paradas — el cobro debe verse. */}
+                {!!fareQuote.quote.stopSurchargeTotal && (
+                  <div className="mt-2 pt-2 border-t border-green-200 space-y-0.5">
+                    <div className="flex justify-between text-xs text-green-800">
+                      <span>Tarifa de ruta</span>
+                      <span>${(fareQuote.quote.total - (fareQuote.quote.stopSurchargeTotal ?? 0)).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-green-800">
+                      <span>
+                        {fareQuote.quote.stops} parada{fareQuote.quote.stops !== 1 ? "s" : ""} intermedia
+                        {fareQuote.quote.stops !== 1 ? "s" : ""} × ${fareQuote.quote.stopSurchargeUnit?.toFixed(2)}
+                      </span>
+                      <span>+${fareQuote.quote.stopSurchargeTotal?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-xs text-green-700/70 mt-1">
                   Precio de la tabla corporativa de tu empresa. Puedes ajustarlo abajo si hay una
                   excepción acordada.

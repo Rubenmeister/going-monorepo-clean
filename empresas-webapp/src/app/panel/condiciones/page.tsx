@@ -18,6 +18,24 @@ interface Seccion {
   contenido: (string | { tipo: "lista"; items: string[] } | { tipo: "tabla"; encabezados: string[]; filas: string[][] })[];
 }
 
+/**
+ * Tarifas y recargos — aplica igual a los tres tipos de cuenta, porque sale del
+ * mismo motor de tarifas. Se declara una sola vez y se inserta en cada tipo.
+ */
+const SECCION_TARIFAS: Seccion = {
+  titulo: "Tarifas y Recargos",
+  contenido: [
+    "El valor de cada viaje sale de la tabla de tarifas corporativas de tu empresa, según la ruta y el tamaño del vehículo. No se calcula a mano: el panel lo muestra al elegir origen, destino y vehículo.",
+    { tipo: "lista", items: [
+      "Paradas intermedias: cada parada adicional del recorrido suma USD 5,00 a la tarifa de ruta. El desglose se muestra antes de confirmar la solicitud.",
+      "Ida y regreso: la tarifa mostrada corresponde a cada trayecto.",
+      "Rutas sin tarifa fija: si la combinación de origen y destino no está en la tabla, el monto se acuerda con Going App al coordinar el servicio.",
+      "Los recargos por horario, feriado o fin de semana se aplican según las reglas vigentes del motor de tarifas.",
+    ]},
+    "Las tarifas y recargos pueden actualizarse; siempre rige la versión vigente al momento de crear la solicitud, y queda reflejada en la factura.",
+  ],
+};
+
 // ─── Contenido por tipo ───────────────────────────────────────────────────────
 
 const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] }> = {
@@ -35,6 +53,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
           ["Duración",          "12 meses, renovación automática"],
         ]}],
       },
+      SECCION_TARIFAS,
       {
         titulo: "Crédito Corporativo",
         contenido: [
@@ -98,6 +117,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
           ["Permanencia",     "Sin plazo mínimo"],
         ]}],
       },
+      SECCION_TARIFAS,
       {
         titulo: "Cómo Funciona el Pago",
         contenido: [
@@ -145,6 +165,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
           ["Duración",        "12 meses, renovación automática"],
         ]}],
       },
+      SECCION_TARIFAS,
       {
         titulo: "Comisiones",
         contenido: [

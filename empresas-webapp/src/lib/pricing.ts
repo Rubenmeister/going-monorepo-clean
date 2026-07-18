@@ -72,6 +72,10 @@ export interface FareQuote {
   /** Lista usada por el motor: debe ser "empresas" en el portal corporativo. */
   list?: string;
   listVersion?: number | null;
+  /** Paradas intermedias cobradas y su recargo (regla `stop_surcharge`). */
+  stops?: number;
+  stopSurchargeUnit?: number;
+  stopSurchargeTotal?: number;
 }
 
 export type QuoteOutcome =
@@ -90,6 +94,8 @@ export async function quoteCorporateFare(params: {
   destination: string;
   vehicleType: string;
   dateTime?: string;
+  /** Paradas INTERMEDIAS (sin contar origen ni destino final). */
+  stops?: number;
   signal?: AbortSignal;
 }): Promise<QuoteOutcome> {
   const originSlug = placeSlugFromAddress(params.origin);
@@ -108,6 +114,7 @@ export async function quoteCorporateFare(params: {
         destination: destinationSlug,
         vehicleType: params.vehicleType,
         segment: "corporate",
+        ...(params.stops ? { stops: params.stops } : {}),
         ...(params.dateTime ? { dateTime: params.dateTime } : {}),
       }),
     });
@@ -124,6 +131,9 @@ export async function quoteCorporateFare(params: {
         currency: json.currency ?? "USD",
         list: json?.breakdown?.list,
         listVersion: json.listVersion ?? null,
+        stops: json?.breakdown?.stops ?? 0,
+        stopSurchargeUnit: json?.breakdown?.stopSurchargeUnit ?? 0,
+        stopSurchargeTotal: json?.breakdown?.stopSurchargeTotal ?? 0,
       },
     };
   } catch {
