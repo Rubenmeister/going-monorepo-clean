@@ -212,7 +212,7 @@ export class CorporateService {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthlySpend = allBookings
       .filter((b: any) => b.status === 'completed' && new Date(b.createdAt) >= startOfMonth)
-      .reduce((sum: number, b: any) => sum + (b.totalPrice ?? b.amount ?? 0), 0);
+      .reduce((sum: number, b: any) => sum + this.money(b), 0);
 
     const activeTrips = allBookings.filter(
       (b: any) => b.status === 'in_progress' || b.status === 'confirmed',
@@ -430,7 +430,7 @@ export class CorporateService {
 
       if (b.status === 'completed') {
         completedCount++;
-        const amount = b.totalPrice ?? b.amount ?? 0;
+        const amount = this.money(b);
         totalSpend += amount;
         const month = new Date(b.createdAt).toLocaleString('default', { month: 'short', year: '2-digit' });
         byMonth[month] = (byMonth[month] ?? 0) + amount;
@@ -741,7 +741,7 @@ export class CorporateService {
     let total = 0;
     for (const b of bookings) {
       if (!inScope(b)) continue;
-      const amt = b.totalPrice ?? b.amount ?? 0;
+      const amt = this.money(b);
       const emp = b.userId ?? 'unknown';
       byEmployee[emp] = parseFloat(((byEmployee[emp] ?? 0) + amt).toFixed(2));
       total += amt;
@@ -780,7 +780,7 @@ export class CorporateService {
     let total = 0;
 
     for (const b of inMonth) {
-      const amt = b.totalPrice ?? b.amount ?? 0;
+      const amt = this.money(b);
       const emp = b.userId ?? 'unknown';
       const svc = b.serviceType ?? b.type ?? 'other';
       const prev = byEmployee[emp] ?? { count: 0, amount: 0 };
@@ -1331,6 +1331,19 @@ export class CorporateService {
       { statusCode: res.status, message: detail || `Error ${res.status} del servicio`, upstream: url },
       res.status,
     );
+  }
+
+  /**
+   * Monto numérico de un booking. `totalPrice` viaja como Money
+   * ({ amount, currency }), NO como número: hacer `b.totalPrice ?? b.amount`
+   * devolvía el OBJETO, así que `prev.amount + amt` concatenaba
+   * ("0[object Object]") y `.toFixed()` reventaba → la facturación mensual
+   * fallaba con 500 y los acumulados de gasto salían corruptos.
+   */
+  private money(b: any): number {
+    const v = b?.totalPrice?.amount ?? b?.totalPrice ?? b?.amount ?? 0;
+    const n = typeof v === 'number' ? v : parseFloat(String(v));
+    return Number.isFinite(n) ? n : 0;
   }
 
   private async fetchJson(url: string, token: string): Promise<unknown> {
