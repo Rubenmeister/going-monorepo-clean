@@ -26,22 +26,36 @@ export function authHeaders(token: string) {
  * Esto evita el "logout sorpresivo" donde el usuario veía datos vacíos sin
  * entender que la sesión expiró.
  */
+export interface CorpFetchInit extends RequestInit {
+  /**
+   * Si true, un 401 NO borra la sesión ni redirige a login: solo lanza el error
+   * para que el caller lo maneje (degradar a "—"). Úsalo en widgets OPCIONALES
+   * que consultan recursos que podrían estar restringidos para el rol actual
+   * (p.ej. endpoints solo-admin). Evita también rotar el refresh token en vano.
+   */
+  silent401?: boolean;
+}
+
 export async function corpFetch<T>(
   path: string,
   token: string,
-  options?: RequestInit,
+  options?: CorpFetchInit,
   _retried = false
 ): Promise<T> {
+  const { silent401, ...init } = options ?? {};
   const url = `${API_BASE_URL}${path}`;
   const res = await fetch(url, {
-    ...options,
+    ...init,
     headers: {
       ...authHeaders(token),
-      ...(options?.headers ?? {}),
+      ...(init.headers ?? {}),
     },
   });
 
   if (res.status === 401 && !_retried && typeof window !== "undefined") {
+    // Widgets opcionales: un 401 de un recurso restringido no debe arrastrar la
+    // sesión ni consumir el refresh token. Lanzamos y que el caller degrade.
+    if (silent401) throw new Error(`API 401 (silencioso): ${path}`);
     // Sesión expirada — intentamos refresh transparente y reintentamos una vez
     const refreshed = await refreshToken();
     if (refreshed) {

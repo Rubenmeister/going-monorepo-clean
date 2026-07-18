@@ -1,20 +1,27 @@
 /**
- * Página de Reportes
- * Ruta: /reportes
+ * Página de Reportes (corporativa)
+ * Ruta: /panel/reportes
  *
- * KPIs en tiempo real + historial de reportes generados + generador de nuevos reportes.
+ * KPIs derivados de datos CORPORATIVOS (los mismos del dashboard) + generación
+ * de reportes CSV del lado del cliente por rango de fechas.
+ *
+ * ⚠️ Antes esta página consultaba `/analytics/kpis/current` y `/analytics/reports`,
+ * que son endpoints SOLO-ADMIN (RBAC). Para un usuario de empresa devolvían 401 y
+ * `corpFetch`, al refrescar y fallar, BORRABA la sesión y redirigía a login: la
+ * página "no abría" y encima deslogueaba. Ahora usa `/bookings/my` +
+ * `/invoices/stats/summary` (scope corporativo) y arma los reportes en el cliente.
  */
 
 "use client";
 
 import { useEffect, useState } from "react";
 import { useAuthRedirect } from "@/lib/auth";
-import { corpFetch, fetchBookings } from "@/lib/api";
+import { fetchBookings, fetchInvoices, corpFetch } from "@/lib/api";
 
 // ─── Export helpers ───────────────────────────────────────────────────────────
 
 function downloadBlob(content: string, filename: string, mime: string) {
-  const blob = new Blob(["\uFEFF" + content], { type: mime }); // BOM para UTF-8 en Excel
+  const blob = new Blob(["﻿" + content], { type: mime }); // BOM para UTF-8 en Excel
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
   a.href = url; a.download = filename; a.click();
@@ -25,85 +32,55 @@ function toCSV(rows: Record<string, any>[], cols: string[]): string {
   const header = cols.join(";");
   const body   = rows.map((r) => cols.map((c) => {
     const v = r[c] ?? "";
-    return typeof v === "string" && v.includes(";") ? `"${v}"` : v;
+    return typeof v === "string" && (v.includes(";") || v.includes("\n")) ? `"${v.replace(/"/g, '""')}"` : v;
   }).join(";")).join("\n");
   return `${header}\n${body}`;
 }
 
-function formatISO(s: string): string {
+function fmtDateISO(s: string): string {
   try { return new Date(s).toLocaleDateString("es-EC"); } catch { return s; }
+}
+
+function fmtMoney(n: number) {
+  return `$${(n ?? 0).toLocaleString("es-EC", { minimumFractionDigits: 2 })}`;
+}
+
+function todayStr()       { return new Date().toISOString().slice(0, 10); }
+function firstOfMonthStr(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10); }
+
+function bookingAmount(b: any): number {
+  return Number(b?.totalPrice?.amount ?? b?.total ?? 0) || 0;
+}
+function bookingDate(b: any): Date {
+  return new Date(b?.startDate ?? b?.createdAt ?? 0);
 }
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 interface KPIs {
   totalTrips: number;
-  activeDrivers: number;
-  totalRevenueThisMonth: number;
-  totalRevenueThisYear: number;
+  tripsThisMonth: number;
+  completedTrips: number;
+  pendingApprovals: number;
+  billedAmount: number;
   outstandingAmount: number;
-  totalInvoicesIssued: number;
-  totalInvoicesOverdue: number;
-  notificationDeliveryRate: number;
 }
 
-interface Report {
-  id?: string;
-  type: string;
-  title: string;
-  status: "GENERATING" | "COMPLETED" | "FAILED";
-  format: string;
-  startDate: string;
-  endDate: string;
-  totalRecords: number;
-  fileUrl?: string;
-  createdAt: string;
-}
+type ReportType = "TRIP" | "REVENUE" | "INVOICE";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const REPORT_TYPES = [
-  { value: "TRIP_REPORT",          label: "Reporte de Viajes" },
-  { value: "INVOICE_REPORT",       label: "Reporte de Facturas" },
-  { value: "REVENUE_REPORT",       label: "Reporte de Ingresos" },
-  { value: "DRIVER_PERFORMANCE",   label: "Rendimiento de Conductores" },
-  { value: "COMPLIANCE_REPORT",    label: "Cumplimiento" },
+const REPORT_TYPES: { value: ReportType; label: string; desc: string }[] = [
+  { value: "TRIP",    label: "Viajes (detalle)",   desc: "Una fila por viaje en el rango" },
+  { value: "REVENUE", label: "Ingresos (mensual)", desc: "Total gastado agrupado por mes" },
+  { value: "INVOICE", label: "Facturas",           desc: "Facturas emitidas en el rango" },
 ];
-
-const FORMATS = ["PDF", "XLSX", "CSV"];
-
-const STATUS_STYLES: Record<string, string> = {
-  COMPLETED:  "bg-green-100 text-green-700",
-  GENERATING: "bg-yellow-100 text-yellow-700",
-  FAILED:     "bg-red-100 text-red-700",
-};
-
-function fmtMoney(n: number) {
-  return `$${n.toLocaleString("es-EC", { minimumFractionDigits: 2 })}`;
-}
-
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString("es-EC", {
-    day: "2-digit", month: "short", year: "numeric",
-  });
-}
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function firstOfMonthStr() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
-}
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
 
-function KPICard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function KPICard({ label, value, sub, alert }: { label: string; value: string; sub?: string; alert?: boolean }) {
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
       <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+      <p className={`text-2xl font-bold mt-1 ${alert ? "text-amber-600" : "text-slate-900"}`}>{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>
   );
@@ -114,304 +91,219 @@ function KPICard({ label, value, sub }: { label: string; value: string; sub?: st
 export default function ReportesPage() {
   const { session } = useAuthRedirect();
 
-  // KPIs
-  const [kpis, setKpis] = useState<KPIs | null>(null);
+  const [kpis, setKpis]           = useState<KPIs | null>(null);
   const [kpisLoading, setKpisLoading] = useState(true);
 
-  // Reportes
-  const [reports, setReports] = useState<Report[]>([]);
-  const [reportsLoading, setReportsLoading] = useState(true);
-
-  // Generador
-  const [form, setForm] = useState({
-    type: "TRIP_REPORT",
+  const [form, setForm] = useState<{ type: ReportType; startDate: string; endDate: string }>({
+    type: "TRIP",
     startDate: firstOfMonthStr(),
     endDate: todayStr(),
-    format: "PDF",
   });
-  const [generating,   setGenerating]   = useState(false);
-  const [genError,     setGenError]     = useState<string | null>(null);
-  const [genOk,        setGenOk]        = useState(false);
-  const [exporting,    setExporting]    = useState<"bookings" | "kpis" | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [genError,   setGenError]   = useState<string | null>(null);
+  const [genOk,      setGenOk]      = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) return;
+    let alive = true;
+    (async () => {
+      try {
+        // Datos corporativos (scope propio). silent401 → si algo se restringe,
+        // degradamos sin desloguear.
+        const [bookings, invoiceStats] = await Promise.all([
+          fetchBookings(session!.accessToken).catch(() => [] as any[]),
+          corpFetch<any>("/invoices/stats/summary", session!.accessToken, { silent401: true }).catch(() => null),
+        ]);
 
-    // Cargar KPIs
-    corpFetch<KPIs>("/analytics/kpis/current", session!.accessToken)
-      .then(setKpis)
-      .catch(() => {/* silencioso, mostramos "—" */})
-      .finally(() => setKpisLoading(false));
+        const now = new Date();
+        const m = now.getMonth(), y = now.getFullYear();
+        let totalTrips = 0, tripsThisMonth = 0, completedTrips = 0, pendingApprovals = 0;
+        (Array.isArray(bookings) ? bookings : []).forEach((b: any) => {
+          totalTrips++;
+          const d = bookingDate(b);
+          if (d.getMonth() === m && d.getFullYear() === y) tripsThisMonth++;
+          const st = String(b?.status ?? "").toLowerCase();
+          if (st === "completed" || st === "confirmed") completedTrips++;
+          if (st === "pending") pendingApprovals++;
+        });
 
-    // Cargar reportes existentes
-    corpFetch<{ reports: Report[] }>("/analytics/reports?limit=20", session!.accessToken)
-      .then((res) => setReports(res?.reports ?? []))
-      .catch(() => {})
-      .finally(() => setReportsLoading(false));
+        const billedAmount      = Number(invoiceStats?.totalAmount ?? 0) || 0;
+        const outstandingAmount = Number(invoiceStats?.dueAmount ?? 0) || 0;
+
+        if (alive) setKpis({ totalTrips, tripsThisMonth, completedTrips, pendingApprovals, billedAmount, outstandingAmount });
+      } catch {
+        if (alive) setKpis({ totalTrips: 0, tripsThisMonth: 0, completedTrips: 0, pendingApprovals: 0, billedAmount: 0, outstandingAmount: 0 });
+      } finally {
+        if (alive) setKpisLoading(false);
+      }
+    })();
+    return () => { alive = false; };
   }, [session?.accessToken]);
 
   if (!session) return null;
 
-  const handleGenerate = async (e: React.FormEvent) => {
+  // ── Generar reporte (CSV, en el cliente) ─────────────────────────────────
+  async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
     setGenerating(true);
     setGenError(null);
-    setGenOk(false);
+    setGenOk(null);
     try {
-      const report = await corpFetch<Report>("/analytics/reports", session!.accessToken!, {
-        method: "POST",
-        body: JSON.stringify(form),
-      });
-      setReports((prev) => [report, ...prev]);
-      setGenOk(true);
-      setTimeout(() => setGenOk(false), 4000);
+      const from = new Date(form.startDate + "T00:00:00");
+      const to   = new Date(form.endDate   + "T23:59:59");
+      if (from > to) { setGenError("El rango de fechas es inválido (Desde es posterior a Hasta)."); return; }
+      const tag = `${form.startDate}_${form.endDate}`;
+
+      if (form.type === "TRIP" || form.type === "REVENUE") {
+        const all = await fetchBookings(session!.accessToken);
+        const inRange = (Array.isArray(all) ? all : []).filter((b: any) => {
+          const d = bookingDate(b); return d >= from && d <= to;
+        });
+        if (inRange.length === 0) { setGenError("No hay viajes en ese rango de fechas."); return; }
+
+        if (form.type === "TRIP") {
+          const rows = inRange.map((b: any) => ({
+            ID:        b.id ?? b._id ?? "",
+            Servicio:  b.serviceType ?? "",
+            Estado:    b.status ?? "",
+            Origen:    b.metadata?.origin ?? "",
+            Destino:   b.metadata?.destination ?? "",
+            Monto:     bookingAmount(b).toFixed(2),
+            Moneda:    b.totalPrice?.currency ?? "USD",
+            Fecha:     b.startDate ? fmtDateISO(b.startDate) : "",
+            Creado:    b.createdAt ? fmtDateISO(b.createdAt) : "",
+            Solicitante: b.metadata?.requesterName ?? "",
+          }));
+          downloadBlob(toCSV(rows, ["ID","Servicio","Estado","Origen","Destino","Monto","Moneda","Fecha","Creado","Solicitante"]),
+            `going_viajes_${tag}.csv`, "text/csv;charset=utf-8");
+          setGenOk(`Reporte de ${rows.length} viaje(s) descargado.`);
+        } else {
+          // Ingresos agrupados por mes (YYYY-MM)
+          const byMonth = new Map<string, { total: number; count: number }>();
+          inRange.forEach((b: any) => {
+            const d = bookingDate(b);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+            const cur = byMonth.get(key) ?? { total: 0, count: 0 };
+            cur.total += bookingAmount(b); cur.count++;
+            byMonth.set(key, cur);
+          });
+          const rows = Array.from(byMonth.entries()).sort().map(([mes, v]) => ({
+            Mes: mes, Viajes: v.count, Total: v.total.toFixed(2), Moneda: "USD",
+          }));
+          downloadBlob(toCSV(rows, ["Mes","Viajes","Total","Moneda"]),
+            `going_ingresos_${tag}.csv`, "text/csv;charset=utf-8");
+          setGenOk(`Reporte de ingresos (${rows.length} mes/es) descargado.`);
+        }
+      } else {
+        // Facturas — endpoint corporativo /invoices
+        const res = await fetchInvoices(session!.accessToken, { limit: 500 });
+        const inRange = (res?.invoices ?? []).filter((inv: any) => {
+          const d = new Date(inv.issuedAt ?? inv.createdAt ?? inv.date ?? 0);
+          return d >= from && d <= to;
+        });
+        if (inRange.length === 0) { setGenError("No hay facturas en ese rango de fechas."); return; }
+        const rows = inRange.map((inv: any) => ({
+          Numero:  inv.invoiceNumber ?? inv.number ?? inv.id ?? "",
+          Estado:  inv.status ?? inv.paymentStatus ?? "",
+          Total:   Number(inv.totalAmount ?? inv.amount ?? 0).toFixed(2),
+          Moneda:  inv.currency ?? "USD",
+          Emitida: inv.issuedAt ? fmtDateISO(inv.issuedAt) : (inv.createdAt ? fmtDateISO(inv.createdAt) : ""),
+          Vence:   inv.dueDate ? fmtDateISO(inv.dueDate) : "",
+        }));
+        downloadBlob(toCSV(rows, ["Numero","Estado","Total","Moneda","Emitida","Vence"]),
+          `going_facturas_${tag}.csv`, "text/csv;charset=utf-8");
+        setGenOk(`Reporte de ${rows.length} factura(s) descargado.`);
+      }
     } catch {
-      setGenError("No se pudo generar el reporte. Intenta de nuevo.");
+      setGenError("No se pudo generar el reporte. Verifica tu conexión e intenta de nuevo.");
     } finally {
       setGenerating(false);
     }
-  };
-
-  const kpiFmt = (n?: number) => (n == null ? "—" : String(n));
-
-  // ── Exportar bookings del mes como CSV ───────────────────────────────────
-  async function handleExportBookings() {
-    setExporting("bookings");
-    try {
-      const bookings = await fetchBookings(session!.accessToken);
-      const rows = bookings.map((b: any) => ({
-        ID:          b.id ?? "",
-        Servicio:    b.serviceType ?? "",
-        Estado:      b.status ?? "",
-        Total:       b.totalPrice?.amount ?? b.total ?? "",
-        Moneda:      b.totalPrice?.currency ?? b.currency ?? "USD",
-        Inicio:      b.startDate ? formatISO(b.startDate) : "",
-        Creado:      b.createdAt ? formatISO(b.createdAt) : "",
-        Notas:       b.notes ?? "",
-      }));
-      const csv = toCSV(rows, ["ID","Servicio","Estado","Total","Moneda","Inicio","Creado","Notas"]);
-      const month = new Date().toISOString().slice(0,7);
-      downloadBlob(csv, `going_viajes_${month}.csv`, "text/csv;charset=utf-8");
-    } catch {/* silencioso */}
-    finally { setExporting(null); }
   }
 
-  // ── Exportar KPIs actuales como CSV ──────────────────────────────────────
-  function handleExportKPIs() {
-    if (!kpis) return;
-    setExporting("kpis");
-    const rows = [
-      { Indicador: "Viajes Totales",            Valor: kpis.totalTrips },
-      { Indicador: "Ingresos Este Mes (USD)",   Valor: kpis.totalRevenueThisMonth },
-      { Indicador: "Ingresos Este Año (USD)",   Valor: kpis.totalRevenueThisYear },
-      { Indicador: "Saldo Pendiente (USD)",     Valor: kpis.outstandingAmount },
-      { Indicador: "Facturas Emitidas",         Valor: kpis.totalInvoicesIssued },
-      { Indicador: "Facturas Vencidas",         Valor: kpis.totalInvoicesOverdue },
-      { Indicador: "Conductores Activos",       Valor: kpis.activeDrivers },
-      { Indicador: "Entrega Notificaciones (%)",Valor: kpis.notificationDeliveryRate },
-    ];
-    const csv = toCSV(rows, ["Indicador","Valor"]);
-    const date = new Date().toISOString().slice(0,10);
-    downloadBlob(csv, `going_kpis_${date}.csv`, "text/csv;charset=utf-8");
-    setExporting(null);
-  }
+  const kpiN = (n?: number) => (n == null ? "—" : String(n));
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Reportes</h1>
-          <p className="text-slate-600 mt-1">KPIs en tiempo real y generación de reportes</p>
-        </div>
-        {/* Exportar rápido */}
-        <div className="flex gap-2">
-          <button
-            onClick={handleExportKPIs}
-            disabled={!kpis || exporting === "kpis"}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40 flex items-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            {exporting === "kpis" ? "Exportando…" : "KPIs CSV"}
-          </button>
-          <button
-            onClick={handleExportBookings}
-            disabled={exporting === "bookings"}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40 flex items-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            {exporting === "bookings" ? "Exportando…" : "Viajes CSV"}
-          </button>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-900">Reportes</h1>
+        <p className="text-slate-600 mt-1">Indicadores de tu empresa y exportación de reportes</p>
       </div>
 
       {/* KPIs */}
-      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-        KPIs Actuales
-      </h2>
+      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Indicadores</h2>
       {kpisLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[1,2,3,4].map((i) => (
-            <div key={i} className="h-20 bg-white rounded-lg border border-slate-200 animate-pulse" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+          {[1,2,3,4,5,6].map((i) => (
+            <div key={i} className="h-24 bg-white rounded-lg border border-slate-200 animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <KPICard label="Viajes Totales"        value={kpiFmt(kpis?.totalTrips)}            sub="acumulado" />
-          <KPICard label="Ingresos Este Mes"     value={kpis ? fmtMoney(kpis.totalRevenueThisMonth) : "—"} />
-          <KPICard label="Ingresos Este Año"     value={kpis ? fmtMoney(kpis.totalRevenueThisYear)  : "—"} />
-          <KPICard label="Saldo Pendiente"       value={kpis ? fmtMoney(kpis.outstandingAmount)     : "—"} sub="por cobrar" />
-          <KPICard label="Facturas Emitidas"     value={kpiFmt(kpis?.totalInvoicesIssued)} />
-          <KPICard label="Facturas Vencidas"     value={kpiFmt(kpis?.totalInvoicesOverdue)} sub={kpis?.totalInvoicesOverdue ? "⚠ Requieren atención" : undefined} />
-          <KPICard label="Conductores Activos"   value={kpiFmt(kpis?.activeDrivers)} />
-          <KPICard label="Entrega Notificaciones" value={kpis ? `${kpis.notificationDeliveryRate?.toFixed(1)}%` : "—"} />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+          <KPICard label="Viajes Totales"        value={kpiN(kpis?.totalTrips)}     sub="histórico" />
+          <KPICard label="Viajes Este Mes"       value={kpiN(kpis?.tripsThisMonth)} sub="del mes en curso" />
+          <KPICard label="Viajes Completados"    value={kpiN(kpis?.completedTrips)} sub="confirmados / completados" />
+          <KPICard label="Pendientes Aprobación" value={kpiN(kpis?.pendingApprovals)} sub="requieren atención" alert={!!kpis?.pendingApprovals} />
+          <KPICard label="Total Facturado"       value={kpis ? fmtMoney(kpis.billedAmount) : "—"} sub="acumulado" />
+          <KPICard label="Saldo Pendiente"       value={kpis ? fmtMoney(kpis.outstandingAmount) : "—"} sub="por pagar" alert={!!kpis?.outstandingAmount} />
         </div>
       )}
 
-      {/* Generador + Historial */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-        {/* Generador */}
-        <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-sm h-fit">
-          <h2 className="text-base font-semibold text-slate-900 mb-4">Generar Nuevo Reporte</h2>
-          <form onSubmit={handleGenerate} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {REPORT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Desde</label>
-                <input
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                  required
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Hasta</label>
-                <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                  required
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Formato</label>
-              <div className="flex gap-2">
-                {FORMATS.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setForm({ ...form, format: f })}
-                    className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                      form.format === f
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {genError && (
-              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                {genError}
-              </p>
-            )}
-            {genOk && (
-              <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                ✓ Reporte generado y añadido al historial.
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={generating}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
-            >
-              {generating ? "Generando..." : "Generar Reporte"}
-            </button>
-          </form>
-        </div>
-
-        {/* Historial */}
-        <div className="lg:col-span-3">
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-            Historial de Reportes
-          </h2>
-
-          {reportsLoading && (
-            <div className="space-y-3">
-              {[1,2,3].map((i) => (
-                <div key={i} className="h-16 bg-white rounded-lg border border-slate-200 animate-pulse" />
-              ))}
-            </div>
-          )}
-
-          {!reportsLoading && reports.length === 0 && (
-            <div className="bg-white rounded-lg border border-slate-200 p-8 text-center">
-              <p className="text-slate-500 text-sm">No hay reportes generados aún.</p>
-            </div>
-          )}
-
-          {!reportsLoading && reports.length > 0 && (
-            <div className="space-y-3">
-              {reports.map((r, i) => (
-                <div
-                  key={r.id ?? i}
-                  className="bg-white rounded-lg border border-slate-200 px-5 py-4 shadow-sm flex items-center justify-between gap-3"
+      {/* Generador de reportes CSV */}
+      <div className="max-w-xl bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Generar reporte</h2>
+        <p className="text-sm text-slate-500 mb-4">Descarga un CSV (se abre en Excel/Sheets) con los datos del período elegido.</p>
+        <form onSubmit={handleGenerate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de reporte</label>
+            <div className="space-y-2">
+              {REPORT_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, type: t.value })}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg border transition-colors ${
+                    form.type === t.value ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-semibold text-slate-900 truncate">
-                        {r.title ?? REPORT_TYPES.find((t) => t.value === r.type)?.label ?? r.type}
-                      </span>
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full shrink-0 ${STATUS_STYLES[r.status] ?? "bg-slate-100 text-slate-600"}`}>
-                        {r.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      {fmtDate(r.startDate)} → {fmtDate(r.endDate)} ·{" "}
-                      {r.format} · {r.totalRecords ?? 0} registros
-                    </p>
-                  </div>
-                  {r.status === "COMPLETED" && r.fileUrl && (
-                    <a
-                      href={r.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="shrink-0 px-3 py-1.5 text-xs font-semibold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      Descargar
-                    </a>
-                  )}
-                </div>
+                  <p className={`text-sm font-semibold ${form.type === t.value ? "text-blue-700" : "text-slate-800"}`}>{t.label}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t.desc}</p>
+                </button>
               ))}
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Desde</label>
+              <input type="date" value={form.startDate} max={form.endDate}
+                onChange={(e) => setForm({ ...form, startDate: e.target.value })} required
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Hasta</label>
+              <input type="date" value={form.endDate} min={form.startDate} max={todayStr()}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })} required
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          {genError && (
+            <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{genError}</p>
           )}
-        </div>
+          {genOk && (
+            <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">✓ {genOk}</p>
+          )}
+
+          <button type="submit" disabled={generating}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            {generating ? "Generando…" : "Descargar CSV"}
+          </button>
+        </form>
       </div>
     </div>
   );
