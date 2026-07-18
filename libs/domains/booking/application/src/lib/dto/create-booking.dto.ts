@@ -28,9 +28,16 @@ export class CreateBookingDto {
   @IsEnum(['urban', 'intercity'])
   bookingType?: 'urban' | 'intercity';
 
-  /** Empresa corporativa dueña del booking (corporate-service lo setea). */
+  /**
+   * Empresa corporativa dueña del booking (corporate-service lo setea).
+   *
+   * OJO: NO es un UUID pelado. El alta de empresa genera `comp_<uuid>`
+   * (approveCompany), y ese mismo valor viaja en el JWT y se usa para el
+   * aislamiento por tenant. Validarlo con @IsUUID() rechazaba con 400 TODA
+   * reserva corporativa — que corporate-service convertía en un 500 opaco.
+   */
   @IsOptional()
-  @IsUUID()
+  @IsString()
   companyId?: string;
 
   @IsOptional()

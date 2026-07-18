@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   BadRequestException,
   NotFoundException,
+  HttpException,
 } from '@nestjs/common';
 import { CompanySettingsRepository } from '../infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from '../infrastructure/persistence/approval-workflow.repository';
@@ -1309,11 +1310,34 @@ export class CorporateService {
 
   // ── HTTP helpers ───────────────────────────────────────────────────────
 
+  /**
+   * Lee el detalle del error del servicio downstream y lo propaga con el MISMO
+   * status. Antes se tiraba `new Error('400 from <url>')`: se perdía el motivo
+   * (p.ej. qué campo no pasó validación) y Nest lo convertía en un 500 opaco,
+   * así que el usuario veía "Internal server error" ante un simple 400.
+   */
+  private async throwDownstream(res: Response, url: string): Promise<never> {
+    const raw = await res.text().catch(() => '');
+    let detail = raw;
+    try {
+      const parsed = JSON.parse(raw);
+      const m = (parsed as any)?.message;
+      detail = Array.isArray(m) ? m.join('; ') : (m ?? raw);
+    } catch {
+      /* no era JSON — se usa el texto crudo */
+    }
+    this.logger.warn(`Downstream ${res.status} en ${url}: ${detail?.slice(0, 500)}`);
+    throw new HttpException(
+      { statusCode: res.status, message: detail || `Error ${res.status} del servicio`, upstream: url },
+      res.status,
+    );
+  }
+
   private async fetchJson(url: string, token: string): Promise<unknown> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(url, { headers });
-    if (!res.ok) throw new Error(`${res.status} from ${url}`);
+    if (!res.ok) await this.throwDownstream(res, url);
     return res.json();
   }
 
@@ -1321,7 +1345,7 @@ export class CorporateService {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error(`${res.status} from ${url}`);
+    if (!res.ok) await this.throwDownstream(res, url);
     return res.json();
   }
 
