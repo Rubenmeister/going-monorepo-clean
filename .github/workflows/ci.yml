@@ -44,6 +44,13 @@ jobs:
       - name: Validate Dockerfile SERVICE_NAME defaults
         run: bash scripts/validate-dockerfiles.sh
 
+      # 1.56 Guardas de arquitectura — impiden que vuelvan fallos YA arreglados.
+      # Corre SIEMPRE (no bajo `nx affected`): estas fallas cruzan servicios y
+      # un guard que solo corre "si el proyecto cambió" no protege nada.
+      # G1 _id:false en colecciones · G2 Money como número · G3 required con ''
+      - name: Guardas de arquitectura (regresiones conocidas)
+        run: node scripts/check-architecture.mjs
+
       # 1.6 ShellCheck — análisis estático de scripts bash.
       # severity:error → falla CI sólo en bugs reales (sintaxis, lógica
       # rota, command not found). Warnings (variables sin usar, quoting

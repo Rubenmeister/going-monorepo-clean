@@ -74,7 +74,10 @@ export function computePeriodSpend(
   for (const b of bookings) {
     if (b.userId !== employeeId) continue;
     if (!b.status || !SPEND_STATUSES.has(b.status)) continue;
-    const amount = b.totalPrice ?? b.amount ?? 0;
+    // totalPrice es Money ({ amount, currency }): sumarlo pelado acumulaba
+    // objetos y el control de presupuesto comparaba basura.
+    const bruto = b.totalPrice?.amount ?? b.totalPrice ?? b.amount ?? 0;
+    const amount = typeof bruto === 'number' ? bruto : parseFloat(String(bruto)) || 0;
     const t = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     if (t >= monthStart) monthly += amount;
     if (t >= weekStart) weekly += amount;
