@@ -139,16 +139,31 @@ function ApproveModal({ company, token, onClose, onApproved }: {
   const [tipoCuenta, setTipoCuenta] = useState<TipoCuenta>('negocio');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Link "define tu clave" que devuelve el approve. Se muestra para que el
+  // staff se lo pase al cliente DIRECTO (WhatsApp/email), sin depender del
+  // email automático (Gmail SMTP frágil — a veces no llega o se rate-limitea).
+  const [resetLink, setResetLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function handleApprove() {
     setLoading(true); setError('');
     try {
-      await adminFetch(`/corporate/companies/${company.id}/approve`, token, {
+      const res: any = await adminFetch(`/corporate/companies/${company.id}/approve`, token, {
         method: 'POST', body: JSON.stringify({ tipoCuenta }),
       });
-      onApproved(company.id); onClose();
+      onApproved(company.id);
+      // Si el backend provisionó la cuenta y devolvió el link, lo mostramos en
+      // vez de cerrar. Si no (p.ej. no aplica), cerramos como antes.
+      if (res?.resetLink) setResetLink(res.resetLink);
+      else onClose();
     } catch (e: any) { setError(e.message ?? 'Error al aprobar'); }
     finally { setLoading(false); }
+  }
+
+  async function copyLink() {
+    if (!resetLink) return;
+    try { await navigator.clipboard.writeText(resetLink); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    catch { /* clipboard puede fallar en http; el link igual está visible para copiar a mano */ }
   }
 
   return (
@@ -164,26 +179,53 @@ function ApproveModal({ company, token, onClose, onApproved }: {
             <p className="text-slate-500">{company.email} · RUC {company.ruc}</p>
             {company.employees > 0 && <p className="text-slate-500">{company.employees} empleados · {company.industry}</p>}
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Asignar tipo de cuenta *</p>
-            <div className="space-y-2">
-              {(Object.entries(TIPO_LABELS) as [TipoCuenta, any][]).map(([key, { label }]) => (
-                <button key={key} type="button" onClick={() => setTipoCuenta(key)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${tipoCuenta === key ? 'border-green-500 bg-green-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${tipoCuenta === key ? 'border-green-500 bg-green-500' : 'border-slate-300'}`} />
-                  <span className={`text-sm font-medium ${tipoCuenta === key ? 'text-green-700' : 'text-slate-700'}`}>{label}</span>
+          {!resetLink ? (
+            <>
+              <div>
+                <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Asignar tipo de cuenta *</p>
+                <div className="space-y-2">
+                  {(Object.entries(TIPO_LABELS) as [TipoCuenta, any][]).map(([key, { label }]) => (
+                    <button key={key} type="button" onClick={() => setTipoCuenta(key)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${tipoCuenta === key ? 'border-green-500 bg-green-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                      <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${tipoCuenta === key ? 'border-green-500 bg-green-500' : 'border-slate-300'}`} />
+                      <span className={`text-sm font-medium ${tipoCuenta === key ? 'text-green-700' : 'text-slate-700'}`}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+              <div className="flex gap-3">
+                <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50">Cancelar</button>
+                <button onClick={handleApprove} disabled={loading}
+                  className="flex-1 py-2.5 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 disabled:opacity-60">
+                  {loading ? 'Aprobando…' : '✓ Aprobar y activar'}
                 </button>
-              ))}
-            </div>
-          </div>
-          {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-          <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50">Cancelar</button>
-            <button onClick={handleApprove} disabled={loading}
-              className="flex-1 py-2.5 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 disabled:opacity-60">
-              {loading ? 'Aprobando…' : '✓ Aprobar y activar'}
-            </button>
-          </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-green-800">✓ Aprobada y cuenta creada</p>
+                <p className="text-xs text-slate-600">
+                  Comparte este enlace con el cliente para que <strong>defina su contraseña</strong> (válido 72h).
+                  Úsalo para no depender del email automático:
+                </p>
+                <div className="flex items-center gap-2">
+                  <input readOnly value={resetLink}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 text-xs bg-white border border-slate-200 rounded px-2 py-1.5 text-slate-700" />
+                  <button type="button" onClick={copyLink}
+                    className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded hover:bg-green-700 whitespace-nowrap">
+                    {copied ? '¡Copiado!' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+              <button onClick={onClose}
+                className="w-full py-2.5 bg-slate-800 text-white text-sm font-semibold rounded-lg hover:bg-slate-900">
+                Cerrar
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
