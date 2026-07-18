@@ -15,6 +15,12 @@ export interface NotificationProps {
   createdAt: Date;
   sentAt?: Date;
   readAt?: Date;
+  /**
+   * Datos específicos del canal / del evento (teléfono destino para WhatsApp,
+   * enlace de la acción, ids de referencia). Antes NO existía, así que los
+   * gateways que leían `props.data` (SMS) siempre veían undefined.
+   */
+  data?: Record<string, any>;
 }
 
 export class Notification {
@@ -27,6 +33,7 @@ export class Notification {
   readonly createdAt: Date;
   readonly sentAt?: Date;
   readonly readAt?: Date;
+  readonly data?: Record<string, any>;
 
   private constructor(props: NotificationProps) {
     this.id = props.id;
@@ -38,6 +45,7 @@ export class Notification {
     this.createdAt = props.createdAt;
     this.sentAt = props.sentAt;
     this.readAt = props.readAt;
+    this.data = props.data;
   }
 
   public static create(props: {
@@ -45,6 +53,7 @@ export class Notification {
     channel: NotificationChannel;
     title: string;
     body: string;
+    data?: Record<string, any>;
   }): Result<Notification, Error> {
     
     if (props.title.length === 0) {
@@ -75,6 +84,7 @@ export class Notification {
       createdAt: this.createdAt,
       sentAt: this.sentAt,
       readAt: this.readAt,
+      data: this.data,
     };
   }
 

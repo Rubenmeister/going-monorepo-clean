@@ -30,6 +30,7 @@ export class SendNotificationUseCase {
       title: dto.title,
       body: dto.body,
       channel: channelVOResult.value,
+      data: dto.data,
     });
 
     if (notificationResult.isErr()) {

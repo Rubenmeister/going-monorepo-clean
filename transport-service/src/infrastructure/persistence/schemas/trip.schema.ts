@@ -22,7 +22,13 @@ class LocationSchema {
 
 export type TripDocument = TripModelSchema & Document;
 
-@Schema({ timestamps: true, _id: false })
+/**
+ * OJO: sin `_id: false`. Ese flag corresponde a SUBdocumentos; en una colección
+ * de nivel superior impide que Mongoose genere el _id y todo save() falla con
+ * "document must have an _id before saving". Mismo defecto que tenían reservas
+ * y notificaciones (copy-paste desde un subdocumento).
+ */
+@Schema({ timestamps: true })
 export class TripModelSchema {
   @Prop({ required: true, unique: true })
   id: string;
