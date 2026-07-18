@@ -27,6 +27,16 @@ import {
 
 type ServiceType = "transport" | "accommodation" | "tour" | "experience" | "parcel";
 type VehicleType  = "sedan" | "suv" | "van" | "minibus";
+
+/** Tipo de viaje — se elige ANTES de cargar los lugares. */
+type TripType = "ida" | "ida_vuelta" | "multi";
+
+/** Punto intermedio de un viaje con paradas: lugar + cuándo. */
+interface Stop {
+  address: string;
+  date: string;
+  time: string;
+}
 type CatalogType  = "tour" | "accommodation" | "experience";
 type CatalogItem  = TourItem | AccommodationItem | ExperienceItem;
 
@@ -48,6 +58,12 @@ const TOUR_CATEGORIES = [
   { key: "CULTURAL",    label: "Cultural" },
   { key: "GASTRONOMY",  label: "Gastronomía" },
   { key: "NATURE",      label: "Naturaleza" },
+];
+
+const TRIP_TYPES: { key: TripType; label: string; desc: string }[] = [
+  { key: "ida",        label: "Solo ida",       desc: "Un trayecto" },
+  { key: "ida_vuelta", label: "Ida y regreso",  desc: "Con fecha de retorno" },
+  { key: "multi",      label: "Con paradas",    desc: "Varios puntos" },
 ];
 
 const VEHICLES: { key: VehicleType; label: string; cap: string }[] = [
@@ -129,7 +145,13 @@ export default function SolicitarViajePage() {
   const [destination, setDestination] = useState("");
   const [passengers, setPassengers]   = useState("1");
   const [vehicleType, setVehicleType] = useState<VehicleType>("sedan");
-  const [roundTrip, setRoundTrip]     = useState(false);
+
+  // Tipo de viaje: se define ANTES de los lugares. Según el tipo, el formulario
+  // va sumando los lugares con su fecha y hora (regreso, o paradas intermedias).
+  const [tripType, setTripType]       = useState<TripType>("ida");
+  const [returnDate, setReturnDate]   = useState("");
+  const [returnTime, setReturnTime]   = useState("");
+  const [stops, setStops]             = useState<Stop[]>([]);
 
   // ── Encomienda ────────────────────────────────────────────────────────────
   const [parcelOrigin, setParcelOrigin]       = useState("");
@@ -238,9 +260,19 @@ export default function SolicitarViajePage() {
     }
     setSubmitting(true);
     const isoStart = `${startDate}T${startTime || "00:00"}:00`;
-    const isoEnd   = roundTrip && startDate
-      ? (() => { const d = new Date(startDate); d.setDate(d.getDate() + 1); return d.toISOString().split("T")[0] + "T00:00:00"; })()
-      : undefined;
+    // Ida y regreso: el fin del viaje es la fecha/hora de regreso que cargó el
+    // solicitante (antes se inventaba "el día siguiente", que no reservaba nada).
+    // Con paradas: el fin es la última parada con fecha.
+    const isoEnd = (() => {
+      if (tripType === "ida_vuelta" && returnDate) {
+        return `${returnDate}T${returnTime || "00:00"}:00`;
+      }
+      if (tripType === "multi") {
+        const last = [...stops].reverse().find((s) => s.date);
+        if (last) return `${last.date}T${last.time || "00:00"}:00`;
+      }
+      return undefined;
+    })();
 
     const meta: Record<string, unknown> = {
       requesterName: requesterName || session!.user.nombre,
@@ -249,8 +281,17 @@ export default function SolicitarViajePage() {
       ...(isAgencia && { passengerName }),
     };
     if (serviceType === "transport") {
-      Object.assign(meta, { origin, destination, passengers: +passengers, vehicleType, roundTrip });
+      const cleanStops = stops.filter((s) => s.address.trim());
+      Object.assign(meta, {
+        origin, destination, passengers: +passengers, vehicleType,
+        tripType,
+        // Compatibilidad con consumidores que ya leían roundTrip.
+        roundTrip: tripType === "ida_vuelta",
+        ...(tripType === "ida_vuelta" && { returnDate, returnTime }),
+        ...(tripType === "multi" && { stops: cleanStops }),
+      });
       rememberAddress(origin); rememberAddress(destination);
+      cleanStops.forEach((s) => rememberAddress(s.address));
     } else {
       Object.assign(meta, { origin: parcelOrigin, destination: parcelDest, description: parcelDescription });
       rememberAddress(parcelOrigin); rememberAddress(parcelDest);
@@ -693,27 +734,131 @@ export default function SolicitarViajePage() {
 
           {/* TRANSPORT */}
           {serviceType === "transport" && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
+
+              {/* ── Tipo de viaje — se define ANTES de los lugares ── */}
+              <div>
+                <p className="text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                  Tipo de viaje <span className="text-red-500">*</span>
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {TRIP_TYPES.map((t) => (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setTripType(t.key)}
+                      className={`p-2.5 rounded-lg border text-left transition-colors ${
+                        tripType === t.key
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      <p className={`text-sm font-semibold ${tripType === t.key ? "text-blue-700" : "text-slate-800"}`}>
+                        {t.label}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5 leading-tight">{t.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Salida ── */}
+              <div className="space-y-3 border-l-2 border-blue-200 pl-3">
+                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">🟢 Salida</p>
                 <Field label="Origen" required>
                   <AddressAutocomplete className={INPUT} value={origin} onChange={setOrigin}
                     placeholder="Dirección de recogida" required />
                 </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Fecha" required>
+                    <input type="date" className={INPUT} value={startDate} min={today}
+                      onChange={(e) => setStartDate(e.target.value)} required />
+                  </Field>
+                  <Field label="Hora">
+                    <input type="time" className={INPUT} value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)} />
+                  </Field>
+                </div>
+              </div>
+
+              {/* ── Paradas intermedias (solo multi) ── */}
+              {tripType === "multi" && (
+                <div className="space-y-3 border-l-2 border-amber-200 pl-3">
+                  <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">
+                    🟡 Paradas intermedias
+                  </p>
+                  {stops.length === 0 && (
+                    <p className="text-xs text-slate-400">
+                      Agrega los lugares por los que debe pasar, con su fecha y hora.
+                    </p>
+                  )}
+                  {stops.map((s, i) => (
+                    <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-slate-500">Parada {i + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() => setStops(stops.filter((_, j) => j !== i))}
+                          className="text-xs text-red-600 hover:underline font-medium"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                      <AddressAutocomplete
+                        className={INPUT}
+                        value={s.address}
+                        onChange={(v) => setStops(stops.map((x, j) => (j === i ? { ...x, address: v } : x)))}
+                        placeholder="Lugar de la parada"
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <input type="date" className={INPUT} value={s.date} min={startDate || today}
+                          onChange={(e) => setStops(stops.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))} />
+                        <input type="time" className={INPUT} value={s.time}
+                          onChange={(e) => setStops(stops.map((x, j) => (j === i ? { ...x, time: e.target.value } : x)))} />
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setStops([...stops, { address: "", date: "", time: "" }])}
+                    className="w-full py-2 border border-dashed border-slate-300 rounded-lg text-sm font-medium text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  >
+                    + Agregar parada
+                  </button>
+                </div>
+              )}
+
+              {/* ── Llegada ── */}
+              <div className="space-y-3 border-l-2 border-red-200 pl-3">
+                <p className="text-xs font-bold text-red-700 uppercase tracking-wide">
+                  🔴 {tripType === "multi" ? "Destino final" : "Llegada"}
+                </p>
                 <Field label="Destino" required>
                   <AddressAutocomplete className={INPUT} value={destination} onChange={setDestination}
                     placeholder="Dirección de llegada" required />
                 </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Fecha" required>
-                  <input type="date" className={INPUT} value={startDate} min={today}
-                    onChange={(e) => setStartDate(e.target.value)} required />
-                </Field>
-                <Field label="Hora">
-                  <input type="time" className={INPUT} value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)} />
-                </Field>
-              </div>
+
+              {/* ── Regreso (solo ida y vuelta) ── */}
+              {tripType === "ida_vuelta" && (
+                <div className="space-y-3 border-l-2 border-green-200 pl-3">
+                  <p className="text-xs font-bold text-green-700 uppercase tracking-wide">
+                    🔄 Regreso — del destino al origen
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Fecha de regreso" required>
+                      <input type="date" className={INPUT} value={returnDate} min={startDate || today}
+                        onChange={(e) => setReturnDate(e.target.value)} required />
+                    </Field>
+                    <Field label="Hora de regreso">
+                      <input type="time" className={INPUT} value={returnTime}
+                        onChange={(e) => setReturnTime(e.target.value)} />
+                    </Field>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Vehículo y pasajeros ── */}
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Pasajeros">
                   <input type="number" min="1" max="50" className={INPUT} value={passengers}
@@ -726,11 +871,6 @@ export default function SolicitarViajePage() {
                   </select>
                 </Field>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)}
-                  className="w-4 h-4 accent-blue-600" />
-                <span className="text-sm text-slate-700">Incluir viaje de regreso</span>
-              </label>
             </div>
           )}
 
