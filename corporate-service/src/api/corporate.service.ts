@@ -198,6 +198,29 @@ export class CorporateService {
    * Best-effort: un aviso que falla NO debe tumbar la operación de negocio que
    * lo originó (aprobar, facturar). Pero sí se registra con detalle.
    */
+  /**
+   * Contacto (teléfono/email) de un usuario, para poder avisarle.
+   * Vía servicio-a-servicio con X-Internal-Token. Best-effort: si falla, el
+   * aviso cae al canal por defecto en vez de romper la operación.
+   */
+  private async contactoDeUsuario(
+    userId: string,
+  ): Promise<{ phone?: string | null; email?: string | null } | null> {
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!this.authUrl || !token) return null;
+    try {
+      const res = await fetch(
+        `${this.authUrl}/auth/svc/contact?userId=${encodeURIComponent(userId)}`,
+        { headers: { 'X-Internal-Token': token } },
+      );
+      if (!res.ok) return null;
+      const j: any = await res.json();
+      return j?.found ? { phone: j.phone, email: j.email } : null;
+    } catch {
+      return null;
+    }
+  }
+
   private async notify(params: {
     userId: string;
     channel: 'EMAIL' | 'SMS' | 'PUSH' | 'WHATSAPP';
@@ -372,7 +395,12 @@ export class CorporateService {
       // aprobador se entere es una solicitud que se cae por vencimiento.
       const nivelActual = chain[0];
       const aprobadorId = (nivelActual as any)?.approverId ?? (nivelActual as any)?.userId;
-      const aprobadorTel = (nivelActual as any)?.approverPhone ?? (nivelActual as any)?.phone;
+      // El teléfono NO viaja en la cadena de aprobación (ahí solo hay ids y
+      // umbrales): se resuelve del registro del usuario. Si no tiene teléfono
+      // cargado, el aviso cae a email.
+      const aprobadorTel = aprobadorId
+        ? await this.contactoDeUsuario(String(aprobadorId)).then((c) => c?.phone ?? null)
+        : null;
       if (aprobadorId) {
         void this.notify({
           userId: String(aprobadorId),
@@ -1306,6 +1334,11 @@ export class CorporateService {
           firstName: a.contactoNombre,
           companyId,
           companyName: a.razonSocial,
+          // El teléfono YA se pidió en el formulario de alta y se guardó en la
+          // solicitud, pero no se pasaba aquí: el usuario quedaba sin phone y
+          // los avisos por WhatsApp no tenían a dónde ir. El dato existía y se
+          // perdía en esta costura.
+          phone: a.contactoTelefono,
         });
         provisioned = true;
         resetLink = (res as any)?.resetLink ?? null;

@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { RequestSignatureMiddleware } from '@going-monorepo-clean/shared-infrastructure';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthController } from './api/auth.controller';
+import { UserContactController } from './api/user-contact.controller';
 import { HealthController } from './api/health.controller';
 import { AdminController } from './api/admin.controller';
 import { MfaController } from './api/mfa.controller';
@@ -46,7 +47,7 @@ import {
     InfrastructureModule,
     AuditModule,
   ],
-  controllers: [AuthController, HealthController, AdminController, MfaController],
+  controllers: [AuthController, HealthController, AdminController, MfaController, UserContactController],
   providers: [
     RegisterUserUseCase,
     LoginUserUseCase,

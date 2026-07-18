@@ -161,7 +161,7 @@ export class AuthController {
   @HttpCode(201)
   async createCorporateUser(
     @CurrentUser('roles') callerRoles: string[],
-    @Body() body: { email: string; firstName?: string; lastName?: string; companyId: string; companyName?: string },
+    @Body() body: { email: string; firstName?: string; lastName?: string; companyId: string; companyName?: string; phone?: string },
   ): Promise<any> {
     const roles: string[] = Array.isArray(callerRoles) ? callerRoles : [];
     if (!roles.includes('admin')) {
@@ -186,6 +186,8 @@ export class AuthController {
           companyId: body.companyId,
           companyName: body.companyName ?? existing.companyName,
           status: 'active',
+          // No pisamos un teléfono ya cargado por el propio usuario.
+          ...(body.phone && !existing.phone ? { phone: String(body.phone).trim() } : {}),
           resetPasswordToken: resetToken,
           resetPasswordExpiry: resetExpiry,
         },
@@ -218,6 +220,9 @@ export class AuthController {
       passwordHash,
       firstName,
       lastName,
+      // Viene del formulario de alta (contactoTelefono). Sin esto el usuario
+      // quedaba sin teléfono y los avisos por WhatsApp no tenían destino.
+      ...(body.phone ? { phone: String(body.phone).trim() } : {}),
       roles: ['corporate'],
       status: 'active',
       companyId: body.companyId,
