@@ -290,7 +290,11 @@ export class CorporateService {
     const legacyNeedsApproval =
       (settings as any)?.requireApproval &&
       (payload.amount ?? payload.totalPrice ?? 0) >= ((settings as any)?.approvalThreshold ?? 0);
-    const needsApproval = legacyNeedsApproval || policyResult.requiresApproval;
+    // El solicitante puede FORZAR aprobación desde la UI ("Enviar para aprobación"),
+    // aunque no supere umbral ni política. Así el toggle del panel es real.
+    const clientForcedApproval = !!body.requiresApproval;
+    const needsApproval =
+      legacyNeedsApproval || policyResult.requiresApproval || clientForcedApproval;
 
     const booking = await this.postJson(`${this.bookingUrl}/bookings`, token, payload);
 

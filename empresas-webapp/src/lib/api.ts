@@ -163,8 +163,18 @@ export async function fetchBookings(
 
 /**
  * Crea una nueva reserva corporativa.
- * POST /bookings — requiere: userId, serviceId, serviceType, totalPrice, startDate, endDate?
- * Nota: serviceId es asignado por el sistema cuando no hay catálogo de servicios disponible.
+ *
+ * ⚠️ Va a POST /corporate/bookings (NO /bookings directo). El corporate-service:
+ *   1. valida presupuesto + política de viajes de la empresa,
+ *   2. reenvía el booking a transport-service,
+ *   3. si supera umbral/política O el solicitante marcó "Enviar para aprobación",
+ *      CREA la aprobación en el workflow multinivel (/corporate/approvals/*).
+ * Postear a /bookings directo se saltaba el paso 3 → las aprobaciones nunca se
+ * creaban y el multinivel no arrancaba desde la UI.
+ *
+ * Por eso mandamos, además del payload de booking, los campos PLANOS que el
+ * corporate-service lee: amount (numérico), employeeName, origin, destination,
+ * serviceType, startDate y requiresApproval (fuerza aprobación).
  */
 export async function crearBooking(
   token: string,
@@ -179,9 +189,22 @@ export async function crearBooking(
     metadata?: Record<string, unknown>;
   }
 ): Promise<any> {
-  return corpFetch("/bookings", token, {
+  const meta = (data.metadata ?? {}) as Record<string, any>;
+  const body = {
+    ...data,
+    // Campos planos para el enforcement + workflow del corporate-service.
+    amount: data.totalPrice?.amount ?? 0,
+    employeeName: meta.passengerName ?? meta.requesterName ?? "",
+    origin: meta.origin,
+    destination: meta.destination,
+    requiresApproval: !!meta.requiresApproval,
+    isPersonal: !!meta.isPersonal,
+    isInternational: !!meta.isInternational,
+    justification: meta.justification ?? data.notes,
+  };
+  return corpFetch("/corporate/bookings", token, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(body),
   });
 }
 
