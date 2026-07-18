@@ -27,7 +27,13 @@ import {
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 type ServiceType = "transport" | "accommodation" | "tour" | "experience" | "parcel";
-type VehicleType  = "sedan" | "suv" | "van" | "minibus";
+/**
+ * Vehículos EXACTAMENTE como los tarifa el motor (lista `empresas`).
+ * Antes el formulario ofrecía "sedan", que NO existe en la tabla: el motor caía
+ * a SUV y se cobraba precio de SUV sin avisar. Y faltaban suv_xl / van_xl /
+ * bus / bus_40, que sí están tarifados.
+ */
+type VehicleType = "suv" | "suv_xl" | "van" | "van_xl" | "minibus" | "bus" | "bus_40";
 
 /** Tipo de viaje — se elige ANTES de cargar los lugares. */
 type TripType = "ida" | "ida_vuelta" | "multi";
@@ -82,11 +88,15 @@ const PARCEL_MODES: { key: ParcelMode; label: string; desc: string }[] = [
   { key: "multi",  label: "Varios destinos", desc: "Distribución en ruta" },
 ];
 
-const VEHICLES: { key: VehicleType; label: string; cap: string }[] = [
-  { key: "sedan",   label: "Sedán",   cap: "1–4 pax" },
-  { key: "suv",     label: "SUV",     cap: "1–6 pax" },
-  { key: "van",     label: "Van",     cap: "7–12 pax" },
-  { key: "minibus", label: "Minibús", cap: "13–20 pax" },
+/** maxPax se usa además para avisar si los pasajeros no caben en el vehículo. */
+const VEHICLES: { key: VehicleType; label: string; cap: string; maxPax: number }[] = [
+  { key: "suv",     label: "SUV",     cap: "hasta 4 pax",   maxPax: 4 },
+  { key: "suv_xl",  label: "SUV XL",  cap: "hasta 5 pax",   maxPax: 5 },
+  { key: "van",     label: "Van",     cap: "hasta 7 pax",   maxPax: 7 },
+  { key: "van_xl",  label: "Van XL",  cap: "hasta 12 pax",  maxPax: 12 },
+  { key: "minibus", label: "Minibús", cap: "hasta 20 pax",  maxPax: 20 },
+  { key: "bus",     label: "Bus",     cap: "21 a 30 pax",   maxPax: 30 },
+  { key: "bus_40",  label: "Bus 40",  cap: "40 o más pax",  maxPax: 99 },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -160,7 +170,7 @@ export default function SolicitarViajePage() {
   const [origin, setOrigin]           = useState("");
   const [destination, setDestination] = useState("");
   const [passengers, setPassengers]   = useState("1");
-  const [vehicleType, setVehicleType] = useState<VehicleType>("sedan");
+  const [vehicleType, setVehicleType] = useState<VehicleType>("suv");
 
   // Tipo de viaje: se define ANTES de los lugares. Según el tipo, el formulario
   // va sumando los lugares con su fecha y hora (regreso, o paradas intermedias).
@@ -936,6 +946,20 @@ export default function SolicitarViajePage() {
                   </select>
                 </Field>
               </div>
+
+              {/* El vehículo define la tarifa: avisar si los pasajeros no caben. */}
+              {(() => {
+                const v = VEHICLES.find((x) => x.key === vehicleType);
+                const pax = parseInt(passengers) || 0;
+                if (!v || pax <= v.maxPax) return null;
+                const sugerido = VEHICLES.find((x) => pax <= x.maxPax);
+                return (
+                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    {pax} pasajeros no caben en {v.label} ({v.cap}).
+                    {sugerido && ` Considera ${sugerido.label} (${sugerido.cap}).`}
+                  </p>
+                );
+              })()}
             </div>
           )}
 
