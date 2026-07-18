@@ -46,7 +46,12 @@ export function periodStart(period: BudgetPeriod, now: Date = new Date()): Date 
 interface BookingLike {
   userId?: string;
   status?: string;
-  totalPrice?: number;
+  /**
+   * En runtime llega como Money ({ amount, currency }); el tipo decía `number`
+   * y por eso TypeScript no avisó de que se estaban SUMANDO objetos. Se declara
+   * la forma real para que el compilador obligue a extraer el monto.
+   */
+  totalPrice?: number | { amount?: number; currency?: string };
   amount?: number;
   createdAt?: string | Date;
 }
@@ -76,8 +81,10 @@ export function computePeriodSpend(
     if (!b.status || !SPEND_STATUSES.has(b.status)) continue;
     // totalPrice es Money ({ amount, currency }): sumarlo pelado acumulaba
     // objetos y el control de presupuesto comparaba basura.
-    const bruto = b.totalPrice?.amount ?? b.totalPrice ?? b.amount ?? 0;
-    const amount = typeof bruto === 'number' ? bruto : parseFloat(String(bruto)) || 0;
+    const tp = b.totalPrice;
+    const bruto =
+      typeof tp === 'object' && tp !== null ? tp.amount ?? 0 : tp ?? b.amount ?? 0;
+    const amount = Number.isFinite(Number(bruto)) ? Number(bruto) : 0;
     const t = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     if (t >= monthStart) monthly += amount;
     if (t >= weekStart) weekly += amount;
