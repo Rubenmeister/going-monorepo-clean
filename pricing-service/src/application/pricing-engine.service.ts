@@ -477,15 +477,31 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
         // `stops` cuántas direcciones extra hay.
         const stopFee = this.stopSurcharge(input, dt, 'envio');
         const extraSplit = this.feeSplit(stopFee.total);
+
+        // Recargo B2B (+25% para corporate/agency). La regla ya existía y la
+        // aplicaba transporte, pero esta rama nunca pasaba el segmento: los
+        // envíos de empresas se cobraban a tarifa de consumidor.
+        //
+        // Se aplica sobre el servicio, NO sobre el recargo por dirección extra
+        // (ese es un cargo plano), igual que en transporte.
+        //
+        // El diferencial B2B es margen de plataforma: el repartidor cobra lo
+        // mismo por el mismo trabajo, así que va a platformFee y providerAmount
+        // no cambia.
+        const segRate = getClientSurchargeRate(segment);
+        const recargoSegmento = round(r.total * segRate);
+
         return {
-          total: round(r.total + stopFee.total),
+          total: round(r.total + recargoSegmento + stopFee.total),
           currency,
           base: r.subtotal,
-          platformFee: round(r.platformFee + extraSplit.platformFee),
+          platformFee: round(r.platformFee + recargoSegmento + extraSplit.platformFee),
           providerAmount: round(r.providerAmount + extraSplit.providerAmount),
           listVersion,
           breakdown: {
             ...r.breakdown,
+            clientSurchargeRate: segRate,
+            clientSurchargeAmount: recargoSegmento,
             stops: stopFee.count,
             stopSurchargeUnit: stopFee.unit,
             stopSurchargeTotal: stopFee.total,
