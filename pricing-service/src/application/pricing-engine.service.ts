@@ -46,6 +46,12 @@ export interface PriceInput {
   weightKg?: number;
   packageSize?: 'small' | 'medium' | 'large';
   isOverVolume?: boolean;
+  /**
+   * Paradas INTERMEDIAS del viaje (no cuenta origen ni destino final).
+   * Cada parada suma el recargo definido por la regla `stop_surcharge` del
+   * motor — editable en vivo, no hardcodeado.
+   */
+  stops?: number;
   /** Código de promoción (F4-2) — aplica reglas condition:promo_code vigentes. */
   promoCode?: string;
   /** Conductor (F4-2) — aplica su precio propio (regla flat_override con tope). */
@@ -239,6 +245,34 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
     return Object.values(byGroup).reduce((a, b) => a + b, 0);
   }
 
+  /**
+   * Recargo FIJO por parada intermedia. Sale de una REGLA del motor
+   * (`effect.type = 'stop_surcharge'`, valor en USD por parada), así se edita
+   * en vivo sin deploy — igual que los demás recargos. Si no hay regla activa,
+   * no cobra nada (nunca inventa un recargo).
+   *
+   * Si hubiera varias reglas aplicables gana la de mayor valor, mismo criterio
+   * que los recargos por tiempo.
+   */
+  private stopSurcharge(
+    input: PriceInput,
+    dt: Date,
+    mode: string,
+  ): { count: number; unit: number; total: number } {
+    const count = Math.max(0, Math.floor(Number(input.stops) || 0));
+    if (!count) return { count: 0, unit: 0, total: 0 };
+    let unit = 0;
+    for (const r of this.rules) {
+      if ((r as any).effect?.type !== 'stop_surcharge') continue;
+      if ((r as any).active === false) continue;
+      const modes = (r as any).scope?.modes;
+      if (modes && !modes.includes(mode)) continue;
+      if (!this.conditionMatches((r as any).condition, dt)) continue;
+      unit = Math.max(unit, Number((r as any).effect.value) || 0);
+    }
+    return { count, unit, total: round(unit * count) };
+  }
+
   /** Recargo dinámico: reglas de Atlas si existen, si no el código (paridad). */
   private surge(dt: Date, mode: string): number {
     const fromRules = this.surchargeFromRules(dt, mode);
@@ -342,14 +376,22 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
         const explicit = this.privateFare(svcList, input.origin, input.destination, veh);
         const originSurcharge = input.originSurcharge ?? 0;
 
+        const stopFee = this.stopSurcharge(input, dt, 'privado');
+
         if (explicit != null) {
           const surge = this.surge(dt, 'privado'); // reglas Atlas (o código); NO segmento
-          const total = round(explicit * (1 + surge)) + originSurcharge;
+          const total = round(explicit * (1 + surge)) + originSurcharge + stopFee.total;
           const { platformFee, providerAmount } = this.feeSplit(total);
           return {
             total, currency, base: explicit, platformFee, providerAmount,
             listVersion: svcList?.version ?? listVersion,
-            breakdown: { basePrice: explicit, timeSurchargeRate: surge, originSurcharge, list: isCorp ? 'empresas' : 'privado' },
+            breakdown: {
+              basePrice: explicit, timeSurchargeRate: surge, originSurcharge,
+              stops: stopFee.count,
+              stopSurchargeUnit: stopFee.unit,
+              stopSurchargeTotal: stopFee.total,
+              list: isCorp ? 'empresas' : 'privado',
+            },
           };
         }
 
@@ -361,13 +403,17 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
         const base = getPrivateFare(perSeat, veh);
         const surge = this.surge(dt, 'privado');
         const segRate = getClientSurchargeRate(segment);
-        const total = round(base * (1 + surge + segRate)) + originSurcharge;
+        const total = round(base * (1 + surge + segRate)) + originSurcharge + stopFee.total;
         const { platformFee, providerAmount } = this.feeSplit(total);
         return {
           total, currency, base, platformFee, providerAmount, listVersion,
           breakdown: {
             basePrice: base, timeSurchargeRate: surge,
-            clientSurchargeRate: segRate, originSurcharge, list: 'compartido(derivado)',
+            clientSurchargeRate: segRate, originSurcharge,
+            stops: stopFee.count,
+            stopSurchargeUnit: stopFee.unit,
+            stopSurchargeTotal: stopFee.total,
+            list: 'compartido(derivado)',
           },
         };
       }
