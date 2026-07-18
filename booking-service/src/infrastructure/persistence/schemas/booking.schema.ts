@@ -17,7 +17,18 @@ class MoneySchema {
 
 export type BookingDocument = BookingModelSchema & Document;
 
-@Schema({ timestamps: true, _id: false })
+/**
+ * OJO: NO poner `_id: false` aquí.
+ *
+ * `_id: false` solo corresponde a SUBdocumentos (como MoneySchema arriba). En una
+ * colección de nivel superior impide que Mongoose genere el _id, y todo `save()`
+ * revienta con "document must have an _id before saving" → NINGUNA reserva se
+ * podía crear. Se había copiado del patrón del subdocumento.
+ *
+ * La clave de negocio sigue siendo `id` (único e indexado); el _id lo genera
+ * Mongoose y las consultas siguen usando { id }.
+ */
+@Schema({ timestamps: true })
 export class BookingModelSchema {
   @Prop({ required: true, unique: true })
   id: string; // ID de la entidad de dominio
