@@ -1,168 +1,158 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Result, ok, err } from 'neverthrow';
+import * as nodemailer from 'nodemailer';
 import {
   Notification,
   INotificationGateway,
 } from '@going-monorepo-clean/domains-notification-core';
 
 /**
- * SendGrid Email Notification Gateway
- * Sends email notifications via SendGrid API
- * Requirements:
- *   npm install @sendgrid/mail
- *   Environment variables: SENDGRID_API_KEY, SENDGRID_FROM_EMAIL
+ * Gateway de correo por SMTP genérico.
+ *
+ * Deliberadamente NO se ata a un proveedor: hoy usa la cuenta de Gmail que ya
+ * envía los correos de "define tu clave" (mismas credenciales), y cambiar a
+ * Brevo, SendGrid o cualquier otro es cuestión de variables de entorno, sin
+ * tocar código.
+ *
+ * Variables (todas opcionales salvo la clave):
+ *   SMTP_HOST  (def. smtp.gmail.com)   SMTP_PORT (def. 465)
+ *   SMTP_USER  (def. GMAIL_USER)       SMTP_PASS (def. GMAIL_APP_PASSWORD)
+ *   SMTP_FROM  (def. el usuario)
+ *
+ * DESTINATARIO: sale de `data.email` de la notificación — quien emite el aviso
+ * sabe a quién escribirle.
+ *
+ * Antes esto usaba el SDK de SendGrid y resolvía el destinatario con un mock
+ * que devolvía null, retornando ok(): NUNCA enviaba un correo y no quedaba
+ * rastro del fallo. Aquí la falta de credenciales o de destinatario devuelve
+ * ERROR: un aviso que no salió tiene que verse.
  */
 @Injectable()
-export class SendGridEmailGateway
-  implements INotificationGateway, OnModuleInit
-{
+export class SendGridEmailGateway implements INotificationGateway {
   private readonly logger = new Logger(SendGridEmailGateway.name);
-  private sgMail: any;
-  private fromEmail: string;
+  private transporter: nodemailer.Transporter | null = null;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly config: ConfigService) {}
 
-  onModuleInit() {
-    try {
-      const sgMail = require('@sendgrid/mail');
-      const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
-      this.fromEmail =
-        this.configService.get<string>('SENDGRID_FROM_EMAIL') ||
-        'noreply@going-platform.com';
+  private get user(): string {
+    return (
+      this.config.get<string>('SMTP_USER') ||
+      this.config.get<string>('GMAIL_USER') ||
+      'goingappecuador@gmail.com'
+    );
+  }
 
-      if (!apiKey) {
-        this.logger.warn('SendGrid API key not configured - using mock mode');
-        this.sgMail = null;
-        return;
-      }
+  private get pass(): string {
+    return (
+      this.config.get<string>('SMTP_PASS') ||
+      this.config.get<string>('GMAIL_APP_PASSWORD') ||
+      ''
+    );
+  }
 
-      sgMail.setApiKey(apiKey);
-      this.sgMail = sgMail;
-      this.logger.log('SendGrid Email Gateway initialized successfully');
-    } catch (error) {
-      this.logger.warn(`SendGrid initialization failed: ${error.message}`);
-      this.sgMail = null;
-    }
+  private get from(): string {
+    return this.config.get<string>('SMTP_FROM') || `Going App <${this.user}>`;
+  }
+
+  /** Transport perezoso: se crea al primer envío y se reutiliza. */
+  private getTransporter(): nodemailer.Transporter | null {
+    if (this.transporter) return this.transporter;
+    if (!this.pass) return null;
+
+    const port = Number(this.config.get<string>('SMTP_PORT') ?? 465);
+    this.transporter = nodemailer.createTransport({
+      host: this.config.get<string>('SMTP_HOST') || 'smtp.gmail.com',
+      port,
+      secure: port === 465,
+      auth: { user: this.user, pass: this.pass },
+    });
+    return this.transporter;
   }
 
   async send(notification: Notification): Promise<Result<void, Error>> {
-    const props = notification.toPrimitives();
+    const props: any = notification.toPrimitives();
+    const destino = String(props.data?.email ?? props.data?.to ?? '').trim();
 
-    this.logger.log(`[EMAIL] Sending to userId=${props.userId}`);
-    this.logger.debug(`  Subject: ${props.title}`);
-    this.logger.debug(`  Body: ${props.body}`);
-
-    // If SendGrid is not configured, use mock mode
-    if (!this.sgMail) {
-      this.logger.warn(
-        `[EMAIL MOCK] Would send: ${props.title} - ${props.body}`
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      this.logger.error(
+        '[EMAIL] Sin credenciales SMTP (SMTP_PASS / GMAIL_APP_PASSWORD) — no se envía',
       );
-      return ok(undefined);
+      return err(new Error('SMTP no configurado'));
+    }
+
+    if (!destino || !this.emailValido(destino)) {
+      this.logger.warn(
+        `[EMAIL] Notificación sin destinatario válido (userId=${props.userId}) — no se envía`,
+      );
+      return err(new Error('Notificación sin email destino'));
     }
 
     try {
-      // Get user email address (in production, query from database)
-      const recipientEmail = await this.getUserEmail(props.userId);
-
-      if (!recipientEmail) {
-        this.logger.warn(`No email found for user ${props.userId}`);
-        return ok(undefined);
-      }
-
-      // Validate email format
-      if (!this.isValidEmail(recipientEmail)) {
-        this.logger.error(`Invalid email format: ${recipientEmail}`);
-        return err(new Error('Invalid email address'));
-      }
-
-      // Build email content based on notification type
-      const { subject, htmlContent, textContent } =
-        this.buildEmailContent(props);
-
-      // Send email via SendGrid
-      const msg = {
-        to: recipientEmail,
-        from: this.fromEmail,
-        subject,
-        text: textContent,
-        html: htmlContent,
-        trackingSettings: {
-          openTracking: {
-            enable: true,
-          },
-          clickTracking: {
-            enable: true,
-          },
-        },
-      };
-
-      const response = await this.sgMail.send(msg);
-
-      this.logger.log(
-        `[EMAIL] Sent successfully. Status: ${response[0].statusCode}`
-      );
+      const { asunto, html, texto } = this.construirCorreo(props);
+      const info = await transporter.sendMail({
+        from: this.from,
+        to: destino,
+        subject: asunto,
+        text: texto,
+        html,
+      });
+      this.logger.log(`[EMAIL] Enviado a ${this.enmascarar(destino)} (${asunto}) id=${info.messageId}`);
       return ok(undefined);
-    } catch (error) {
-      this.logger.error(`[EMAIL] Failed to send: ${error.message}`);
-      return err(new Error(`Email send failed: ${error.message}`));
+    } catch (e: any) {
+      this.logger.error(`[EMAIL] Falló el envío: ${e?.message}`);
+      return err(new Error(`Email: ${e?.message}`));
     }
   }
 
-  /**
-   * Build email content based on notification type
-   */
-  private buildEmailContent(props: any): {
-    subject: string;
-    htmlContent: string;
-    textContent: string;
-  } {
-    const subject = props.title || 'Notification from Going Platform';
-    const textContent = `${props.title}\n\n${props.body}`;
-
-    // Build HTML email template
-    const htmlContent = `
-      <html>
-        <body style="font-family: Arial, sans-serif; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto;">
-            <h2>${props.title}</h2>
-            <p>${props.body}</p>
-
-            ${
-              props.data?.actionUrl
-                ? `<a href="${props.data.actionUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Take Action</a>`
-                : ''
-            }
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="font-size: 12px; color: #999;">
-              This is an automated email from Going Platform. Please do not reply to this email.
-            </p>
-          </div>
-        </body>
-      </html>
-    `;
-
-    return { subject, htmlContent, textContent };
+  private emailValido(v: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   }
 
-  /**
-   * Validate email format
-   */
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  /** No dejamos correos completos en los logs. */
+  private enmascarar(email: string): string {
+    const [u, d] = email.split('@');
+    return `${u.slice(0, 2)}***@${d ?? ''}`;
   }
 
-  /**
-   * Get user's email address from database
-   */
-  private async getUserEmail(userId: string): Promise<string | null> {
-    // In production, query from user profile/authentication table
-    // return this.userRepository.getEmail(userId);
+  private construirCorreo(props: any): { asunto: string; html: string; texto: string } {
+    const asunto = props.title || 'Aviso de Going App';
+    const cuerpo = props.body || '';
+    const url = props.data?.url;
+    const texto = `${asunto}\n\n${cuerpo}${url ? `\n\n${url}` : ''}`;
 
-    // Mock implementation
-    this.logger.debug(`[MOCK] Would fetch email for user ${userId}`);
-    return null;
+    const html = `<!doctype html>
+<html lang="es"><body style="margin:0;background:#f1f5f9;font-family:system-ui,-apple-system,'Segoe UI',sans-serif">
+  <div style="max-width:560px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+    <div style="background:#1d4ed8;padding:18px 24px">
+      <span style="color:#fff;font-size:18px;font-weight:700">Going App</span>
+    </div>
+    <div style="padding:24px">
+      <h1 style="margin:0 0 12px;font-size:18px;color:#0f172a">${this.escapar(asunto)}</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#334155">${this.escapar(cuerpo)}</p>
+      ${
+        url
+          ? `<p style="margin:24px 0 0"><a href="${this.escapar(url)}" style="display:inline-block;background:#1d4ed8;color:#fff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px">Ver detalle</a></p>`
+          : ''
+      }
+    </div>
+    <div style="padding:14px 24px;background:#f8fafc;border-top:1px solid #e2e8f0">
+      <p style="margin:0;font-size:12px;color:#64748b">
+        Going App · Movilidad corporativa · Ecuador
+      </p>
+    </div>
+  </div>
+</body></html>`;
+
+    return { asunto, html, texto };
+  }
+
+  private escapar(s: string): string {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 }

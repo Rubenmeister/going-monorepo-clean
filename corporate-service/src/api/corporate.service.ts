@@ -398,10 +398,21 @@ export class CorporateService {
       // El teléfono NO viaja en la cadena de aprobación (ahí solo hay ids y
       // umbrales): se resuelve del registro del usuario. Si no tiene teléfono
       // cargado, el aviso cae a email.
-      const aprobadorTel = aprobadorId
-        ? await this.contactoDeUsuario(String(aprobadorId)).then((c) => c?.phone ?? null)
+      const contacto = aprobadorId
+        ? await this.contactoDeUsuario(String(aprobadorId))
         : null;
-      if (aprobadorId) {
+      const aprobadorTel = contacto?.phone ?? null;
+      const aprobadorEmail = contacto?.email ?? null;
+
+      if (aprobadorId && !aprobadorTel && !aprobadorEmail) {
+        // Sin ningún canal de contacto el aviso no puede llegar. Decirlo es
+        // mejor que emitirlo y que se pierda silenciosamente.
+        this.logger.warn(
+          `Aprobador ${aprobadorId} sin teléfono ni email — no se le puede avisar`,
+        );
+      }
+
+      if (aprobadorId && (aprobadorTel || aprobadorEmail)) {
         void this.notify({
           userId: String(aprobadorId),
           channel: aprobadorTel ? 'WHATSAPP' : 'EMAIL',
@@ -412,12 +423,15 @@ export class CorporateService {
             ` Requiere tu aprobación.`,
           data: {
             ...(aprobadorTel ? { phone: aprobadorTel } : {}),
+            // El correo viaja SIEMPRE: es el destinatario del canal EMAIL y
+            // sirve de respaldo si más adelante hay reintento por otro canal.
+            ...(aprobadorEmail ? { email: aprobadorEmail } : {}),
             url: `${process.env.EMPRESAS_URL ?? 'https://empresas.goingec.com'}/panel/aprobaciones`,
             bookingId: (booking as any).id,
             companyId,
           },
         }).catch(() => undefined);
-      } else {
+      } else if (!aprobadorId) {
         this.logger.warn(
           `Aprobación creada sin aprobador identificable (companyId=${companyId}) — nadie será avisado`,
         );
