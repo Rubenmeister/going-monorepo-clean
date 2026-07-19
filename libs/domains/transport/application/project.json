@@ -1,0 +1,9 @@
+{
+  "name": "domains-transport-application",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/transport/application/src",
+  "projectType": "library",
+  "tags": [
+    "type:lib"
+  ]
+}

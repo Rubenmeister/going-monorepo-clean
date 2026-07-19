@@ -1,0 +1,9 @@
+{
+  "name": "domains-audit-core",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/audit/core/src",
+  "projectType": "library",
+  "tags": [
+    "type:lib"
+  ]
+}

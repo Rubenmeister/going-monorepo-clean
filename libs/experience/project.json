@@ -3,16 +3,22 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/experience/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/experience",
         "main": "libs/experience/src/index.ts",
         "tsConfig": "libs/experience/tsconfig.lib.json",
-        "assets": ["libs/experience/*.md"]
+        "assets": [
+          "libs/experience/*.md"
+        ]
       }
     }
   }

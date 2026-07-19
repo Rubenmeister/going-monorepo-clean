@@ -3,21 +3,29 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/going-kb/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/going-kb",
         "main": "libs/going-kb/src/index.ts",
         "tsConfig": "libs/going-kb/tsconfig.lib.json",
-        "assets": ["libs/going-kb/*.md"]
+        "assets": [
+          "libs/going-kb/*.md"
+        ]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/going-kb"],
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/going-kb"
+      ],
       "options": {
         "jestConfig": "libs/going-kb/jest.config.ts",
         "passWithNoTests": true

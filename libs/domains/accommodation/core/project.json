@@ -1,0 +1,9 @@
+{
+  "name": "domains-accommodation-core",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/accommodation/core/src",
+  "projectType": "library",
+  "tags": [
+    "type:lib"
+  ]
+}

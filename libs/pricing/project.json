@@ -3,21 +3,29 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/pricing/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/pricing",
         "main": "libs/pricing/src/index.ts",
         "tsConfig": "libs/pricing/tsconfig.lib.json",
-        "assets": ["libs/pricing/*.md"]
+        "assets": [
+          "libs/pricing/*.md"
+        ]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/pricing"],
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/pricing"
+      ],
       "options": {
         "jestConfig": "libs/pricing/jest.config.ts",
         "passWithNoTests": true

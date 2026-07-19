@@ -3,16 +3,22 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/domains/experience-frontend/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/domains/experience-frontend",
         "main": "libs/domains/experience-frontend/src/index.ts",
         "tsConfig": "libs/domains/experience-frontend/tsconfig.lib.json",
-        "assets": ["libs/domains/experience-frontend/*.md"]
+        "assets": [
+          "libs/domains/experience-frontend/*.md"
+        ]
       }
     }
   }

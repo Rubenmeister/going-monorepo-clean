@@ -3,16 +3,22 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/payment/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/payment",
         "main": "libs/payment/src/index.ts",
         "tsConfig": "libs/payment/tsconfig.lib.json",
-        "assets": ["libs/payment/*.md"]
+        "assets": [
+          "libs/payment/*.md"
+        ]
       }
     }
   }

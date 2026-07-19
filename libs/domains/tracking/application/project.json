@@ -1,0 +1,9 @@
+{
+  "name": "domains-tracking-application",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/tracking/application/src",
+  "projectType": "library",
+  "tags": [
+    "type:lib"
+  ]
+}

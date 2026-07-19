@@ -1,0 +1,9 @@
+{
+  "name": "domains-tour-core",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/tour/core/src",
+  "projectType": "library",
+  "tags": [
+    "type:lib"
+  ]
+}

@@ -3,16 +3,22 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/domains/user/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/domains/user",
         "main": "libs/domains/user/src/index.ts",
         "tsConfig": "libs/domains/user/tsconfig.lib.json",
-        "assets": ["libs/domains/user/*.md"]
+        "assets": [
+          "libs/domains/user/*.md"
+        ]
       }
     }
   }

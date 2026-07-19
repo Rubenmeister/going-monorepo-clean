@@ -1,0 +1,9 @@
+{
+  "name": "domains-payment-core",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/payment/core/src",
+  "projectType": "library",
+  "tags": [
+    "type:lib"
+  ]
+}

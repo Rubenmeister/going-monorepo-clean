@@ -2,7 +2,9 @@
   "name": "shared-theme",
   "sourceRoot": "libs/shared/theme/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "lint": {
       "executor": "@nx/eslint:lint"

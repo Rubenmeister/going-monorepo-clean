@@ -9,5 +9,8 @@
         "passWithNoTests": true
       }
     }
-  }
+  },
+  "tags": [
+    "type:app"
+  ]
 }

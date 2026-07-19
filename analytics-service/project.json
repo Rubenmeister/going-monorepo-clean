@@ -3,11 +3,15 @@
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "analytics-service/src",
   "projectType": "application",
-  "tags": [],
+  "tags": [
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "target": "node",
         "compiler": "tsc",
@@ -21,7 +25,9 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "analytics-service:build",
         "runBuildTargetDependencies": false

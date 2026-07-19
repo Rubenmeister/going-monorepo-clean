@@ -3,16 +3,22 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/accommodation/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/accommodation",
         "main": "libs/accommodation/src/index.ts",
         "tsConfig": "libs/accommodation/tsconfig.lib.json",
-        "assets": ["libs/accommodation/*.md"]
+        "assets": [
+          "libs/accommodation/*.md"
+        ]
       }
     }
   }

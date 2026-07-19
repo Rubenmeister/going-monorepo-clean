@@ -2,16 +2,26 @@
   "name": "user-auth-service-e2e",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "implicitDependencies": ["user-auth-service"],
+  "implicitDependencies": [
+    "user-auth-service"
+  ],
   "targets": {
     "e2e": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{e2eProjectRoot}"
+      ],
       "options": {
         "jestConfig": "user-auth-service-e2e/jest.config.ts",
         "passWithNoTests": true
       },
-      "dependsOn": ["user-auth-service:build", "user-auth-service:serve"]
+      "dependsOn": [
+        "user-auth-service:build",
+        "user-auth-service:serve"
+      ]
     }
-  }
+  },
+  "tags": [
+    "type:app"
+  ]
 }

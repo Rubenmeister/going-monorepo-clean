@@ -6,7 +6,9 @@
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "target": "node",
         "compiler": "tsc",
@@ -16,5 +18,8 @@
         "webpackConfig": "mycortex-service/webpack.config.js"
       }
     }
-  }
+  },
+  "tags": [
+    "type:app"
+  ]
 }

@@ -3,16 +3,22 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/transport/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:lib"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/transport",
         "main": "libs/transport/src/index.ts",
         "tsConfig": "libs/transport/tsconfig.lib.json",
-        "assets": ["libs/transport/*.md"]
+        "assets": [
+          "libs/transport/*.md"
+        ]
       }
     }
   }
