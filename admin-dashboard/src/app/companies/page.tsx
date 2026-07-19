@@ -151,9 +151,20 @@ function ApproveModal({ company, token, onClose, onApproved }: {
       const res: any = await adminFetch(`/corporate/companies/${company.id}/approve`, token, {
         method: 'POST', body: JSON.stringify({ tipoCuenta }),
       });
+
+      // El backend puede responder 201 y AUN ASÍ no haber creado la cuenta
+      // (provisioned:false). Antes se cerraba como si todo hubiera salido bien:
+      // el admin veía "aprobada" y el cliente no podía entrar, sin que nadie se
+      // enterara. Eso dejó una agencia real bloqueada durante horas.
+      if (res && res.provisioned === false) {
+        setError(
+          'La empresa quedó aprobada pero NO se creó su cuenta de acceso. ' +
+          'El cliente no podrá ingresar. Reintenta aprobar; si persiste, avisa a soporte técnico.',
+        );
+        return; // no cerramos ni la marcamos como lista
+      }
+
       onApproved(company.id);
-      // Si el backend provisionó la cuenta y devolvió el link, lo mostramos en
-      // vez de cerrar. Si no (p.ej. no aplica), cerramos como antes.
       if (res?.resetLink) setResetLink(res.resetLink);
       else onClose();
     } catch (e: any) { setError(e.message ?? 'Error al aprobar'); }
@@ -352,16 +363,30 @@ export default function CompaniesPage() {
     if (!ids.length) return;
     setBulkLoading(true);
     let ok = 0;
+    let sinCuenta = 0;
     for (const id of ids) {
       try {
-        await adminFetch(`/corporate/companies/${id}/approve`, token, { method: 'POST', body: JSON.stringify({ tipoCuenta: 'negocio' }) });
+        // El tipo de cuenta sale de lo que pidió la empresa, NO fijo a 'negocio':
+        // forzarlo degradaba a PyME a las Grandes y Agencias aprobadas en lote,
+        // cambiándoles crédito, aprobaciones y comisiones sin que nadie lo viera.
+        const tipo = companies.find(c => c.id === id)?.tipoCuenta ?? 'negocio';
+        const res: any = await adminFetch(`/corporate/companies/${id}/approve`, token, {
+          method: 'POST', body: JSON.stringify({ tipoCuenta: tipo }),
+        });
+        // Aprobada sin cuenta creada NO es un éxito: el cliente no podrá entrar.
+        if (res && res.provisioned === false) { sinCuenta++; continue; }
         setCompanies(p => p.map(c => c.id === id ? { ...c, status: 'active' } : c));
         ok++;
       } catch { /* skip */ }
     }
     setBulkSelected(new Set());
     setBulkLoading(false);
-    showToast(`${ok}/${ids.length} empresas aprobadas.`, ok > 0);
+    showToast(
+      sinCuenta
+        ? `${ok}/${ids.length} aprobadas. ${sinCuenta} quedaron SIN cuenta de acceso — revísalas.`
+        : `${ok}/${ids.length} empresas aprobadas.`,
+      sinCuenta === 0 && ok > 0,
+    );
   }
 
   async function bulkReject() {
