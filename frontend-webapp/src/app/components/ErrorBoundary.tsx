@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import { useUIStore } from '@going-monorepo-clean/frontend-stores';
+import { useUIStore } from '@/lib/stores';
 
 interface Props {
   children: ReactNode;

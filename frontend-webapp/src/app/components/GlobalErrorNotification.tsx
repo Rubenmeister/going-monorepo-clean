@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   useUIStore,
   Notification,
-} from '@going-monorepo-clean/frontend-stores';
+} from '@/lib/stores';
 
 /**
  * Global notification toast component

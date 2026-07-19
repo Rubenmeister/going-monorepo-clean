@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRideStore, type Ride } from '../stores/rideStore';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { authFetch } from '@/lib/providers/auth-client';
 import { COLORS } from '../components/design-tokens';
 import { IconUsers, IconVan, IconPackage, IconArrowRight } from '../components/icons';

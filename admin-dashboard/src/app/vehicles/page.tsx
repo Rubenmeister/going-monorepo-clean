@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 

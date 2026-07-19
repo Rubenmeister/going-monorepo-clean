@@ -116,7 +116,7 @@ npm run dev:webapp
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -178,7 +178,7 @@ export default function RegisterPage() {
 'use client';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();

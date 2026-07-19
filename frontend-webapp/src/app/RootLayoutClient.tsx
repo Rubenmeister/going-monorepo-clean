@@ -2,8 +2,8 @@
 
 import { Suspense, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
-import { hydrateAuthStore } from '@going-monorepo-clean/frontend-stores';
+import { AuthProvider } from '@/lib/providers';
+import { hydrateAuthStore } from '@/lib/stores';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';

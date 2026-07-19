@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback } from 'react';
 import dynamicImport from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { AdminLayout } from '../components';
 import { useAdminSocket } from '../../lib/useAdminSocket';
 

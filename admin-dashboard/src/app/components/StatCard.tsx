@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Card, CardBody } from '@going-monorepo-clean/shared-ui';
+import { Card, CardBody } from '@/lib/shared-ui';
 
 interface StatCardProps {
   icon?: string;

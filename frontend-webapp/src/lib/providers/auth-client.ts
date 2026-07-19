@@ -12,7 +12,7 @@
  * escribir esas keys; el resto del código debe pasar por aquí.
  */
 
-import { useAuthStore, type UserProfile } from '@going-monorepo-clean/frontend-stores';
+import { useAuthStore, type UserProfile } from '@/lib/stores';
 import { useEffect, useState } from 'react';
 
 export const TOKEN_KEY = 'authToken';

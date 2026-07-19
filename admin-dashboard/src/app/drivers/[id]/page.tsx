@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { AdminLayout } from '../../components';
 import { adminFetch, API } from '../../../lib/admin-api';
 

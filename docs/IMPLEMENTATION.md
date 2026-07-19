@@ -237,7 +237,7 @@ await trackingClient.broadcastLocation({
 
 ### 2. **Push Notifications**
 ```typescript
-import { useNotificationStore } from '@going-monorepo-clean/frontend-providers';
+import { useNotificationStore } from '@/lib/providers';
 
 const store = useNotificationStore();
 await store.requestPermission();
@@ -249,7 +249,7 @@ store.showNotification('Booking Confirmed', {
 
 ### 3. **Stripe Payment Integration**
 ```typescript
-import { stripePaymentService } from '@going-monorepo-clean/frontend-providers';
+import { stripePaymentService } from '@/lib/providers';
 
 const intent = await stripePaymentService.createPaymentIntent(
   bookingId,
@@ -264,7 +264,7 @@ const result = await stripePaymentService.confirmPayment(
 
 ### 4. **Internationalization (i18n)**
 ```typescript
-import i18n from '@going-monorepo-clean/frontend-providers';
+import i18n from '@/lib/providers';
 import { useTranslation } from 'react-i18next';
 
 function Component() {

@@ -110,7 +110,7 @@ module.exports = {
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -211,7 +211,7 @@ export default function LoginPage() {
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 export default function HomePage() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { useAuthStore } from '@going-monorepo-clean/frontend-stores';
+import { useAuthStore } from '@/lib/stores';
 
 // --- Auth Types ---
 export interface AuthUser {

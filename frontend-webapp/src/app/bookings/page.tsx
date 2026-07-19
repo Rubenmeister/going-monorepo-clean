@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback, ComponentType } from 'react';
 import Link from 'next/link';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { rideService } from '@/services/ride/rideService';
 import { COLORS } from '../components/design-tokens';
 import {

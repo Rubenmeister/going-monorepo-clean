@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, ComponentType } from 'react';
 import Link from 'next/link';
 // Logo: <img> directo. El optimizador de next/image devuelve 400 con los PNG del
 // logo (caía al fallback de texto rojo). El asset estático se sirve sin problema.
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/hooks/useTranslation';
 import { COLORS } from '../design-tokens';

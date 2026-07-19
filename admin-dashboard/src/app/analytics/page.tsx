@@ -2,11 +2,11 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { Button } from '@going-monorepo-clean/shared-ui';
+import { useMonorepoApp } from '@/lib/providers';
+import { Button } from '@/lib/shared-ui';
 import { useRouter } from 'next/navigation';
 import { AdminLayout, StatCard } from '../components';
-import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
+import { Loading, ErrorState } from '@/lib/shared-ui';
 import { adminFetch, API } from '../../lib/admin-api';
 
 /* ─── Types ────────────────────────────────────────────────────────────── */

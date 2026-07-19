@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { COLORS } from '../../components/design-tokens';
 import { IconPackage, IconMailbox, IconCard, IconMoney, IconMobile, IconUsers } from '../../components/icons';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 // Borrador del formulario: si el usuario debe iniciar sesión al solicitar,
 // guardamos lo que llevaba lleno y lo restauramos al volver (no perder datos).

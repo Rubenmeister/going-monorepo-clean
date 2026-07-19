@@ -3,11 +3,15 @@
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "frontend-webapp",
   "projectType": "application",
-  "tags": [],
+  "tags": [
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/next:build",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "root": "frontend-webapp",
@@ -40,9 +44,13 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["frontend-webapp/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": [
+          "frontend-webapp/**/*.{ts,tsx,js,jsx}"
+        ]
       }
     }
   }

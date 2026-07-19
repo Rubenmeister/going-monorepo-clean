@@ -1,11 +1,11 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { Card, CardBody, Button } from '@going-monorepo-clean/shared-ui';
+import { useMonorepoApp } from '@/lib/providers';
+import { Card, CardBody, Button } from '@/lib/shared-ui';
 import { useRouter } from 'next/navigation';
 import { AdminLayout, StatCard } from './components';
-import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
+import { Loading, ErrorState } from '@/lib/shared-ui';
 import { useAdminSocket, type LiveEvent } from '../lib/useAdminSocket';
 import { LiveOperationsFeed } from './components/LiveOperationsFeed';
 

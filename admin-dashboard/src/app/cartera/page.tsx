@@ -12,7 +12,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { AdminLayout } from '../components';
 import { adminFetch } from '../../lib/admin-api';
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { rideService } from '@/services/ride/rideService';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com/api';
 

@@ -1,22 +1,9 @@
 //@ts-check
-const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@going-monorepo-clean/frontend-providers': path.resolve(
-        __dirname,
-        './src/lib/providers'
-      ),
-      '@going-monorepo-clean/shared-ui': path.resolve(
-        __dirname,
-        './src/lib/shared-ui'
-      ),
-    };
-    return config;
-  },
+  // Sin alias webpack: los imports usan `@/lib/*` resuelto vía
+  // tsconfig.json paths, que Next.js respeta automáticamente.
 };
 
 module.exports = nextConfig;

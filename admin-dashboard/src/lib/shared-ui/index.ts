@@ -11,7 +11,7 @@
  * import {
  *   Button, Card, CardBody, Input, Alert, Badge, Modal,
  *   Loading, EmptyState, ErrorState
- * } from '@going-monorepo-clean/shared-ui';
+ * } from '@/lib/shared-ui';
  *
  * // Use components
  * <Button variant="primary" onClick={handleClick}>Click me</Button>

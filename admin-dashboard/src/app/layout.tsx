@@ -1,4 +1,4 @@
-import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
+import { AuthProvider } from '@/lib/providers';
 import './global.css'; // Asume que tienes un archivo global.css
 // Side-effect import: registra listeners window.onerror + unhandledrejection
 // que envían errores JS al cerebro-service. 10% sampling por sesión.

@@ -1,4 +1,4 @@
-import { ApiErrorCode } from '@going-monorepo-clean/frontend-providers';
+import { ApiErrorCode } from '@/lib/providers';
 
 /**
  * User-friendly error messages for API errors

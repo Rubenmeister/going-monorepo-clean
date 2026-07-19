@@ -1,12 +1,12 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import {
   Button,
   Card,
   CardHeader,
   CardBody,
-} from '@going-monorepo-clean/shared-ui';
+} from '@/lib/shared-ui';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {
@@ -19,7 +19,7 @@ import {
   Loading,
   EmptyState,
   ErrorState,
-} from '@going-monorepo-clean/shared-ui';
+} from '@/lib/shared-ui';
 
 interface User {
   id: string;

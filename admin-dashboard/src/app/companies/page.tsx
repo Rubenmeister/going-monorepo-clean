@@ -6,12 +6,12 @@ export const dynamic = 'force-dynamic';
  * Tabs: Empresas activas | Solicitudes pendientes
  */
 
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { Button } from '@going-monorepo-clean/shared-ui';
+import { useMonorepoApp } from '@/lib/providers';
+import { Button } from '@/lib/shared-ui';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { AdminLayout, StatCard } from '../components';
-import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
+import { Loading, ErrorState } from '@/lib/shared-ui';
 import { adminFetch } from '../../lib/admin-api';
 
 type TipoCuenta = 'grande' | 'negocio' | 'agencia';

@@ -2,9 +2,9 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { AdminLayout } from '../components';
-import { Loading } from '@going-monorepo-clean/shared-ui';
+import { Loading } from '@/lib/shared-ui';
 
 // Panel del MOTOR DE TARIFAS. Llama al proxy same-origin /api/pricing/* que
 // inyecta el x-admin-token server-side (el browser nunca lo ve).

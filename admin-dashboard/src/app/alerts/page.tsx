@@ -2,9 +2,9 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useMonorepoApp } from '@/lib/providers';
 import { AdminLayout } from '../components';
-import { Loading } from '@going-monorepo-clean/shared-ui';
+import { Loading } from '@/lib/shared-ui';
 import Link from 'next/link';
 import { fetchAlerts, Alert, AlertSeverity, AlertCategory } from '../../lib/alerts';
 
