@@ -27,6 +27,7 @@ export const CATALOG: CatalogCourse[] = [
   { id: 'c3', school: 'conductores', title: 'Mecánica Preventiva Básica' },
   { id: 'c4', school: 'conductores', title: 'Inglés Turístico Básico' },
   { id: 'c5', school: 'conductores', title: 'Primeros Auxilios en Ruta' },
+  { id: 'c6', school: 'conductores', title: 'Atención al Cliente' },
 
   { id: 'a1', school: 'anfitriones', title: 'Fotografía con el Celular' },
   { id: 'a2', school: 'anfitriones', title: 'Limpieza Estándar Going App' },

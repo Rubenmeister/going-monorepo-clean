@@ -190,6 +190,16 @@ const document: Motif = (a) => (
   </>
 );
 
+const serviceStar: Motif = (a) => (
+  <>
+    <rect x="30" y="26" width="46" height="30" rx="9" fill="#fff" stroke={a} strokeWidth="1.6" />
+    <path d="M44 56 l-4 9 12 -6z" fill="#fff" stroke={a} strokeWidth="1.6" />
+    <path d="M53 33 l2.6 5.3 5.8 .8 -4.2 4.1 1 5.8 -5.2 -2.7 -5.2 2.7 1 -5.8 -4.2 -4.1 5.8 -.8z" fill={a} />
+    <circle cx="72" cy="60" r="10" fill={a} opacity="0.9" />
+    <path d="M67 60 l3.5 3.5 6 -6.5" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+  </>
+);
+
 const SCHOOL_MOTIF: Record<string, Motif> = {
   tronco: heartHands,
   conductores: steeringGreeting,
@@ -203,7 +213,7 @@ const COURSE_MOTIF: Record<string, Motif> = {
   // Tronco
   tc1: heartHands, tc2: appPhone, tc3: leaf,
   // Conductores
-  c1: steeringGreeting, c2: roadShield, c3: wrench, c4: chatBilingual, c5: firstAid,
+  c1: steeringGreeting, c2: roadShield, c3: wrench, c4: chatBilingual, c5: firstAid, c6: serviceStar,
   // Anfitriones
   a1: camera, a2: sparkleClean, a3: palette, a4: reviewStar,
   // Guías

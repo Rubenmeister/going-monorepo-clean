@@ -73,6 +73,135 @@ export interface MultiFormatCourseData {
 
 // ─── Curso ejemplar (plantilla de oro) ────────────────────────────────────
 export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
+  c6: {
+    id: 'c6',
+    school: 'Escuela de Conductores',
+    schoolColor: COLORS.brand.red,
+    title: 'Atención al Cliente',
+    subtitle: 'El arte de un servicio de cinco estrellas',
+    description:
+      'De la sonrisa inicial al adiós memorable: comunicación que conecta, un vehículo que enamora, manejo de situaciones difíciles con calma, y seguridad y privacidad que generan confianza total.',
+    readingHtml: `
+<h2>1. Eres la cara de Going</h2>
+<p>No solo manejas un vehículo: eres embajador de la marca y creador de experiencias. Un servicio excelente sube tu calificación, tu demanda y tus ingresos.</p>
+<ul>
+  <li>Amabilidad genuina, empatía y profesionalismo desde el primer segundo.</li>
+  <li>Usa el nombre de la persona al saludar y al despedirte.</li>
+  <li>Los primeros 30 segundos definen casi toda la experiencia.</li>
+</ul>
+<h2>2. Comunicación que conecta</h2>
+<ul>
+  <li>Habla claro: punto, detalle y acción ("Cambio de ruta, hay un accidente, así llegamos antes").</li>
+  <li>Escucha sin interrumpir y confirma lo que entendiste.</li>
+  <li>Tu tono y tu gesto comunican más que las palabras: sonrisa, calma, volumen moderado.</li>
+</ul>
+<h2>3. Tu auto, una experiencia</h2>
+<ul>
+  <li>Impecable a la vista, olor neutro, motor silencioso.</li>
+  <li>Temperatura lista (22–24 °C) y música suave de fondo, pregunta siempre.</li>
+  <li>Detalles que fidelizan: cargador, agua, gel, paraguas.</li>
+</ul>
+<h2>4. Situaciones difíciles con calma</h2>
+<ul>
+  <li>Detecta señales tempranas y mantén la calma (método PARAR).</li>
+  <li>Desarma con empatía: "Entiendo que estás molesto, ¿cómo te ayudo?".</li>
+  <li>Si hay riesgo, termina el viaje en un lugar seguro y reporta.</li>
+</ul>
+<h2>5. Seguridad y privacidad</h2>
+<ul>
+  <li>Verificación mutua de identidad, cinturón obligatorio, botón SOS a mano.</li>
+  <li>Confidencialidad absoluta: nada de datos personales ni temas invasivos.</li>
+  <li>Objetos perdidos: reporta a Going sin revisar el contenido.</li>
+</ul>
+`,
+    manualHtml: `
+<p>Piensa en el mejor servicio que hayas recibido en tu vida: quizá alguien que te atendió con tal calidez que saliste contando la historia. Ahora imagina que ese alguien eres tú, en tu auto, cada día. Porque en Going no transportamos personas de un punto a otro: creamos experiencias que la gente recuerda, recomienda y califica con cinco estrellas. Y esas estrellas son, literalmente, tu ingreso y tu reputación. Este manual es tu hoja de ruta para lograrlo.</p>
+
+<h2>1. Eres la cara de Going</h2>
+<p>Cada vez que enciendes la app, dejas de ser una persona con un carro y te conviertes en tres cosas a la vez: el embajador de la marca, el creador de una experiencia que se va a recordar, y el profesional capaz de convertir un simple trayecto en el mejor momento del día de alguien. Sostener esa idea en la cabeza cambia por completo cómo saludas, cómo manejas y cómo te despides.</p>
+<h3>Los pilares de un servicio excepcional</h3>
+<ul>
+  <li><strong>Amabilidad auténtica.</strong> Tu sonrisa y una frase cálida —"¡Buenos días! Es un gusto llevarte hoy"— separan un viaje ordinario de uno memorable.</li>
+  <li><strong>Empatía profesional.</strong> Cada pasajera o pasajero trae su propia historia; conecta sin juzgar.</li>
+  <li><strong>Profesionalismo y comunicación clara.</strong> Tu apariencia, tu trato y la información que das inspiran confianza antes de la primera palabra.</li>
+  <li><strong>Puntualidad y adaptabilidad.</strong> Cumple lo que prometes y ajústate a cada persona: quien conversa, quien va en silencio, quien lleva prisa.</li>
+</ul>
+<div class="box clave"><b>Clave Going</b>Di el nombre de la persona al menos dos veces: al saludar y al despedirte. Ese pequeño toque personal crea una conexión inmediata.</div>
+<h3>De la sonrisa al adiós</h3>
+<p>Los primeros treinta segundos definen casi toda la experiencia. Sonríe al ver acercarse a la persona, confirma el destino con entusiasmo y verifica su comodidad: "¿La temperatura está bien para ti?". Durante el viaje, maneja suave y lee las señales. Y cierra con gratitud: "Gracias por elegir Going, que tengas un excelente día".</p>
+
+<h2>2. Comunicación que conecta</h2>
+<p>Comunicar bien no es hablar bonito: es hacer que la otra persona se sienta valorada y comprendida. Una fórmula simple: <strong>claridad + amabilidad + propósito</strong>.</p>
+<ul>
+  <li><strong>Simplicidad poderosa.</strong> En vez de "nos encontramos ante una congestión vehicular considerable", di: "Hay tráfico adelante; tomo una ruta alterna para ahorrarte tiempo, ¿te parece?".</li>
+  <li><strong>Estructura clara (Punto · Detalle · Acción).</strong> "Voy a cambiar de ruta (punto) porque hay un accidente (detalle); así llegamos cinco minutos antes (acción)".</li>
+  <li><strong>Escucha activa.</strong> No interrumpas, confirma lo que entendiste ("Entiendo que prefieres la avenida principal") y pregunta si hay dudas.</li>
+</ul>
+<div class="box clave"><b>Clave Going</b>El 55% de tu mensaje es lenguaje corporal, el 38% el tono y solo el 7% las palabras. Sonríe, mantén la calma y un volumen moderado: comunicas confianza sin decir nada.</div>
+<p>Y usa siempre lenguaje positivo. Convierte cada situación en una oportunidad:</p>
+<blockquote>En vez de "estamos atrapados, vamos a llegar tardísimo" → "Hay algo de tráfico; voy a buscar la mejor ruta para llegar a tiempo".</blockquote>
+
+<h2>3. Tu auto, una experiencia</h2>
+<p>Tu vehículo es tu oficina móvil y el escenario donde ocurre todo. Un auto bien cuidado impacta los cinco sentidos: <strong>vista</strong> (interior impecable, vidrios limpios), <strong>olfato</strong> (aroma neutro, nunca fragancias fuertes) y <strong>oído</strong> (motor silencioso, puertas que cierran suave).</p>
+<h3>El confort que se agradece</h3>
+<ul>
+  <li><strong>Temperatura lista.</strong> Ajusta a 22–24 °C antes de que suba la persona, y pregunta: "¿Está cómoda la temperatura?".</li>
+  <li><strong>Música de fondo.</strong> Suave, a un 30–40% del volumen, que permita conversar. Ofrece: "Tengo música suave, pero si prefieres otra cosa o silencio, dime".</li>
+  <li><strong>Detalles que fidelizan.</strong> Cargador universal, agua fría, gel, toallitas, paraguas para la lluvia. Una inversión pequeña que sube tu calificación y tus propinas.</li>
+</ul>
+<div class="box escenario"><b>Escenario</b>Recoges a alguien un día de mucho calor y le ofreces una botella de agua fría. Ese gesto de dos dólares se convierte en un comentario de cinco estrellas y en que te recuerden para el próximo viaje.</div>
+
+<h2>4. Situaciones difíciles con calma</h2>
+<p>A los grandes conductores no se les mide por no tener problemas, sino por cómo los resuelven. Aprende a detectar señales tempranas —tono agresivo, impaciencia extrema, comportamiento errático— y actívate en "modo profesional elevado" manteniendo la calma.</p>
+<h3>El método PARAR</h3>
+<p>Ante la tensión: <strong>P</strong>ausa y respira, <strong>A</strong>naliza con objetividad, <strong>R</strong>esponde (no reacciones), <strong>A</strong>ctúa según el protocolo y <strong>R</strong>eporta si hace falta.</p>
+<p>Desarma con empatía en lugar de defenderte:</p>
+<blockquote>Ante un cliente molesto, en vez de "¡no me grite!" → "Entiendo que estás molesto. ¿Cómo puedo ayudarte a resolver esto?".</blockquote>
+<p>Y pon límites con elegancia: <em>"Entiendo que necesitas llegar rápido, pero no puedo exceder los límites de velocidad porque tu seguridad es mi prioridad; eso sí, tomo la ruta más eficiente"</em>.</p>
+<div class="box error"><b>Error común</b>Ponerte a la defensiva o discutir para "ganar". Consecuencia: aunque tengas la razón, recibes una estrella menos y arriesgas tu calificación (el mínimo es 4.5). Una queja bien manejada genera más lealtad que un viaje sin problemas.</div>
+<h3>Cuándo terminar el viaje</h3>
+<p>Si hay amenazas, comportamiento que compromete la seguridad vial o faltas graves de respeto: detente en un lugar público y seguro, comunica con firmeza y calma ("Por la seguridad de ambos, debo terminar el viaje aquí"), no negocies y reporta el incidente a soporte.</p>
+
+<h2>5. Seguridad y privacidad: confianza total</h2>
+<p>La confianza es tu activo más valioso. Constrúyela en cada viaje.</p>
+<ul>
+  <li><strong>Verificación mutua.</strong> "Buenos días, soy [tu nombre], tu conductor de Going. ¿Eres [nombre]?" e invita a verificar tu foto y placa en la app.</li>
+  <li><strong>Seguridad no negociable.</strong> Cinturón para todos, checklist diario del vehículo, GPS activo y botón SOS a la mano.</li>
+  <li><strong>Privacidad absoluta.</strong> Conversa de lo apropiado (clima, recomendaciones locales), nunca de lo invasivo (situación sentimental, ingresos, temas médicos). Los datos del viaje son solo para el servicio.</li>
+</ul>
+<blockquote>"Por la seguridad de todos, necesito que uses el cinturón durante el viaje. Es política de Going y me ayuda a cuidarte mejor."</blockquote>
+<div class="box clave"><b>Clave Going</b>Si alguien olvida un objeto, repórtalo a Going <strong>sin revisar su contenido</strong> y guárdalo seguro hasta la devolución oficial. La integridad es parte del servicio.</div>
+
+<h2>En resumen</h2>
+<p>Atender bien no es un truco: es una mentalidad de mejora continua. Cada "gracias" y cada estrella son el reconocimiento de tu esfuerzo. Un auto cuidado, una comunicación cálida, la calma ante lo difícil y el respeto por la seguridad y la privacidad convierten un traslado en una experiencia de cinco estrellas — y a ti, en el conductor o la conductora que la gente pide y recomienda. Así se construye, viaje a viaje, la reputación de Going y del Ecuador.</p>
+`,
+    audioFemale: 'https://storage.googleapis.com/going-academy-audio/academy/c6-coral.mp3',
+    audioMale: 'https://storage.googleapis.com/going-academy-audio/academy/c6-echo.mp3',
+    slides: [
+      { title: 'Eres la cara de Going', points: ['Embajador de la marca', 'Amabilidad, empatía, profesionalismo', 'Di el nombre al saludar y despedir', 'Los primeros 30 s lo definen todo'], image: 'https://storage.googleapis.com/going-academy-audio/img/c6-s0.png?v2' },
+      { title: 'Comunicación que conecta', points: ['Punto · Detalle · Acción', 'Escucha sin interrumpir y confirma', 'Tu gesto y tono comunican más que las palabras', 'Siempre lenguaje positivo'], image: 'https://storage.googleapis.com/going-academy-audio/img/c6-s1.png?v2' },
+      { title: 'Tu auto, una experiencia', points: ['Impecable, olor neutro, silencioso', 'Temperatura 22–24 °C', 'Música suave, pregunta siempre', 'Cargador, agua, gel, paraguas'], image: 'https://storage.googleapis.com/going-academy-audio/img/c6-s2.png?v2' },
+      { title: 'Situaciones difíciles', points: ['Detecta señales y mantén la calma', 'Método PARAR', 'Desarma con empatía', 'Termina en lugar seguro si hay riesgo'], image: 'https://storage.googleapis.com/going-academy-audio/img/c6-s3.png?v2' },
+      { title: 'Seguridad y privacidad', points: ['Verificación mutua + cinturón', 'Botón SOS y GPS activos', 'Confidencialidad absoluta', 'Objetos perdidos: reporta sin revisar'], image: 'https://storage.googleapis.com/going-academy-audio/img/c6-s4.png?v2' },
+      { title: 'Mejora continua', points: ['Escucha el feedback', 'Cada estrella reconoce tu esfuerzo', 'Sube a 4.8★+ con excelencia', 'Eres embajador del Ecuador'], image: 'https://storage.googleapis.com/going-academy-audio/img/c6-s5.png?v2' },
+    ],
+    podcast: {
+      intro: 'En este curso aprenderás a brindar un servicio al cliente de cinco estrellas: desde el saludo hasta el adiós, con comunicación que conecta, un vehículo que enamora, calma ante lo difícil y confianza total en seguridad y privacidad.',
+      segments: [
+        { title: 'Eres la cara de Going', text: 'No solo manejas un vehículo: eres embajador de la marca y creador de experiencias. Amabilidad genuina, empatía y profesionalismo desde el primer segundo. Y recuerda usar el nombre de la persona al saludar y al despedirte.' },
+        { title: 'Comunicación y ambiente', text: 'Habla claro con la fórmula punto, detalle y acción; escucha sin interrumpir. Tu auto debe impactar los sentidos: impecable, con olor neutro, temperatura lista y música suave.' },
+        { title: 'Situaciones difíciles y seguridad', text: 'Ante la tensión aplica el método PARAR y desarma con empatía; si hay riesgo, termina el viaje en un lugar seguro y reporta. Cuida siempre la seguridad y la privacidad: cinturón, botón SOS y confidencialidad absoluta.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Cuántas veces conviene usar el nombre del pasajero durante el viaje?', options: ['Ninguna, es invasivo', 'Al menos dos: al saludar y al despedirse', 'Solo si te lo pide', 'Todo el tiempo'], correct: 1, explanation: 'Usar el nombre al saludar y al despedirse crea una conexión personal inmediata.' },
+      { question: 'La estructura clara de un mensaje profesional es…', options: ['Largo y detallado', 'Punto principal + Detalles + Acción', 'Solo la acción', 'Improvisado'], correct: 1, explanation: 'La fórmula Punto · Detalle · Acción hace tu mensaje claro y tranquilizador.' },
+      { question: '¿Qué proporción de tu comunicación proviene de las palabras?', options: ['El 55%', 'El 38%', 'Solo el 7%', 'El 100%'], correct: 2, explanation: 'El 55% es lenguaje corporal, el 38% el tono y solo el 7% las palabras: tu gesto y tu calma comunican más.' },
+      { question: 'Ante un pasajero molesto, la respuesta profesional es…', options: ['"¡No me grite!"', '"Entiendo que estás molesto, ¿cómo te ayudo a resolver esto?"', 'Ignorarlo', 'Subir el volumen de la música'], correct: 1, explanation: 'Desarmar con empatía transforma la tensión en colaboración. Discutir siempre baja tu calificación.' },
+      { question: 'Si un pasajero olvida un objeto en tu auto, debes…', options: ['Revisarlo para identificar al dueño', 'Quedártelo', 'Reportarlo a Going sin revisar su contenido y guardarlo seguro', 'Botarlo'], correct: 2, explanation: 'La integridad es parte del servicio: reporta a Going sin revisar el contenido y guárdalo para la devolución oficial.' },
+      { question: '¿Cuándo debes terminar un viaje anticipadamente?', options: ['Cuando el pasajero conversa mucho', 'Ante amenazas o comportamiento que compromete la seguridad', 'Si hay tráfico', 'Si no te cae bien la persona'], correct: 1, explanation: 'Solo ante riesgo real: detente en un lugar seguro, comunícalo con calma y firmeza, y reporta el incidente.' },
+    ],
+  },
   tc2: {
     id: 'tc2',
     school: 'Tronco Común',

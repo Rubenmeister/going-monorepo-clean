@@ -73,6 +73,7 @@ export const CATALOG: Record<string, CourseMeta> = {
   c3: C('c3', 'conductores', 'Mecánica Preventiva Básica',  'Mecánico Preventivo',       4),
   c4: C('c4', 'conductores', 'Inglés Turístico Básico',     'Bilingüe Going App',        6),
   c5: C('c5', 'conductores', 'Primeros Auxilios en Ruta',   'Primeros Auxilios',         7),
+  c6: C('c6', 'conductores', 'Atención al Cliente',         'Servicio 5 Estrellas',      6),
 
   // ── Escuela de Anfitriones ──
   a1: C('a1', 'anfitriones', 'Fotografía con el Celular',   'Fotógrafo Going App',       4),

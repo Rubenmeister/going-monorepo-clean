@@ -135,6 +135,10 @@ const SCHOOLS: Record<string, School> = {
         desc: 'Protocolo ante accidentes, mareo, malestar de pasajero. Incluye RCP básico y uso de botiquín.',
         duration: '35 min', lessons: 7, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Avanzado',
         levelColor: 'bg-red-100 text-red-700' },
+      { id: 'c6', Icon: IconStar,   title: 'Atención al Cliente',           subtitle: 'El arte de un servicio de cinco estrellas',
+        desc: 'De la sonrisa al adiós: comunicación, ambiente, manejo de situaciones difíciles, y seguridad y privacidad.',
+        duration: '30 min', lessons: 6, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
+        levelColor: 'bg-yellow-100 text-yellow-700' },
     ],
   },
   anfitriones: {
