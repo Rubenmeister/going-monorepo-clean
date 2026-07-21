@@ -65,7 +65,7 @@ const PROMOS = [
 
 export default function PromocionesPage() {
   return (
-    <div className="pt-[68px]">
+    <div className="pt-[88px]">
       {/* Hero */}
       <div className="bg-gradient-to-br from-[#011627] to-[#0a2540] py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">

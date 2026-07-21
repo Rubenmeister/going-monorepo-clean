@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ComunidadPage() {
   return (
-    <div className="pt-[68px]">
+    <div className="pt-[88px]">
       {/* Hero */}
       <div className="relative bg-[#011627] py-24 px-6 overflow-hidden">
         <div className="absolute inset-0">

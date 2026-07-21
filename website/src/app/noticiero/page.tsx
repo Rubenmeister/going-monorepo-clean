@@ -17,7 +17,7 @@ const NEWS = [
 
 export default function NoticeroPage() {
   return (
-    <div className="pt-[68px]">
+    <div className="pt-[88px]">
       {/* Header */}
       <div className="bg-[#011627] py-16 px-6">
         <div className="max-w-4xl mx-auto">

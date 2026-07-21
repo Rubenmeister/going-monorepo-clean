@@ -111,6 +111,28 @@ export class CompanySettingsSchema extends Document {
   @Prop({ type: [Object], default: [] })
   approvalLevels: Record<string, unknown>[];
 
+  /**
+   * Recargo corporativo NEGOCIADO con esta empresa, por servicio.
+   *
+   * Se guarda como fracción: 0.25 = +25%. `default` aplica a los servicios que
+   * no tengan tasa propia; si no hay nada, rige `RECARGO_CORPORATIVO_POR_DEFECTO`.
+   *
+   * Ejemplo: { default: 0.25, transport: 0.18, tour: 0.30 }
+   *   → transporte +18%, tours +30%, envíos y el resto +25%.
+   *
+   * Antes el +25% estaba FIJO en el código (`return 0.25`) y el precio
+   * corporativo se guardaba ya multiplicado en una lista aparte — 862 números
+   * duplicados que había que mantener sincronizados a mano. Ahora el corporativo
+   * se calcula al cotizar: se cambia el precio privado en un solo lugar y el
+   * corporativo sigue solo, porque ya no es un dato sino una operación.
+   *
+   * OJO: esta tasa la resuelve SIEMPRE el servidor a partir de la empresa de la
+   * sesión. Si llegara del navegador, cualquiera podría negociarse su propia
+   * tarifa.
+   */
+  @Prop({ type: Object, default: {} })
+  surchargeRates: Record<string, number>;
+
   // ── Contrato / facturación ─────────────────────────────────────────────────
   /** 'monthly_consolidated' (diferido, factura mensual) | 'prepaid' (saldo). */
   @Prop({ default: 'monthly_consolidated' })

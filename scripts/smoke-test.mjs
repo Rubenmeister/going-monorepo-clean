@@ -53,9 +53,21 @@ check('cotiza una ruta conocida (quito→cuenca)',
   t1.status === 200 && typeof t1.body?.total === 'number' && t1.body.total > 0,
   `status=${t1.status} total=${t1.body?.total}`);
 
-check('usa la tabla corporativa para segment=corporate',
-  t1.body?.breakdown?.list === 'empresas',
+// El corporativo ya NO es una lista aparte (20-jul-2026): es la tabla `privado`
+// más un recargo aplicado al cotizar. Antes existía una lista `empresas` con los
+// valores premultiplicados —862 números duplicados— que se desalineaban en
+// silencio en cuanto alguien editaba una sola de las dos.
+//
+// Esta invariante es MÁS fuerte que la anterior: no comprueba de qué tabla sale
+// el número, sino que el recargo se haya aplicado de verdad.
+check('el corporativo sale de la tabla privada, no de una lista aparte',
+  t1.body?.breakdown?.list === 'privado',
   `lista=${t1.body?.breakdown?.list}`);
+
+check('al corporativo se le aplica un recargo declarado y positivo',
+  typeof t1.body?.breakdown?.clientSurchargeRate === 'number' &&
+    t1.body.breakdown.clientSurchargeRate > 0,
+  `recargo=${t1.body?.breakdown?.clientSurchargeRate}`);
 
 // ── 2. Recargo B2B: corporativo SIEMPRE por encima de consumidor ──────────
 // Regla de negocio: corporate/agency pagan +25%. Se rompió en envíos y estuvo
@@ -93,6 +105,33 @@ const dif = +((con2.body?.total ?? 0) - (sin.body?.total ?? 0)).toFixed(2);
 check('2 paradas suman exactamente el doble del recargo unitario',
   dif > 0 && Math.abs(dif - (con2.body?.breakdown?.stopSurchargeUnit ?? 0) * 2) < 0.01,
   `diferencia=${dif} unitario=${con2.body?.breakdown?.stopSurchargeUnit}`);
+
+// ── 3b. Ida y regreso: recorre la ruta dos veces, se cobra dos veces ──────
+// El panel de empresas mostraba la tarifa rotulada "por trayecto" pero enviaba
+// UN trayecto como precio total: los viajes de ida y regreso se facturaban a
+// mitad de precio, en silencio. Esta invariante es el seguro contra eso.
+console.log('\nIda y regreso');
+const rt = await precio({
+  serviceType: 'intercity_private', origin: 'quito', destination: 'cuenca',
+  vehicleType: 'suv', segment: 'corporate', roundTrip: true,
+});
+const mult = rt.body?.breakdown?.roundTripMultiplier ?? 0;
+check('ida y regreso cuesta más que solo ida',
+  (rt.body?.total ?? 0) > (sin.body?.total ?? 0),
+  `ida=${sin.body?.total} idaYRegreso=${rt.body?.total}`);
+check('el total coincide con el multiplicador declarado',
+  mult > 1 && Math.abs((rt.body?.total ?? 0) - (sin.body?.total ?? 0) * mult) < 0.02,
+  `esperado=${((sin.body?.total ?? 0) * mult).toFixed(2)} real=${rt.body?.total} mult=${mult}`);
+
+// Paradas y regreso son ejes INDEPENDIENTES: pedir los dos juntos debe cobrar
+// los dos. Antes eran excluyentes en el formulario y no se podía ni pedir.
+const rtStops = await precio({
+  serviceType: 'intercity_private', origin: 'quito', destination: 'cuenca',
+  vehicleType: 'suv', segment: 'corporate', roundTrip: true, stops: 2,
+});
+check('ida y regreso CON paradas cobra ambos conceptos',
+  Math.abs((rtStops.body?.total ?? 0) - ((rt.body?.total ?? 0) + (rtStops.body?.breakdown?.stopSurchargeTotal ?? 0))) < 0.02,
+  `conParadas=${rtStops.body?.total} sinParadas=${rt.body?.total} recargo=${rtStops.body?.breakdown?.stopSurchargeTotal}`);
 
 // ── 4. Ruta sin tarifa: debe decirlo, no inventar un precio ───────────────
 console.log('\nRutas sin tarifa');

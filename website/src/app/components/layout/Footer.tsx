@@ -66,7 +66,7 @@ export function Footer() {
           <div className="col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/going-logo-white-h.png" alt="Going App" className="h-9 w-auto" />
+              <img src="/going-logo-white-h.png" alt="Going App" className="h-[3.375rem] w-auto" />
             </div>
             <p className="text-sm text-white/40 leading-relaxed mb-5">
               Nos movemos contigo.<br />

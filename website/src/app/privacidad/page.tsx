@@ -191,7 +191,7 @@ Antes de acudir a la autoridad de control, te invitamos a contactarnos directame
 
 export default function PrivacidadPage() {
   return (
-    <div className="pt-[68px]">
+    <div className="pt-[88px]">
       {/* Hero */}
       <div className="bg-[#0033A0] py-16 px-6">
         <div className="max-w-3xl mx-auto">

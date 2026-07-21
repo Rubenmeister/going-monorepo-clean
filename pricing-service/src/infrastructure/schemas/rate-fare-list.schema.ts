@@ -43,6 +43,27 @@ export class RateFareList {
 
   @Prop() importedAt?: Date;
   @Prop() createdBy?: string;
+
+  // ── Auditoría de publicación ──────────────────────────────────────────────
+  // Un precio mal puesto se cobra a clientes reales, así que cada versión que
+  // sale a producción deja constancia de quién la publicó, cuándo y por qué.
+  // Antes no existía: la lista viva quedaba en `version: 1` y era imposible
+  // saber quién había cambiado una tarifa, ni volver atrás con certeza.
+
+  /** Quién la puso en producción. */
+  @Prop() publishedBy?: string;
+
+  /** Cuándo salió a producción. */
+  @Prop() publishedAt?: Date;
+
+  /** Motivo declarado ("baja de demanda en Cuenca", "promo feriado"). */
+  @Prop() reason?: string;
+
+  /** Versión que estaba activa justo antes — para reconstruir la línea de tiempo. */
+  @Prop() replacedVersion?: number;
+
+  /** Si nació como copia de una versión anterior (vuelta atrás). */
+  @Prop() rolledBackFrom?: number;
 }
 
 export type RateFareListDocument = RateFareList & Document;

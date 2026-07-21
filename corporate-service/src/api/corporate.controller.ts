@@ -35,6 +35,50 @@ export class CorporateController {
     return this.svc.listBookings(companyId, token, { page: +page, limit: +limit, status });
   }
 
+  /**
+   * POST /corporate/quote — precio de un servicio para ESTA empresa.
+   *
+   * El panel debe cotizar por aquí y NO llamando al motor directamente: la tasa
+   * negociada de cada empresa se resuelve en el servidor a partir de la sesión.
+   * Si el panel cotizara por su cuenta mostraría el recargo estándar mientras la
+   * reserva cobra el negociado — precio mostrado distinto del cobrado.
+   *
+   * Usa el mismo cálculo que `createBooking`, así que lo que se ve es lo que se
+   * cobra, por construcción y no por coincidencia.
+   */
+  @Post('quote')
+  async quote(@Req() req: Request, @Body() body: any) {
+    const companyId = this.extractCompanyId(req);
+    return this.svc.cotizar(companyId, body);
+  }
+
+  /**
+   * GET /corporate/surcharge-rates/:companyId — tasas negociadas. SOLO staff Going.
+   */
+  @Get('surcharge-rates/:companyId')
+  async getSurchargeRates(@Req() req: Request, @Param('companyId') companyId: string) {
+    this.requireAdmin(req);
+    return this.svc.obtenerRecargos(companyId);
+  }
+
+  /**
+   * PUT /corporate/surcharge-rates/:companyId — negocia las tasas. SOLO staff Going.
+   *
+   * Deliberadamente NO se expone a la empresa: si una empresa pudiera fijar su
+   * propio recargo, se pondría 0% y el modelo corporativo dejaría de existir.
+   * Por eso va con `requireAdmin` y con el companyId en la ruta, no tomado de
+   * la sesión de quien llama.
+   */
+  @Put('surcharge-rates/:companyId')
+  async setSurchargeRates(
+    @Req() req: Request,
+    @Param('companyId') companyId: string,
+    @Body() body: { rates: Record<string, number> },
+  ) {
+    this.requireAdmin(req);
+    return this.svc.negociarRecargos(companyId, body?.rates ?? {});
+  }
+
   /** POST /corporate/bookings — Create a new corporate booking */
   @Post('bookings')
   async createBooking(@Req() req: Request, @Body() body: any) {

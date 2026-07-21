@@ -2875,11 +2875,12 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
         .academy-manual .box.escenario{background:#FFF7ED;border:1px solid #FED7AA}.academy-manual .box.escenario b{color:#B45309}
         .academy-manual .box.error{background:#FEF2F2;border:1px solid #FECACA}.academy-manual .box.error b{color:#B91C1C}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @media (prefers-reduced-motion: reduce){.academy-ver-img{transition:opacity .3s ease !important;transform:none !important}}
       `}</style>
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/academy" className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">←</Link>
+          <Link href="/academy" aria-label="Volver a la Academia" className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><span aria-hidden="true">←</span></Link>
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accent }}>{course.school}</p>
             <h1 className="text-base font-black text-gray-900 truncate">{course.title}</h1>
@@ -2954,9 +2955,13 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
             <div className="flex items-center justify-between mt-4">
               <button onClick={() => setSlide(s => Math.max(0, s - 1))} disabled={slide === 0}
                 className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 disabled:opacity-40">‹ Anterior</button>
-              <div className="flex gap-1">
+              <div className="flex">
                 {course.slides.map((_, i) => (
-                  <button key={i} onClick={() => setSlide(i)} className="w-2 h-2 rounded-full" style={{ backgroundColor: i === slide ? accent : '#D1D5DB' }} />
+                  <button key={i} onClick={() => setSlide(i)}
+                    aria-label={`Ir a la diapositiva ${i + 1}`} aria-current={i === slide}
+                    className="flex items-center justify-center min-w-[40px] min-h-[40px]">
+                    <span className="w-2 h-2 rounded-full block transition-colors" style={{ backgroundColor: i === slide ? accent : '#D1D5DB' }} />
+                  </button>
                 ))}
               </div>
               <button onClick={() => setSlide(s => Math.min(course.slides.length - 1, s + 1))} disabled={slide === course.slides.length - 1}
@@ -3002,8 +3007,9 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
               <>
                 <div className="flex items-center gap-3 mb-4">
                   <button onClick={speaking ? stopPodcast : playPodcast}
+                    aria-label={speaking ? 'Detener narración' : 'Reproducir narración'}
                     className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl" style={{ backgroundColor: accent }}>
-                    {speaking ? '⏹' : '▶'}
+                    <span aria-hidden="true">{speaking ? '⏹' : '▶'}</span>
                   </button>
                   <div>
                     <p className="font-bold text-gray-900">Podcast · {course.title}</p>
@@ -3054,7 +3060,7 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
                       {course.slides.map((s, i) => s.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img key={i} src={s.image} alt={i === verSlide ? s.title : ''} aria-hidden={i !== verSlide}
-                          className="absolute inset-0 w-full h-full object-cover"
+                          className="academy-ver-img absolute inset-0 w-full h-full object-cover"
                           style={{
                             opacity: i === verSlide ? 1 : 0,
                             transform: i === verSlide ? 'scale(1.07)' : 'scale(1)',
@@ -3133,12 +3139,17 @@ export function MultiFormatCourse({ courseId }: { courseId: string }) {
                     return (
                       <button key={oi} disabled={quizSubmitted}
                         onClick={() => setQuizAnswers(a => { const n = [...a]; n[qi] = oi; return n; })}
-                        className="w-full text-left px-4 py-2.5 rounded-xl border-2 text-sm transition-all"
+                        className="w-full text-left px-4 py-2.5 rounded-xl border-2 text-sm transition-all flex items-center gap-2"
                         style={{
                           borderColor: correct ? '#16a34a' : wrong ? '#ef4444' : chosen ? accent : '#E5E7EB',
                           backgroundColor: correct ? '#ECFDF5' : wrong ? '#FEF2F2' : chosen ? accent + '11' : '#fff',
                         }}>
-                        {opt}
+                        {quizSubmitted && (correct || wrong) && (
+                          <span aria-hidden="true" className="flex-shrink-0">{correct ? '✅' : '❌'}</span>
+                        )}
+                        <span className="flex-1">{opt}</span>
+                        {quizSubmitted && correct && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#15803d' }}>Correcta</span>}
+                        {quizSubmitted && wrong && <span className="text-xs font-bold flex-shrink-0" style={{ color: '#b91c1c' }}>Tu respuesta</span>}
                       </button>
                     );
                   })}

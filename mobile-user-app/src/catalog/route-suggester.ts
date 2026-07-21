@@ -2,7 +2,7 @@
  * MIRROR de `libs/pricing/src/lib/route-suggester.ts`.
  *
  * Sugiere la ciudad-hub más cercana al destino cuando no hay ruta compartida
- * directa. Trabaja con la copia local de FARES (catalog/fares.ts) y CITIES
+ * directa. Toma las tarifas del MOTOR (snapshot) y las ciudades de CITIES
  * (catalog/coverage.ts) — si esos cambian, el comportamiento se sincroniza
  * automáticamente sin tocar este archivo.
  *
@@ -10,7 +10,18 @@
  * `libs/pricing/src/lib/route-suggester.ts` reemplazando los imports por los
  * mirrors de `./fares` y `./coverage`.
  */
-import { FARES, getFare } from './fares';
+import { motorShared } from './motorSnapshot';
+
+/**
+ * Tarifa compartida entre dos ciudades, tomada del MOTOR.
+ *
+ * Antes salía de `catalog/fares.ts`, una copia local de 38 rutas congelada el
+ * 6 de julio. Si el motor no está cargado devuelve null y el sugeridor deja de
+ * proponer rutas, en vez de proponerlas con precios viejos.
+ */
+function tarifaCompartida(a: string, b: string): number | null {
+  return motorShared(`${a}-${b}`.toLowerCase(), `${b}-${a}`.toLowerCase());
+}
 import {
   COVERAGE_CITIES,
   type CityCentroid,
@@ -63,7 +74,7 @@ export function suggestSharedTripPlan(
 
   const destCity = resolveCityWithBuffer(destLat, destLng);
   if (destCity) {
-    const directPrice = getFare(origin.id, destCity.id);
+    const directPrice = tarifaCompartida(origin.id, destCity.id);
     if (directPrice !== null) {
       return {
         kind: 'direct',
@@ -77,7 +88,7 @@ export function suggestSharedTripPlan(
   let best: { city: CityCentroid; price: number; distanceKm: number } | null = null;
   for (const candidate of COVERAGE_CITIES) {
     if (candidate.id === origin.id) continue;
-    const price = getFare(origin.id, candidate.id);
+    const price = tarifaCompartida(origin.id, candidate.id);
     if (price === null) continue;
     const distanceKm = haversineKm(destLat, destLng, candidate.lat, candidate.lng);
     if (!best || distanceKm < best.distanceKm) {
@@ -118,4 +129,3 @@ export function suggestSharedTripPlan(
 }
 
 // Marker para mantener el import.
-void FARES;

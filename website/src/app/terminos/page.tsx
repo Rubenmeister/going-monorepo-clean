@@ -202,7 +202,7 @@ En caso de no alcanzar acuerdo, las disputas se someterán a la jurisdicción y 
 
 export default function TerminosPage() {
   return (
-    <div className="pt-[68px]">
+    <div className="pt-[88px]">
       {/* Hero */}
       <div className="bg-[#0033A0] py-16 px-6">
         <div className="max-w-3xl mx-auto">

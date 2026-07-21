@@ -31,10 +31,12 @@ function StatusBarThemed() {
 }
 
 export default function App() {
-  // Al arrancar, baja el snapshot del MOTOR DE TARIFAS (Atlas) y sobrescribe la
-  // tabla local → el móvil cotiza con los MISMOS precios que el backend (igual
-  // que el webapp). Fire-and-forget; si falla, usa el mirror bundleado.
-  useEffect(() => { loadMotorSnapshot(); }, []);
+  // Al arrancar baja el snapshot del MOTOR DE TARIFAS (Atlas). Ya NO hay tabla
+  // local de respaldo: las copias del 6 de julio se eliminaron porque, si el
+  // motor no respondía, la app cotizaba con precios congelados como si fueran
+  // buenos. Si esto falla, las pantallas que dependen de tarifas lo informan en
+  // vez de inventar un precio.
+  useEffect(() => { void loadMotorSnapshot(); }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

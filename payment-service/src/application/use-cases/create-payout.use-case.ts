@@ -1,6 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IPayoutRepository } from '../../domain/ports';
-import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -11,7 +10,6 @@ import { v4 as uuidv4 } from 'uuid';
 export class CreatePayoutUseCase {
   constructor(
     @Inject(IPayoutRepository) private payoutRepository: IPayoutRepository,
-    private stripeGateway: StripeGateway
   ) {}
 
   async execute(input: {
@@ -60,50 +58,31 @@ export class CreatePayoutUseCase {
       netAmount: totalAmount - this.calculatePayoutFees(totalAmount),
     });
 
-    // Process payout with Stripe
+    // Transferencia bancaria a la conductora o el conductor.
+    //
+    // Antes esto lo ejecutaba Stripe, que NUNCA operó en Ecuador: la
+    // transferencia no salía y el registro quedaba en 'failed'. Al eliminar
+    // Stripe (19-jul-2026) no se reemplaza por otra pasarela porque ni Datafast
+    // ni DeUna hacen envío de fondos: ambas son de COBRO.
+    //
+    // Queda en 'pending' a la espera de la transferencia manual desde el banco.
+    // Deliberadamente NO se marca 'completed': el dinero no se movió, y decir
+    // que sí dejaría a alguien sin cobrar sin que nadie se entere.
     if (input.paymentMethod === 'bank_account') {
-      const result = await this.stripeGateway.createPayout({
-        amount: Math.round(payout.netAmount * 100), // Convert to cents
-        currency: 'USD',
-        bankAccountId: input.bankAccountId,
-        description: `Payout to driver ${input.driverId} for rides`,
+      const pendiente = await this.payoutRepository.update(payout.id, {
+        status: 'pending',
         metadata: {
-          driverId: input.driverId,
-          payoutId,
-          periodStart: payout.periodStart.toISOString(),
-          periodEnd: payout.periodEnd.toISOString(),
+          requiereTransferenciaManual: true,
+          bankAccountId: input.bankAccountId,
         },
       });
 
-      if (result.success && result.payoutId) {
-        // Update payout status to processing
-        const updated = await this.payoutRepository.update(payout.id, {
-          status: 'processing',
-          metadata: {
-            stripePayoutId: result.payoutId,
-          },
-        });
-
-        // Mark old payouts as processed
-        for (const oldPayout of driverPayouts) {
-          await this.payoutRepository.update(oldPayout.id, {
-            status: 'completed',
-            processedAt: new Date(),
-          });
-        }
-
-        return updated;
-      } else {
-        await this.payoutRepository.update(payout.id, {
-          status: 'failed',
-          failureReason: result.error || 'Payout creation failed',
-        });
-
-        throw new Error(result.error || 'Payout creation failed');
-      }
+      // Los pagos del período quedan agrupados en este pago pendiente; no se
+      // dan por procesados hasta que la transferencia se confirme.
+      return pendiente;
     }
 
-    // For other payment methods, mark as completed immediately
+    // Billetera interna: el saldo se acredita en el acto, sin banco de por medio.
     return await this.payoutRepository.update(payout.id, {
       status: 'completed',
       processedAt: new Date(),

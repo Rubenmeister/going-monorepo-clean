@@ -14,18 +14,36 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Query,
   UseGuards,
   Inject,
   UnauthorizedException,
+  BadRequestException,
   Logger,
   Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { IPaymentRepository, IPayoutRepository } from '../domain/ports';
+import {
+  ProviderBankAccount,
+  ProviderBankAccountDocument,
+} from '../infrastructure/schemas/provider-bank-account.schema';
+import {
+  esIdentificacionValida,
+  type TipoDocumento,
+} from '../domain/identificacion.validator';
 import { v4 as uuidv4 } from 'uuid';
+
+/** Deja ver solo los últimos 4 dígitos: basta para reconocer la cuenta propia. */
+function enmascararCuenta(numero: string): string {
+  const n = String(numero ?? '');
+  return n.length <= 4 ? n : `${'•'.repeat(Math.max(0, n.length - 4))}${n.slice(-4)}`;
+}
 
 // ── Auth helpers (inline — payment-service no tiene módulo Auth propio) ─────
 
@@ -55,6 +73,9 @@ export class DriverEarningsController {
 
     @Inject(IPayoutRepository)
     private readonly payoutRepo: IPayoutRepository,
+
+    @InjectModel(ProviderBankAccount.name)
+    private readonly bankAccountModel: Model<ProviderBankAccountDocument>,
   ) {}
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -246,6 +267,123 @@ export class DriverEarningsController {
       status:     'pending',
       message:    'Solicitud de retiro recibida. Se procesará en 1-3 días hábiles.',
       requestedAt: now,
+    };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  GET /drivers/me/bank-account — a qué cuenta se le transfiere
+  // ──────────────────────────────────────────────────────────────────────────
+
+  @Get('me/bank-account')
+  @UseGuards(JwtAuthGuard)
+  async getBankAccount(@CurrentUser('id') providerId: string) {
+    if (!providerId) throw new UnauthorizedException();
+
+    const cuenta = await this.bankAccountModel.findOne({ providerId }).lean();
+    if (!cuenta) {
+      // No es un error: simplemente todavía no la ha cargado. La app usa esto
+      // para mostrar el formulario vacío en vez de un fallo.
+      return { registrada: false };
+    }
+
+    return {
+      registrada: true,
+      holderName: cuenta.holderName,
+      documentType: cuenta.documentType,
+      documentNumber: cuenta.documentNumber,
+      bankName: cuenta.bankName,
+      accountType: cuenta.accountType,
+      // Solo los últimos 4 dígitos: el número completo no vuelve a salir del
+      // servidor una vez guardado.
+      accountNumberMasked: enmascararCuenta(cuenta.accountNumber),
+      verified: cuenta.verified,
+      lastChangedAt: cuenta.lastChangedAt,
+    };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  PUT /drivers/me/bank-account — registrar o corregir la cuenta
+  // ──────────────────────────────────────────────────────────────────────────
+
+  @Put('me/bank-account')
+  @UseGuards(JwtAuthGuard)
+  async setBankAccount(
+    @CurrentUser('id') providerId: string,
+    @Body()
+    body: {
+      holderName: string;
+      documentType: TipoDocumento;
+      documentNumber: string;
+      bankName: string;
+      accountType: string;
+      accountNumber: string;
+      providerType?: string;
+    },
+  ) {
+    if (!providerId) throw new UnauthorizedException();
+
+    const holderName = (body.holderName ?? '').trim();
+    const documentNumber = (body.documentNumber ?? '').trim();
+    const bankName = (body.bankName ?? '').trim();
+    const accountNumber = (body.accountNumber ?? '').replace(/\s|-/g, '');
+
+    // Se valida TODO antes de guardar. Un dato malo aquí no se nota hasta que
+    // el banco rechaza la línea del lote, o hasta que el dinero cae en la
+    // cuenta equivocada — y para entonces ya se transfirió.
+    if (holderName.length < 3) {
+      throw new BadRequestException('Escribe el nombre del titular de la cuenta.');
+    }
+    if (body.documentType !== 'cedula' && body.documentType !== 'ruc') {
+      throw new BadRequestException('El tipo de documento debe ser cédula o RUC.');
+    }
+    if (!esIdentificacionValida(body.documentType, documentNumber)) {
+      throw new BadRequestException(
+        body.documentType === 'cedula'
+          ? 'La cédula no es válida. Revisa los 10 dígitos.'
+          : 'El RUC no es válido. Revisa los 13 dígitos.',
+      );
+    }
+    if (!bankName) {
+      throw new BadRequestException('Indica el banco de la cuenta.');
+    }
+    if (body.accountType !== 'ahorros' && body.accountType !== 'corriente') {
+      throw new BadRequestException('El tipo de cuenta debe ser ahorros o corriente.');
+    }
+    if (!/^\d{5,20}$/.test(accountNumber)) {
+      throw new BadRequestException(
+        'El número de cuenta debe tener solo dígitos (entre 5 y 20).',
+      );
+    }
+
+    // Una cuenta por persona: se reemplaza. Cambiarla resetea `verified` — que
+    // la anterior estuviera confirmada no dice nada de la nueva.
+    const guardada = await this.bankAccountModel.findOneAndUpdate(
+      { providerId },
+      {
+        providerId,
+        providerType: body.providerType ?? 'driver',
+        holderName,
+        documentType: body.documentType,
+        documentNumber,
+        bankName,
+        accountType: body.accountType,
+        accountNumber,
+        verified: false,
+        lastChangedAt: new Date(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+
+    this.logger.log(
+      `Cuenta bancaria registrada para ${providerId} (${bankName}, ${enmascararCuenta(accountNumber)})`,
+    );
+
+    return {
+      ok: true,
+      accountNumberMasked: enmascararCuenta(guardada.accountNumber),
+      verified: false,
+      mensaje:
+        'Cuenta registrada. Se usará en la liquidación semanal, que se paga los martes.',
     };
   }
 

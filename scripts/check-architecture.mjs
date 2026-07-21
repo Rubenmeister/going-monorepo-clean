@@ -159,6 +159,66 @@ const rel = (f) => relative(RAIZ, f).replace(/\\/g, '/');
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// G5 · Tabla de TARIFAS incrustada dentro de una app
+//
+// El 20-jul-2026 el mismo precio vivía en OCHO lugares: el Excel del fundador,
+// un JSON del repo, un YAML, la semilla del motor, dos módulos TS gemelos
+// (libs + móvil), una tabla en la app de cliente y Atlas. Siete estaban
+// congeladas desde el 4-6 de julio; solo Atlas estaba viva. Resultado: nadie
+// sabía qué precio se estaba cobrando realmente, y los cambios que Rubén hacía
+// en su Excel no llegaban a producción.
+//
+// Regla: las tarifas viven en el motor. Una app las PIDE, no las guarda.
+// Se detecta un objeto con varias rutas `ciudad-ciudad` mapeadas a precios.
+// ──────────────────────────────────────────────────────────────────────────
+const APPS_SIN_TARIFAS = /^(frontend-webapp|empresas-webapp|admin-dashboard|website|mobile-user-app|mobile-driver-app)\//;
+
+// Copias que YA existían cuando se creó esta guarda (20-jul-2026). Están en
+// migración: las apps deben pasar a pedirle el precio al motor y estos archivos
+// se borran. La lista solo evita que el CI quede rojo mientras tanto — NO
+// añadir nada aquí: una copia nueva debe romper el build, que es el objetivo.
+// VACÍA desde el 20-jul-2026: las tres copias que existían al crear esta guarda
+// se migraron el mismo día. `frontend-webapp/canonicalFares.ts` perdió sus 174
+// rutas y el respaldo silencioso; `mobile-user-app` perdió `excel-fares.ts`,
+// `fares.ts` y el `pricing.ts` que las usaba (código muerto: `calcPrice` no
+// tenía un solo llamador).
+//
+// NO agregar nada aquí. Una tabla nueva debe romper el build — es el objetivo.
+const DEUDA_CONOCIDA = new Set([]);
+const pendientes = [];
+// Una ruta tarifada: 'quito-cuenca': 220   |   "aeropuerto-ambato": { suv: 70 }
+const RUTA_TARIFA = /['"][a-z]+(?:_[a-z]+)?-[a-z]+(?:_[a-z]+)?['"]\s*:\s*(?:\d+(?:\.\d+)?|\{[^}]*\b(?:suv|van|minibus|bus)\b)/gi;
+
+for (const f of archivos) {
+  const r = rel(f);
+  if (!APPS_SIN_TARIFAS.test(r)) continue;
+  const src = leer(f);
+  const coincidencias = src.match(RUTA_TARIFA);
+  // Un par suelto puede ser un ejemplo o un mock; una TABLA son muchos.
+  if (!coincidencias || coincidencias.length < 5) continue;
+
+  if (DEUDA_CONOCIDA.has(r)) {
+    pendientes.push(`${r} (${coincidencias.length} rutas)`);
+    continue;
+  }
+
+  violaciones.push(
+    `G5  ${r}\n` +
+      `    Hay una tabla de tarifas incrustada (${coincidencias.length} rutas con precio).\n` +
+      `    Las tarifas viven en el motor: pide a /price o /snapshot y falla visible\n` +
+      `    si no responde. Una copia local se congela y termina cobrando precios viejos.`,
+  );
+}
+
+// Las copias pendientes se REPORTAN siempre, aunque no rompan el build: una
+// deuda silenciosa se vuelve permanente.
+if (pendientes.length) {
+  console.warn(`\n⚠️  G5 · ${pendientes.length} tabla(s) de tarifas todavía dentro de apps (en migración):`);
+  for (const p of pendientes) console.warn(`     · ${p}`);
+  console.warn('     Mientras existan, esas apps pueden cobrar precios congelados.\n');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 if (violaciones.length) {
   console.error(`\n❌ Guardas de arquitectura: ${violaciones.length} violación(es)\n`);
   for (const v of violaciones) console.error(v + '\n');
@@ -166,4 +226,4 @@ if (violaciones.length) {
   process.exit(1);
 }
 
-console.log('✅ Guardas de arquitectura: sin violaciones (G1 _id, G2 Money, G3 required vacío)');
+console.log('✅ Guardas de arquitectura: sin violaciones (G1 _id, G2 Money, G3 required vacío, G5 tarifas en apps)');

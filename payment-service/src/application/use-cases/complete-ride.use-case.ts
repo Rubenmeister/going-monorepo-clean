@@ -3,6 +3,7 @@ import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from './process-payment.use-case';
 import { LoyaltyClient } from '../loyalty-client.service';
 import { v4 as uuidv4 } from 'uuid';
+import { semanaEcuador } from '../semana-liquidacion';
 
 /**
  * Complete Ride Use Case
@@ -114,16 +115,12 @@ export class CompleteRideUseCase {
     delta: number,
   ): Promise<void> {
     try {
-      // Get current date for payout period (weekly)
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - dayOfWeek);
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999);
+      // Semana de liquidación en hora de ECUADOR (UTC−5), no del contenedor.
+      //
+      // Cloud Run corre en UTC: con `new Date().getDay()` la semana cortaba el
+      // sábado a las 19:00 de Quito, así que los viajes del sábado por la noche
+      // caían en la semana siguiente y se pagaban siete días tarde.
+      const { weekStart, weekEnd } = semanaEcuador(new Date());
 
       // Check if payout already exists for this period
       const existingPayout = await this.payoutRepository.findByDriverAndPeriod(

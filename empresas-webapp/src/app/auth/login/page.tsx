@@ -84,7 +84,7 @@ export default function LoginPage() {
         {/* Logo */}
         <Link href="/" className="block text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/going-logo-h.png" alt="Going App" className="h-9 mx-auto" />
+          <img src="/going-logo-h.png" alt="Going App" className="h-[3.375rem] mx-auto" />
           <p className="text-xs text-slate-600 mt-2">Para Empresas</p>
         </Link>
 

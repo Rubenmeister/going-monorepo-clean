@@ -35,7 +35,7 @@ const FEATURES = [
 
 export default function DescargarPage() {
   return (
-    <div className="min-h-screen bg-[#011627] pt-[68px]">
+    <div className="min-h-screen bg-[#011627] pt-[88px]">
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
         <div className="flex justify-center mb-6">

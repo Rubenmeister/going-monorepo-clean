@@ -105,7 +105,7 @@ export default function LiveTrackingPage() {
       {/* Header */}
       <div className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="/going-logo-h.png" alt="Going App" className="h-7 w-auto" />
+          <img src="/going-logo-h.png" alt="Going App" className="h-[2.625rem] w-auto" />
           <span className="text-sm text-gray-500">Seguimiento en vivo</span>
         </div>
         <span className={`text-xs font-medium px-2 py-1 rounded-full ${

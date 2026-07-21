@@ -328,6 +328,10 @@ export class ProxyModule implements NestModule {
         { path: 'drivers/me/earnings', method: RequestMethod.GET },
         { path: 'drivers/me/earnings/history', method: RequestMethod.GET },
         { path: 'drivers/me/withdraw', method: RequestMethod.POST },
+        // Datos bancarios de quien presta el servicio: sin ellos no se puede
+        // armar el archivo de pagos masivos del banco.
+        { path: 'drivers/me/bank-account', method: RequestMethod.GET },
+        { path: 'drivers/me/bank-account', method: RequestMethod.PUT },
       ];
       consumer
         .apply(jwtAuthSkipOptions, makeForwardMiddleware(svc.payments, 'drivers'))

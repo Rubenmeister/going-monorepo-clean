@@ -218,7 +218,7 @@ const SCHOOLS: Record<string, School> = {
     Icon: IconGlobe,
     name: 'Escuela de Viajeros',
     tagline: 'Saca el máximo de Going App',
-    color: COLORS.brand.yellowDark,
+    color: '#B45309', // ámbar accesible (yellowDark #E6B43E fallaba WCAG con texto blanco/sobre blanco)
     bg: COLORS.brand.yellowBg,
     badge: 'Viajero Going App Pro',
     badgeIcon: IconMedal,
@@ -278,7 +278,8 @@ function ProgressRing({ pct, done, color }: { pct: number; done: boolean; color:
       {done ? (
         <path d="M12 18 l4 4 8 -8" fill="none" stroke="#15803D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
       ) : (
-        <text x="18" y="21.5" textAnchor="middle" fontSize="9" fontWeight="800" fill={color}>{pct}%</text>
+        // "En curso": punto central (sin % engañoso; el arco indica avance por formatos vistos)
+        <circle cx="18" cy="18" r="2.6" fill={color} />
       )}
     </svg>
   );
@@ -379,8 +380,8 @@ export default function AcademyPage() {
               Capacítate. Crece. Gana más.
             </h1>
             <p className="text-gray-300 text-lg max-w-2xl mb-6">
-              La plataforma de aprendizaje de Going App. Para conductores, anfitriones, guías, operadores y viajeros.
-              Cursos gratuitos en formato microlearning: texto, podcast, video y quizzes.
+              La plataforma de aprendizaje de Going App, para toda la comunidad: quienes conducen, hospedan,
+              guían, operan y viajan. Cursos gratuitos en formato microlearning: texto, podcast, video y quizzes.
             </p>
             <div className="flex flex-wrap gap-3 mb-8 justify-center md:justify-start">
               {SCHOOL_KEYS.map(key => {
@@ -496,6 +497,20 @@ export default function AcademyPage() {
         {/* ── ESCUELAS ── */}
         {activeTab === 'cursos' && (
           <div>
+            {/* Nudge: el Tronco Común es la base — muéstralo mientras no esté completo */}
+            {!['tc1', 'tc2', 'tc3'].every(id => completedIds.has(id)) && (
+              <button onClick={() => setActiveTab('tronco')}
+                className="w-full flex items-center gap-3 mb-6 rounded-2xl px-4 py-3 border text-left hover:shadow-sm transition-shadow"
+                style={{ borderColor: `${COLORS.brand.red}33`, backgroundColor: COLORS.brand.redBg }}>
+                <span className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: COLORS.brand.red }}>
+                  <IconCheck size={18} />
+                </span>
+                <span className="flex-1 text-sm text-gray-700">
+                  <strong className="text-gray-900">¿Recién empiezas?</strong> Completa primero el <strong>Tronco Común</strong> — es la base para todas las escuelas.
+                </span>
+                <IconArrowRight size={16} className="text-gray-400 flex-shrink-0" />
+              </button>
+            )}
             {/* School selector */}
             <div className="flex gap-2 flex-wrap mb-6">
               {SCHOOL_KEYS.map(key => {
@@ -509,7 +524,7 @@ export default function AcademyPage() {
                       : { backgroundColor: COLORS.bg.card, borderColor: COLORS.border.default, color: COLORS.text.muted }
                     }>
                     <s.Icon size={16} />
-                    <span className="hidden sm:inline">{s.name.replace('Escuela de ', '')}</span>
+                    <span>{s.name.replace('Escuela de ', '')}</span>
                   </button>
                 );
               })}
@@ -841,7 +856,8 @@ export default function AcademyPage() {
           </div>
         )}
 
-        {/* ── Pre-lanzamiento ── */}
+        {/* ── Pre-lanzamiento (solo para quien no ha iniciado sesión) ── */}
+        {!isAuthed && (
         <div className="mt-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
           <div className="flex justify-center mb-4" style={{ color: COLORS.brand.red }}>
             <IconGraduation size={28} />
@@ -860,6 +876,7 @@ export default function AcademyPage() {
             <IconArrowRight size={16} />
           </Link>
         </div>
+        )}
       </div>
     </div>
   );

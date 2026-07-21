@@ -20,6 +20,12 @@ import { Model } from 'mongoose';
 import { CorporateFavoriteSchema } from '../infrastructure/schemas/corporate-favorite.schema';
 import { isValidEcuadorianRuc } from './ruc.validator';
 import {
+  resolverRecargo,
+  validarRecargos,
+  SERVICIOS_TARIFABLES,
+  RECARGO_CORPORATIVO_POR_DEFECTO,
+} from './surcharge-rates';
+import {
   computePeriodSpend,
   checkBudget,
   type BudgetCheck,
@@ -54,6 +60,7 @@ export class CorporateService {
   private readonly analyticsUrl: string;
   private readonly authUrl: string;
   private readonly notificationsUrl: string;
+  private readonly pricingUrl: string;
 
   constructor(
     private readonly settingsRepo: CompanySettingsRepository,
@@ -78,6 +85,129 @@ export class CorporateService {
                     || process.env.USER_AUTH_SERVICE_URL
                     || 'http://localhost:3001';
     this.notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || process.env.NOTIFICATION_SERVICE_URL || '';
+    this.pricingUrl = process.env.PRICING_SERVICE_URL || '';
+  }
+
+  /** Tasas negociadas de una empresa, con el efectivo por servicio ya resuelto. */
+  async obtenerRecargos(companyId: string) {
+    const settings = await this.getSettings(companyId);
+    const rates = ((settings as any)?.surchargeRates ?? {}) as Record<string, number>;
+    return {
+      companyId,
+      rates,
+      // Lo que REALMENTE se cobraría hoy en cada servicio: evita tener que
+      // deducir mentalmente la cascada servicio → default → estándar.
+      efectivo: Object.fromEntries(
+        SERVICIOS_TARIFABLES.map((s) => [s, resolverRecargo(rates, s)]),
+      ),
+      porDefectoDelSistema: RECARGO_CORPORATIVO_POR_DEFECTO,
+    };
+  }
+
+  /** Fija las tasas negociadas. Valida antes de guardar. */
+  async negociarRecargos(companyId: string, rates: Record<string, number>) {
+    const errores = validarRecargos(rates);
+    if (errores.length) throw new BadRequestException(errores.join(' '));
+
+    await this.settingsRepo.upsert(companyId, { surchargeRates: rates } as any);
+    this.logger.log(
+      `Recargos negociados [${companyId}]: ` +
+        Object.entries(rates).map(([k, v]) => `${k}=${(v * 100).toFixed(0)}%`).join(', '),
+    );
+    return this.obtenerRecargos(companyId);
+  }
+
+  /**
+   * Cotización para el panel: el MISMO precio que se cobrará al reservar.
+   *
+   * Existe para que el panel no llame al motor por su cuenta. Si lo hiciera,
+   * usaría el recargo estándar y mostraría un precio distinto del que cobra la
+   * reserva en cuanto la empresa tenga una tasa negociada.
+   */
+  async cotizar(companyId: string, body: any) {
+    const settings = await this.getSettings(companyId);
+    const servicio = String(body?.serviceType ?? 'transport');
+    const recargo = resolverRecargo((settings as any)?.surchargeRates, servicio);
+    const cotizado = await this.precioAutoritativo(body, recargo);
+
+    if (!cotizado) {
+      return {
+        cotizable: false,
+        motivo:
+          'No hay tarifa fija para esta ruta. Se coordina con el equipo comercial.',
+        surchargeRate: recargo,
+      };
+    }
+
+    return {
+      cotizable: true,
+      amount: cotizado.amount,
+      currency: 'USD',
+      surchargeRate: recargo,
+      breakdown: cotizado.breakdown,
+    };
+  }
+
+  /**
+   * Precio AUTORITATIVO de una reserva de transporte, calculado en el servidor.
+   *
+   * Antes el monto lo enviaba el navegador y el servidor lo aceptaba tal cual:
+   * quien tuviera sesión de empresa podía reservar un viaje de $300 por $1 —y,
+   * como el umbral de aprobación se evalúa contra ese mismo número, esquivar
+   * también la aprobación. Con recargos negociados por empresa el problema es
+   * peor: la tasa acordada sería decorativa si el cliente fija el total.
+   *
+   * Devuelve `null` cuando NO puede cotizar (servicio de catálogo, ruta sin
+   * tarifa, motor caído). En ese caso se conserva el monto recibido: es mejor
+   * que bloquear reservas legítimas, pero queda registrado.
+   */
+  private async precioAutoritativo(
+    body: any,
+    recargo: number,
+  ): Promise<{ amount: number; breakdown: Record<string, unknown> } | null> {
+    if (!this.pricingUrl) {
+      this.logger.warn('PRICING_SERVICE_URL sin configurar — no se puede recalcular el precio');
+      return null;
+    }
+    const meta = body?.metadata ?? {};
+    const origin = String(meta.origin ?? '').trim();
+    const destination = String(meta.destination ?? '').trim();
+    if (!origin || !destination) return null;
+
+    // El recargo negociado viaja AL MOTOR, que lo aplica junto con el resto de
+    // la fórmula. Así el recargo se suma en un solo lugar: si lo aplicáramos
+    // aquí encima de un precio que el motor ya recargó, se cobraría dos veces.
+    const payload = {
+      serviceType: body.serviceType === 'parcel' ? 'envio' : 'intercity_private',
+      origin,
+      destination,
+      vehicleType: meta.vehicleType ?? 'suv',
+      segment: 'corporate' as const,
+      surchargeRate: recargo,
+      stops: Number(meta.stopCount ?? 0) || 0,
+      roundTrip: !!meta.roundTrip,
+      dateTime: body.startDate,
+    };
+
+    try {
+      const res = await fetch(`${this.pricingUrl}/price`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) return null;
+      const j: any = await res.json();
+      if (typeof j?.total !== 'number') return null;
+
+      // El total ya viene con el recargo aplicado por el motor.
+      return {
+        amount: Math.round(j.total * 100) / 100,
+        breakdown: { recargo, ...(j.breakdown ?? {}) },
+      };
+    } catch (e: any) {
+      this.logger.warn(`No se pudo cotizar en el motor: ${e?.message}`);
+      return null;
+    }
   }
 
   // ── Favoritos corporativos (rutas/lugares guardados por usuario) ─────────
@@ -350,10 +480,35 @@ export class CorporateService {
       );
     }
 
+    // Recargo NEGOCIADO con esta empresa para este servicio (25% si no hay nada
+    // acordado). Sale de la configuración de la empresa, NUNCA del navegador.
+    const recargo = resolverRecargo(
+      (settings as any)?.surchargeRates,
+      String(body.serviceType ?? 'transport'),
+    );
+
+    // El servidor recalcula el precio. Si puede cotizar, su número MANDA.
+    const cotizado = await this.precioAutoritativo(body, recargo);
+    const montoCliente = Number(body.totalPrice?.amount ?? body.amount ?? 0);
+
+    if (cotizado && Math.abs(cotizado.amount - montoCliente) > 0.01) {
+      this.logger.warn(
+        `Monto recibido ($${montoCliente}) ≠ tarifa calculada ($${cotizado.amount}) ` +
+          `[empresa=${companyId}, recargo=${(recargo * 100).toFixed(0)}%] — manda la tarifa.`,
+      );
+    }
+
+    const montoFinal = cotizado ? cotizado.amount : montoCliente;
+
     const payload = {
       ...body,
       companyId,
-      clientSegment: 'corporate', // +25% premium (sin descuentos)
+      clientSegment: 'corporate',
+      // La tarifa es la que es: se sobrescribe lo que llegó del cliente.
+      amount: montoFinal,
+      totalPrice: { amount: montoFinal, currency: body.totalPrice?.currency ?? 'USD' },
+      surchargeRate: recargo,
+      pricedBy: cotizado ? 'engine' : 'client',
       paymentMode: body.paymentMode ?? 'corporate_monthly', // cobro diferido a fin de mes
     };
 
@@ -361,7 +516,7 @@ export class CorporateService {
     // con la nueva política (requiresApproval por horario, día o monto).
     const legacyNeedsApproval =
       (settings as any)?.requireApproval &&
-      (payload.amount ?? payload.totalPrice ?? 0) >= ((settings as any)?.approvalThreshold ?? 0);
+      montoFinal >= ((settings as any)?.approvalThreshold ?? 0);
     // El solicitante puede FORZAR aprobación desde la UI ("Enviar para aprobación"),
     // aunque no supere umbral ni política. Así el toggle del panel es real.
     const clientForcedApproval = !!body.requiresApproval;
@@ -371,7 +526,9 @@ export class CorporateService {
     const booking = await this.postJson(`${this.bookingUrl}/bookings`, token, payload);
 
     if (needsApproval && (booking as any)?.id) {
-      const chainAmount = payload.amount ?? payload.totalPrice ?? 0;
+      // El mismo monto que se cobra: la cadena de aprobación no puede evaluarse
+      // contra una cifra distinta de la facturada.
+      const chainAmount = montoFinal;
       const levels = ((settings as any)?.approvalLevels ?? []) as ApprovalLevelConfig[];
       const chain = buildApprovalChain(chainAmount, levels);
       const policyNote = policyResult.requiresApproval
@@ -413,24 +570,37 @@ export class CorporateService {
       }
 
       if (aprobadorId && (aprobadorTel || aprobadorEmail)) {
-        void this.notify({
-          userId: String(aprobadorId),
-          channel: aprobadorTel ? 'WHATSAPP' : 'EMAIL',
-          title: 'Viaje pendiente de tu aprobación',
-          body:
-            `${body.employeeName || 'Un colaborador'} solicitó ${body.serviceType ?? 'un servicio'}` +
-            `${body.destination ? ` a ${body.destination}` : ''} por ${currencyFmt(chainAmount)}.` +
-            ` Requiere tu aprobación.`,
-          data: {
-            ...(aprobadorTel ? { phone: aprobadorTel } : {}),
-            // El correo viaja SIEMPRE: es el destinatario del canal EMAIL y
-            // sirve de respaldo si más adelante hay reintento por otro canal.
-            ...(aprobadorEmail ? { email: aprobadorEmail } : {}),
-            url: `${process.env.EMPRESAS_URL ?? 'https://empresas.goingec.com'}/panel/aprobaciones`,
-            bookingId: (booking as any).id,
-            companyId,
-          },
-        }).catch(() => undefined);
+        const titulo = 'Viaje pendiente de tu aprobación';
+        const cuerpo =
+          `${body.employeeName || 'Un colaborador'} solicitó ${body.serviceType ?? 'un servicio'}` +
+          `${body.destination ? ` a ${body.destination}` : ''} por ${currencyFmt(chainAmount)}.` +
+          ` Requiere tu aprobación.`;
+        const datos = {
+          ...(aprobadorTel ? { phone: aprobadorTel } : {}),
+          ...(aprobadorEmail ? { email: aprobadorEmail } : {}),
+          url: `${process.env.EMPRESAS_URL ?? 'https://empresas.goingec.com'}/panel/aprobaciones`,
+          bookingId: (booking as any).id,
+          companyId,
+        };
+
+        // WhatsApp Y correo, no uno u otro. Antes el canal era
+        // `aprobadorTel ? 'WHATSAPP' : 'EMAIL'`: quien tenía celular NUNCA
+        // recibía el correo, porque el email era el plan B de quien no lo
+        // tuviera. Una aprobación frena un viaje: vale duplicar el aviso, y
+        // WhatsApp fuera de la ventana de 24h puede no entregarse.
+        const canales: ('WHATSAPP' | 'EMAIL')[] = [
+          ...(aprobadorTel ? (['WHATSAPP'] as const) : []),
+          ...(aprobadorEmail ? (['EMAIL'] as const) : []),
+        ];
+        for (const channel of canales) {
+          void this.notify({
+            userId: String(aprobadorId),
+            channel,
+            title: titulo,
+            body: cuerpo,
+            data: datos,
+          }).catch(() => undefined);
+        }
       } else if (!aprobadorId) {
         this.logger.warn(
           `Aprobación creada sin aprobador identificable (companyId=${companyId}) — nadie será avisado`,

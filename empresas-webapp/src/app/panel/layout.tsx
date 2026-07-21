@@ -62,7 +62,7 @@ export default function EmpresasLayout({ children }: { children: ReactNode }) {
         {/* Logo + empresa */}
         <div className="p-5 border-b border-slate-200 shrink-0">
           <Link href="/" className="inline-block">
-            <img src="/going-logo-h.png" alt="Going App" className="h-9 w-auto" />
+            <img src="/going-logo-h.png" alt="Going App" className="h-[3.375rem] w-auto" />
           </Link>
           <p className="text-xs font-semibold text-slate-800 mt-1 truncate">
             {session.user.companyName}

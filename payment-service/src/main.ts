@@ -9,7 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    rawBody: true, // Required for Stripe webhook signature verification
+    rawBody: true, // Necesario para verificar la firma de los webhooks (Datafast HMAC, DeUna)
   });
 
   const port = process.env.PORT || 3001;
@@ -18,7 +18,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Payment Service')
-    .setDescription('Stripe payment processing & webhook handling API')
+    .setDescription('Procesamiento de pagos (Datafast, DeUna) y webhooks')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

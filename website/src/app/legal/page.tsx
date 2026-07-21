@@ -64,7 +64,7 @@ const SECTIONS = [
 
 export default function LegalPage() {
   return (
-    <div className="pt-[68px]">
+    <div className="pt-[88px]">
       <div className="bg-[#011627] py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="font-serif text-4xl font-black text-white mb-3">Información Legal</h1>

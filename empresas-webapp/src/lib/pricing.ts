@@ -1,15 +1,23 @@
 /**
- * Tarifas corporativas — consulta al motor de precios (pricing-service).
+ * Tarifas corporativas — se consultan a `corporate-service`, NO al motor.
  *
- * El panel NO debe pedirle al operador que teclee el valor del viaje: la tarifa
- * corporativa ya existe como tabla propia en el motor (lista `empresas`, que es
- * la privada +25% materializada como precio FIJO). Aquí la consultamos.
+ * El panel no le pide al operador que teclee el valor del viaje: la tarifa es la
+ * que es. Y no cotiza contra el motor directamente, aunque sería más corto: el
+ * recargo corporativo se NEGOCIA con cada empresa (puede ser 18% en transporte y
+ * 30% en tours) y esa tasa la resuelve el servidor a partir de la sesión. Si el
+ * navegador cotizara por su cuenta mostraría el recargo estándar mientras la
+ * reserva cobra el negociado — precio mostrado distinto del cobrado.
  *
- * Dos detalles del contrato del motor, verificados contra producción:
- *  1. NO normaliza el texto: hay que mandarle el SLUG del lugar
+ * El precio corporativo ya NO es una lista aparte: es la tabla privada más el
+ * recargo, aplicado al cotizar. Antes existía una lista `empresas` con los
+ * valores premultiplicados; se eliminó porque los dos juegos de números se
+ * desalineaban en silencio.
+ *
+ * Dos detalles del contrato, verificados contra producción:
+ *  1. NO se normaliza el texto: hay que mandar el SLUG del lugar
  *     ("santo_domingo", no "Santo Domingo"; "Quito — Centro Norte" no matchea).
  *  2. La tarifa vive por PARES de lugares (124 pares, 46 lugares). Si la ruta no
- *     está en la tabla responde { error }, y ahí el monto queda manual.
+ *     está en la tabla responde `cotizable: false`, y ahí el monto queda manual.
  */
 
 import { API_BASE_URL } from "./constants";
@@ -69,13 +77,18 @@ export interface FareQuote {
   total: number;
   base: number;
   currency: string;
-  /** Lista usada por el motor: debe ser "empresas" en el portal corporativo. */
+  /** Lista del motor usada como base: siempre "privado" (el recargo va aparte). */
   list?: string;
   listVersion?: number | null;
   /** Paradas intermedias cobradas y su recargo (regla `stop_surcharge`). */
   stops?: number;
   stopSurchargeUnit?: number;
   stopSurchargeTotal?: number;
+  /** Ida y regreso: el motor multiplicó la tarifa de ruta por este factor. */
+  roundTrip?: boolean;
+  roundTripMultiplier?: number;
+  /** Recargo corporativo negociado con esta empresa (0.18 = +18%). */
+  surchargeRate?: number | null;
 }
 
 export type QuoteOutcome =
@@ -85,17 +98,25 @@ export type QuoteOutcome =
   | { status: "error" };
 
 /**
- * Cotiza una ruta corporativa. segment='corporate' hace que el motor use la
- * lista `empresas` (verificado: Quito→Cuenca SUV = $343.75 con list "empresas",
- * frente a $275 de la lista privada).
+ * Cotiza una ruta para la empresa de la sesión. El monto que devuelve es el
+ * MISMO que cobrará la reserva: ambos caminos usan el cálculo del servidor.
  */
 export async function quoteCorporateFare(params: {
   origin: string;
   destination: string;
   vehicleType: string;
   dateTime?: string;
-  /** Paradas INTERMEDIAS (sin contar origen ni destino final). */
+  /**
+   * Paradas INTERMEDIAS (sin contar origen ni destino final). En un viaje de
+   * ida y regreso se cuentan las de AMBOS tramos: cada parada se cobra una vez.
+   */
   stops?: number;
+  /** Ida y regreso: el motor cobra la ruta dos veces (regla `round_trip`). */
+  roundTrip?: boolean;
+  /** Token de la sesión: el servidor resuelve con él la empresa y su tasa. */
+  token?: string;
+  /** transport | parcel | tour | accommodation | experience. */
+  serviceType?: string;
   signal?: AbortSignal;
 }): Promise<QuoteOutcome> {
   const originSlug = placeSlugFromAddress(params.origin);
@@ -104,36 +125,53 @@ export async function quoteCorporateFare(params: {
   if (!destinationSlug) return { status: "unknown_place", which: "destination" };
 
   try {
-    const res = await fetch(`${API_BASE_URL}/price`, {
+    // Se cotiza CONTRA corporate-service, no contra el motor directamente.
+    //
+    // La tasa corporativa se negocia con cada empresa y la resuelve el servidor
+    // a partir de la sesión. Si el navegador cotizara por su cuenta usaría el
+    // recargo estándar y mostraría un precio distinto del que cobra la reserva
+    // en cuanto la empresa tenga una tasa propia — precio mostrado ≠ cobrado.
+    const res = await fetch(`${API_BASE_URL}/corporate/quote`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(params.token ? { Authorization: `Bearer ${params.token}` } : {}),
+      },
       signal: params.signal,
       body: JSON.stringify({
-        serviceType: "intercity_private",
-        origin: originSlug,
-        destination: destinationSlug,
-        vehicleType: params.vehicleType,
-        segment: "corporate",
-        ...(params.stops ? { stops: params.stops } : {}),
-        ...(params.dateTime ? { dateTime: params.dateTime } : {}),
+        serviceType: params.serviceType ?? "transport",
+        startDate: params.dateTime,
+        metadata: {
+          origin: originSlug,
+          destination: destinationSlug,
+          vehicleType: params.vehicleType,
+          stopCount: params.stops ?? 0,
+          roundTrip: !!params.roundTrip,
+        },
       }),
     });
     if (!res.ok) return { status: "error" };
     const json = await res.json();
-    if (json?.error || typeof json?.total !== "number") return { status: "no_fare" };
+    if (json?.cotizable === false) return { status: "no_fare" };
+    if (typeof json?.amount !== "number") return { status: "no_fare" };
+    const b = json.breakdown ?? {};
     return {
       status: "ok",
       originSlug,
       destinationSlug,
       quote: {
-        total: json.total,
-        base: json.base,
+        total: json.amount,
+        base: b.basePrice ?? json.amount,
         currency: json.currency ?? "USD",
-        list: json?.breakdown?.list,
-        listVersion: json.listVersion ?? null,
-        stops: json?.breakdown?.stops ?? 0,
-        stopSurchargeUnit: json?.breakdown?.stopSurchargeUnit ?? 0,
-        stopSurchargeTotal: json?.breakdown?.stopSurchargeTotal ?? 0,
+        list: b.list,
+        listVersion: b.listVersion ?? null,
+        stops: b.stops ?? 0,
+        stopSurchargeUnit: b.stopSurchargeUnit ?? 0,
+        stopSurchargeTotal: b.stopSurchargeTotal ?? 0,
+        roundTrip: !!b.roundTrip,
+        roundTripMultiplier: b.roundTripMultiplier ?? 1,
+        // Recargo corporativo REAL de esta empresa, ya negociado.
+        surchargeRate: json.surchargeRate ?? b.clientSurchargeRate ?? null,
       },
     };
   } catch {

@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <>
       {/* ══ HERO ═══════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center bg-[#011627] pt-[68px]">
+      <section className="relative min-h-screen flex items-center bg-[#011627] pt-[88px]">
         {/* Background */}
         <div className="absolute inset-0">
           <Image

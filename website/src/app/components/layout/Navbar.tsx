@@ -43,11 +43,11 @@ export function Navbar() {
         scrolled ? 'bg-white/96 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-white/90 backdrop-blur-sm'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center gap-8">
+      <div className="max-w-7xl mx-auto px-6 h-[88px] flex items-center gap-8">
         {/* Logo + tagline */}
         <Link href="/" className="flex flex-col justify-center flex-shrink-0 leading-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/going-logo-h.png" alt="Going App" className="h-10 w-auto" />
+          <img src="/going-logo-h.png" alt="Going App" className="h-[3.75rem] w-auto" />
           <span className="hidden sm:block text-[9.5px] font-bold tracking-[0.3px] text-[#ff4c41] mt-1 whitespace-nowrap">
             Primera Superapp Latinoamericana de Turismo Colaborativo
           </span>

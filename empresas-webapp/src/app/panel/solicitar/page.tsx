@@ -35,8 +35,15 @@ type ServiceType = "transport" | "accommodation" | "tour" | "experience" | "parc
  */
 type VehicleType = "suv" | "suv_xl" | "van" | "van_xl" | "minibus" | "bus" | "bus_40";
 
-/** Tipo de viaje — se elige ANTES de cargar los lugares. */
-type TripType = "ida" | "ida_vuelta" | "multi";
+/**
+ * Tipo de viaje — se elige ANTES de cargar los lugares.
+ *
+ * Solo describe si el viaje VUELVE o no. Las paradas intermedias NO son un tipo
+ * de viaje: son un agregado independiente, disponible tanto en solo ida como en
+ * ida y regreso (antes eran excluyentes, así que pedir Quito→Santo Domingo ida y
+ * regreso CON paradas era imposible).
+ */
+type TripType = "ida" | "ida_vuelta";
 
 /** Punto intermedio de un viaje con paradas: lugar + cuándo. */
 interface Stop {
@@ -78,9 +85,8 @@ const TOUR_CATEGORIES = [
 ];
 
 const TRIP_TYPES: { key: TripType; label: string; desc: string }[] = [
-  { key: "ida",        label: "Solo ida",       desc: "Un trayecto" },
-  { key: "ida_vuelta", label: "Ida y regreso",  desc: "Con fecha de retorno" },
-  { key: "multi",      label: "Con paradas",    desc: "Varios puntos" },
+  { key: "ida",        label: "Solo ida",      desc: "Un trayecto" },
+  { key: "ida_vuelta", label: "Ida y regreso", desc: "Se cobran los dos trayectos" },
 ];
 
 const PARCEL_MODES: { key: ParcelMode; label: string; desc: string }[] = [
@@ -115,6 +121,79 @@ function Field({ label, required, children }: { label: string; required?: boolea
         {label}{required && <span className="text-red-500 ml-1">*</span>}
       </label>
       {children}
+    </div>
+  );
+}
+
+/**
+ * Editor de paradas intermedias de UN tramo.
+ *
+ * Existe como componente porque un viaje de ida y regreso tiene dos tramos y
+ * cada uno puede parar en lugares distintos — se puede pasar por Alóag al ir y
+ * por otro punto al volver. Antes las paradas eran un "tipo de viaje" excluyente
+ * con el ida y regreso, así que esa combinación no se podía ni pedir.
+ */
+function StopList({
+  titulo,
+  stops,
+  setStops,
+  minDate,
+  recargoUnitario,
+}: {
+  titulo: string;
+  stops: Stop[];
+  setStops: (s: Stop[]) => void;
+  minDate: string;
+  recargoUnitario?: number;
+}) {
+  const editar = (i: number, campo: keyof Stop, valor: string) =>
+    setStops(stops.map((x, j) => (j === i ? { ...x, [campo]: valor } : x)));
+
+  return (
+    <div className="space-y-3 border-l-2 border-amber-200 pl-3">
+      <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">{titulo}</p>
+      <p className="text-xs text-slate-500">
+        Opcional. Lugares por los que debe pasar en este tramo.{" "}
+        <span className="text-amber-700 font-medium">
+          Cada parada suma un recargo a la tarifa de ruta
+          {!!recargoUnitario && ` ($${recargoUnitario.toFixed(2)} por parada)`}.
+        </span>
+      </p>
+
+      {stops.map((s, i) => (
+        <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-slate-500">Parada {i + 1}</p>
+            <button
+              type="button"
+              onClick={() => setStops(stops.filter((_, j) => j !== i))}
+              className="text-xs text-red-600 hover:underline font-medium"
+            >
+              Quitar
+            </button>
+          </div>
+          <AddressAutocomplete
+            className={INPUT}
+            value={s.address}
+            onChange={(v) => editar(i, "address", v)}
+            placeholder="Lugar de la parada"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <input type="date" className={INPUT} value={s.date} min={minDate}
+              onChange={(e) => editar(i, "date", e.target.value)} />
+            <input type="time" className={INPUT} value={s.time}
+              onChange={(e) => editar(i, "time", e.target.value)} />
+          </div>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={() => setStops([...stops, { address: "", date: "", time: "" }])}
+        className="w-full py-2 border border-dashed border-slate-300 rounded-lg text-sm font-medium text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
+      >
+        + Agregar parada
+      </button>
     </div>
   );
 }
@@ -172,12 +251,15 @@ export default function SolicitarViajePage() {
   const [passengers, setPassengers]   = useState("1");
   const [vehicleType, setVehicleType] = useState<VehicleType>("suv");
 
-  // Tipo de viaje: se define ANTES de los lugares. Según el tipo, el formulario
-  // va sumando los lugares con su fecha y hora (regreso, o paradas intermedias).
+  // Tipo de viaje: se define ANTES de los lugares. Dos ejes independientes —
+  // si vuelve o no (tripType), y qué paradas tiene cada tramo (stops por ida,
+  // returnStops por regreso). Cada parada se cobra una vez, en el tramo donde
+  // esté; el multiplicador de ida y regreso solo afecta la tarifa de ruta.
   const [tripType, setTripType]       = useState<TripType>("ida");
   const [returnDate, setReturnDate]   = useState("");
   const [returnTime, setReturnTime]   = useState("");
   const [stops, setStops]             = useState<Stop[]>([]);
+  const [returnStops, setReturnStops] = useState<Stop[]>([]);
 
   // ── Encomienda ────────────────────────────────────────────────────────────
   const [parcelOrigin, setParcelOrigin]       = useState("");
@@ -210,6 +292,12 @@ export default function SolicitarViajePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess]        = useState(false);
 
+  // Paradas efectivamente cobrables: las que tienen dirección, de ida y —si el
+  // viaje vuelve— de regreso.
+  const outboundStops = stops.filter((s) => s.address.trim());
+  const inboundStops  = tripType === "ida_vuelta" ? returnStops.filter((s) => s.address.trim()) : [];
+  const countedStops  = outboundStops.length + inboundStops.length;
+
   // Cotiza al motor cuando cambia la ruta o el vehículo (con debounce, para no
   // pegarle en cada tecla del autocompletado).
   useEffect(() => {
@@ -226,9 +314,16 @@ export default function SolicitarViajePage() {
         origin,
         destination,
         vehicleType,
-        // Solo cuentan las paradas intermedias con dirección cargada.
-        stops: tripType === "multi" ? stops.filter((s) => s.address.trim()).length : 0,
+        // Paradas de AMBOS tramos: cada una se cobra una vez, esté en la ida o
+        // en el regreso. Solo cuentan las que tienen dirección cargada.
+        stops: countedStops,
+        // El motor multiplica la tarifa de ruta (regla `round_trip`). Antes esto
+        // no se enviaba: la pantalla decía "por trayecto" y facturaba UNO SOLO.
+        roundTrip: tripType === "ida_vuelta",
         dateTime: startDate ? `${startDate}T${startTime || "00:00"}:00` : undefined,
+        // El servidor resuelve la empresa y su tasa negociada con este token.
+        token: session?.accessToken,
+        serviceType: "transport",
         signal: ctrl.signal,
       });
       setQuoting(false);
@@ -237,7 +332,7 @@ export default function SolicitarViajePage() {
       if (out.status === "ok") setEstimatedAmount(String(out.quote.total));
     }, 600);
     return () => clearTimeout(t);
-  }, [serviceType, origin, destination, vehicleType, startDate, startTime, tripType, stops]);
+  }, [serviceType, origin, destination, vehicleType, startDate, startTime, tripType, countedStops]);
 
   if (!session) return null;
 
@@ -334,10 +429,9 @@ export default function SolicitarViajePage() {
       if (tripType === "ida_vuelta" && returnDate) {
         return `${returnDate}T${returnTime || "00:00"}:00`;
       }
-      if (tripType === "multi") {
-        const last = [...stops].reverse().find((s) => s.date);
-        if (last) return `${last.date}T${last.time || "00:00"}:00`;
-      }
+      // Solo ida con paradas: el viaje termina en la última parada con fecha.
+      const last = [...outboundStops].reverse().find((s) => s.date);
+      if (last) return `${last.date}T${last.time || "00:00"}:00`;
       return undefined;
     })();
 
@@ -348,17 +442,20 @@ export default function SolicitarViajePage() {
       ...(isAgencia && { passengerName }),
     };
     if (serviceType === "transport") {
-      const cleanStops = stops.filter((s) => s.address.trim());
       Object.assign(meta, {
         origin, destination, passengers: +passengers, vehicleType,
         tripType,
         // Compatibilidad con consumidores que ya leían roundTrip.
         roundTrip: tripType === "ida_vuelta",
         ...(tripType === "ida_vuelta" && { returnDate, returnTime }),
-        ...(tripType === "multi" && { stops: cleanStops }),
+        // Paradas por tramo: quien opere el viaje necesita saber DÓNDE para,
+        // y en cuál de los dos trayectos.
+        ...(outboundStops.length && { stops: outboundStops }),
+        ...(inboundStops.length && { returnStops: inboundStops }),
+        ...(countedStops && { stopCount: countedStops }),
       });
       rememberAddress(origin); rememberAddress(destination);
-      cleanStops.forEach((s) => rememberAddress(s.address));
+      [...outboundStops, ...inboundStops].forEach((s) => rememberAddress(s.address));
     } else {
       const cleanDrops = drops.filter((d) => d.address.trim());
       Object.assign(meta, {
@@ -818,7 +915,7 @@ export default function SolicitarViajePage() {
                 <p className="text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                   Tipo de viaje <span className="text-red-500">*</span>
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {TRIP_TYPES.map((t) => (
                     <button
                       key={t.key}
@@ -858,61 +955,21 @@ export default function SolicitarViajePage() {
                 </div>
               </div>
 
-              {/* ── Paradas intermedias (solo multi) ── */}
-              {tripType === "multi" && (
-                <div className="space-y-3 border-l-2 border-amber-200 pl-3">
-                  <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">
-                    🟡 Paradas intermedias
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Agrega los lugares por los que debe pasar, con su fecha y hora.{" "}
-                    <span className="text-amber-700 font-medium">
-                      Cada parada intermedia tiene un recargo que se suma a la tarifa de ruta
-                      {!!fareQuote && fareQuote.status === "ok" && !!fareQuote.quote.stopSurchargeUnit &&
-                        ` ($${fareQuote.quote.stopSurchargeUnit.toFixed(2)} por parada)`}
-                      .
-                    </span>
-                  </p>
-                  {stops.map((s, i) => (
-                    <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-slate-500">Parada {i + 1}</p>
-                        <button
-                          type="button"
-                          onClick={() => setStops(stops.filter((_, j) => j !== i))}
-                          className="text-xs text-red-600 hover:underline font-medium"
-                        >
-                          Quitar
-                        </button>
-                      </div>
-                      <AddressAutocomplete
-                        className={INPUT}
-                        value={s.address}
-                        onChange={(v) => setStops(stops.map((x, j) => (j === i ? { ...x, address: v } : x)))}
-                        placeholder="Lugar de la parada"
-                      />
-                      <div className="grid grid-cols-2 gap-3">
-                        <input type="date" className={INPUT} value={s.date} min={startDate || today}
-                          onChange={(e) => setStops(stops.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))} />
-                        <input type="time" className={INPUT} value={s.time}
-                          onChange={(e) => setStops(stops.map((x, j) => (j === i ? { ...x, time: e.target.value } : x)))} />
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setStops([...stops, { address: "", date: "", time: "" }])}
-                    className="w-full py-2 border border-dashed border-slate-300 rounded-lg text-sm font-medium text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
-                  >
-                    + Agregar parada
-                  </button>
-                </div>
-              )}
+              {/* ── Paradas de la ida — disponibles siempre, vuelva o no ── */}
+              <StopList
+                titulo="🟡 Paradas intermedias — ida"
+                stops={stops}
+                setStops={setStops}
+                minDate={startDate || today}
+                recargoUnitario={
+                  fareQuote?.status === "ok" ? fareQuote.quote.stopSurchargeUnit : undefined
+                }
+              />
 
               {/* ── Llegada ── */}
               <div className="space-y-3 border-l-2 border-red-200 pl-3">
                 <p className="text-xs font-bold text-red-700 uppercase tracking-wide">
-                  🔴 {tripType === "multi" ? "Destino final" : "Llegada"}
+                  🔴 {outboundStops.length ? "Destino final" : "Llegada"}
                 </p>
                 <Field label="Destino" required>
                   <AddressAutocomplete className={INPUT} value={destination} onChange={setDestination}
@@ -920,7 +977,7 @@ export default function SolicitarViajePage() {
                 </Field>
               </div>
 
-              {/* ── Regreso (solo ida y vuelta) ── */}
+              {/* ── Regreso (solo ida y vuelta) — con sus propias paradas ── */}
               {tripType === "ida_vuelta" && (
                 <div className="space-y-3 border-l-2 border-green-200 pl-3">
                   <p className="text-xs font-bold text-green-700 uppercase tracking-wide">
@@ -936,6 +993,17 @@ export default function SolicitarViajePage() {
                         onChange={(e) => setReturnTime(e.target.value)} />
                     </Field>
                   </div>
+
+                  {/* El regreso puede parar en lugares distintos a los de la ida. */}
+                  <StopList
+                    titulo="🟡 Paradas intermedias — regreso"
+                    stops={returnStops}
+                    setStops={setReturnStops}
+                    minDate={returnDate || startDate || today}
+                    recargoUnitario={
+                      fareQuote?.status === "ok" ? fareQuote.quote.stopSurchargeUnit : undefined
+                    }
+                  />
                 </div>
               )}
 
@@ -1129,14 +1197,22 @@ export default function SolicitarViajePage() {
                 <p className="text-xs text-green-800 mt-1">
                   {placeLabel(fareQuote.originSlug)} → {placeLabel(fareQuote.destinationSlug)} ·{" "}
                   {VEHICLES.find((v) => v.key === vehicleType)?.label ?? vehicleType}
-                  {tripType === "ida_vuelta" && " · por trayecto"}
+                  {/* Lo dicta el MOTOR, no el formulario: si el motor todavía no
+                      aplica el multiplicador, la pantalla no puede prometer que
+                      el monto cubre los dos trayectos. */}
+                  {fareQuote.quote.roundTrip && " · ida y regreso (total)"}
                 </p>
 
-                {/* Desglose cuando hay recargo por paradas — el cobro debe verse. */}
-                {!!fareQuote.quote.stopSurchargeTotal && (
+                {/* Desglose cuando hay recargo por paradas o cobro de regreso —
+                    todo lo que sube el precio debe verse, no solo el total. */}
+                {(!!fareQuote.quote.stopSurchargeTotal || fareQuote.quote.roundTrip) && (
                   <div className="mt-2 pt-2 border-t border-green-200 space-y-0.5">
                     <div className="flex justify-between text-xs text-green-800">
-                      <span>Tarifa de ruta</span>
+                      <span>
+                        Tarifa de ruta
+                        {fareQuote.quote.roundTrip &&
+                          ` (×${fareQuote.quote.roundTripMultiplier} por ida y regreso)`}
+                      </span>
                       <span>${(fareQuote.quote.total - (fareQuote.quote.stopSurchargeTotal ?? 0)).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-xs text-green-800">

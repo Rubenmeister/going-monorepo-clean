@@ -54,6 +54,7 @@ const NAV_SECTIONS = [
     items: [
       { label: 'Tarifas',       href: '/tarifas',   icon: '🧮' },
       { label: 'Cartera B2B',   href: '/cartera',   icon: '🏦' },
+      { label: 'Tarifas corporativas', href: '/tarifas-corporativas', icon: '🤝' },
       { label: 'Ingresos',      href: '/ingresos',  icon: '💰' },
       { label: 'Pagos',         href: '/payments',  icon: '💳' },
       { label: 'Liquidaciones', href: '/payouts',   icon: '💸' },
@@ -146,7 +147,7 @@ export function AdminLayout({
         >
           {sidebarOpen && (
             <div className="flex items-center gap-2">
-              <img src="/going-logo-white-h.png" alt="Going App" className="h-7 w-auto object-contain" />
+              <img src="/going-logo-white-h.png" alt="Going App" className="h-[2.625rem] w-auto object-contain" />
               <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">
                 Admin
               </span>

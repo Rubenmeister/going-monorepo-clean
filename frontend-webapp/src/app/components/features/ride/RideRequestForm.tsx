@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useRideService } from '@/hooks/features/useRideService';
 import { LocationSelector } from './LocationSelector';
@@ -224,14 +224,24 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Snapshot del MOTOR DE TARIFAS: al montar, baja las tablas autoritativas de
-  // Atlas y sobrescribe la tabla local → la cotización del cliente muestra los
-  // MISMOS precios que cobra el backend (cierra la última divergencia). Si falla,
-  // sigue con el bundle local. Al cargar, recotiza (motorLoaded es dep del effect).
-  const [motorLoaded, setMotorLoaded] = useState(false);
+  // Snapshot del MOTOR DE TARIFAS: al montar baja las tablas autoritativas.
+  //
+  // Ya NO hay tabla local de respaldo. Antes, si esto fallaba, la app seguía
+  // cotizando con precios incrustados del 6 de julio y nadie se enteraba. Ahora
+  // el fallo se muestra y no se cotiza: "no puedo cotizar ahora" es recuperable;
+  // cobrar un precio viejo, no.
+  const [motorEstado, setMotorEstado] = useState<'cargando' | 'ok' | 'error'>('cargando');
+  const motorLoaded = motorEstado === 'ok';
+
+  const sincronizarTarifas = useCallback(async () => {
+    setMotorEstado('cargando');
+    const ok = await loadMotorSnapshot();
+    setMotorEstado(ok ? 'ok' : 'error');
+  }, []);
+
   useEffect(() => {
     let alive = true;
-    loadMotorSnapshot().then((ok) => { if (ok && alive) setMotorLoaded(true); });
+    loadMotorSnapshot().then((ok) => { if (alive) setMotorEstado(ok ? 'ok' : 'error'); });
     return () => { alive = false; };
   }, []);
 
@@ -469,6 +479,26 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
       {reserveError && (
         <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-sm">
           ⚠️ {reserveError}
+        </div>
+      )}
+
+      {/* Sin tarifas del motor NO se cotiza. Antes esta app tenía una tabla
+          incrustada y, si el motor no respondía, mostraba precios congelados
+          como si fueran buenos. Ahora se dice y se ofrece reintentar. */}
+      {motorEstado === 'error' && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-sm">
+          <p className="font-semibold text-amber-900">No podemos calcular el precio ahora</p>
+          <p className="text-amber-800 mt-1 leading-relaxed">
+            No pudimos conectarnos con el sistema de tarifas. Prefiero no mostrarte
+            un precio a mostrarte uno equivocado.
+          </p>
+          <button
+            type="button"
+            onClick={() => void sincronizarTarifas()}
+            className="mt-2.5 px-3.5 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700"
+          >
+            Reintentar
+          </button>
         </div>
       )}
 

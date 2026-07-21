@@ -10,8 +10,6 @@ import {
   TransactionModelSchema,
   TransactionSchema,
 } from './persistence/schemas/transaction.schema';
-import { StripeGateway } from './gateways/stripe.gateway';
-import { MercadoPagoGateway } from './gateways/mercadopago.gateway';
 import { DatafastGateway } from './gateways/datafast.gateway';
 import { DeunaGateway } from './gateways/deuna.gateway';
 import { MongoPaymentRepository } from './persistence/mongo-payment.repository';
@@ -20,9 +18,13 @@ import { IPaymentRepository, IPayoutRepository } from '../domain/ports';
 import { Payment, PaymentSchema } from './schemas/payment.schema';
 import { Payout, PayoutSchema } from './schemas/payout.schema';
 
-/** Token to select the right gateway at runtime based on currency/method */
-export const STRIPE_GATEWAY = 'STRIPE_GATEWAY';
-export const MERCADOPAGO_GATEWAY = 'MERCADOPAGO_GATEWAY';
+/**
+ * Token to select the right gateway at runtime based on currency/method.
+ *
+ * Going opera con DOS pasarelas (decisión de Rubén, 19-jul-2026): Datafast
+ * (adquirente de tarjeta) y DeUna (billetera/transferencia). Stripe se eliminó
+ * porque no opera en Ecuador y MercadoPago porque no se va a usar.
+ */
 export const DATAFAST_GATEWAY = 'DATAFAST_GATEWAY';
 export const DEUNA_GATEWAY = 'DEUNA_GATEWAY';
 
@@ -53,18 +55,14 @@ export const DEUNA_GATEWAY = 'DEUNA_GATEWAY';
     },
     MongoPaymentRepository,
     MongoPayoutRepository,
-    // Default gateway — Stripe for international transactions
+    // Pasarela por defecto — Datafast, el adquirente de tarjeta en Ecuador.
     {
       provide: IPaymentGateway,
-      useClass: StripeGateway,
+      useClass: DatafastGateway,
     },
     // Named tokens for selecting gateway by currency/method
-    { provide: STRIPE_GATEWAY, useClass: StripeGateway },
-    { provide: MERCADOPAGO_GATEWAY, useClass: MercadoPagoGateway },
     { provide: DATAFAST_GATEWAY, useClass: DatafastGateway },
     { provide: DEUNA_GATEWAY, useClass: DeunaGateway },
-    MercadoPagoGateway,
-    StripeGateway,
     DatafastGateway,
     DeunaGateway,
   ],
@@ -73,12 +71,8 @@ export const DEUNA_GATEWAY = 'DEUNA_GATEWAY';
     IPaymentRepository,
     IPayoutRepository,
     IPaymentGateway,
-    STRIPE_GATEWAY,
-    MERCADOPAGO_GATEWAY,
     DATAFAST_GATEWAY,
     DEUNA_GATEWAY,
-    MercadoPagoGateway,
-    StripeGateway,
     DatafastGateway,
     DeunaGateway,
   ],

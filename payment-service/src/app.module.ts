@@ -10,7 +10,6 @@ import { WebhookController } from './api/webhook.controller';
 import { PaymentOperationsController } from './api/controllers/payment-operations.controller';
 import {
   CreatePaymentIntentUseCase,
-  HandleStripeEventUseCase,
 } from '@going-monorepo-clean/domains-payment-application';
 import { PricingService } from './application/pricing.service';
 import { FareEngine } from './application/fare-engine.service';
@@ -22,6 +21,10 @@ import { ProcessPaymentUseCase } from './application/use-cases/process-payment.u
 import { CompleteRideUseCase } from './application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from './application/use-cases/create-payout.use-case';
 import { DriverEarningsController } from './api/driver-earnings.controller';
+import {
+  ProviderBankAccount,
+  ProviderBankAccountSchema,
+} from './infrastructure/schemas/provider-bank-account.schema';
 import { WalletController } from './api/wallet.controller';
 import { WalletService } from './application/wallet.service';
 import { RechargeService } from './application/recharge.service';
@@ -63,12 +66,13 @@ import {
     MongooseModule.forFeature([
       { name: Wallet.name, schema: WalletSchema },
       { name: WalletTransaction.name, schema: WalletTransactionSchema },
+      { name: ProviderBankAccount.name, schema: ProviderBankAccountSchema },
     ]),
   ],
   controllers: [
     PaymentController,             // POST /payments/intent, POST /payments/estimate
     PaymentOperationsController,   // POST /payments/process, POST /payments/complete-ride, GET /payments/:id, etc.
-    WebhookController,             // POST /webhooks/stripe, POST /webhooks/mercadopago
+    WebhookController,             // POST /webhooks/datafast, POST /webhooks/deuna
     HealthController,
     DriverEarningsController,      // GET /drivers/me/wallet, GET /drivers/me/earnings, POST /drivers/me/withdraw
     WalletController,              // GET /payments/wallet/:userId/balance|transactions
@@ -76,8 +80,7 @@ import {
   providers: [
     // Domain lib use cases (use ITransactionRepository + IPaymentGateway from InfrastructureModule)
     CreatePaymentIntentUseCase,
-    HandleStripeEventUseCase,
-    // Service-level use cases (use IPaymentRepository + IPayoutRepository + StripeGateway)
+    // Service-level use cases (use IPaymentRepository + IPayoutRepository)
     PricingService,
     PricingClient,
     FareEngine,

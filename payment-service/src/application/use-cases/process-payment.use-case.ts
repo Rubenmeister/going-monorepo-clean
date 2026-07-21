@@ -1,6 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IPaymentRepository } from '../../domain/ports';
-import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
 import { PricingService, ServiceType } from '../pricing.service';
 import { WalletService } from '../wallet.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +12,6 @@ import { v4 as uuidv4 } from 'uuid';
 export class ProcessPaymentUseCase {
   constructor(
     @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
-    private stripeGateway: StripeGateway,
     private pricingService: PricingService,
     private walletService: WalletService
   ) {}
@@ -121,42 +119,20 @@ export class ProcessPaymentUseCase {
       });
     }
 
-    if (input.paymentMethod === 'datafast' || input.paymentMethod === 'deuna') {
+    // Datafast y DeUna son las DOS pasarelas de Going (decisión 19-jul-2026).
+    // `card` entra aquí también: en Ecuador el adquirente de tarjeta es
+    // Datafast, no es un método aparte. Stripe se eliminó porque no opera en
+    // Ecuador y MercadoPago porque no se va a usar.
+    if (
+      input.paymentMethod === 'datafast' ||
+      input.paymentMethod === 'deuna' ||
+      input.paymentMethod === 'card'
+    ) {
       // El pago digital ecuatoriano se inicia desde el controller
       // y se confirma cuando llega el webhook correspondiente
       return payment; // queda en status 'pending' hasta el webhook
     }
 
-    // Process card payment with Stripe
-    if (input.paymentMethod === 'card' && input.paymentMethodId) {
-      const result = await this.stripeGateway.processPayment({
-        amount: Math.round(input.amount * 100), // Convert to cents
-        currency: 'USD',
-        customerId: input.passengerId,
-        paymentMethodId: input.paymentMethodId,
-        description: `Payment for trip ${input.tripId}`,
-        metadata: {
-          tripId: input.tripId,
-          driverId: input.driverId,
-        },
-      });
-
-      if (result.success && result.transactionId) {
-        return await this.paymentRepository.update(payment.id, {
-          status: 'completed',
-          transactionId: result.transactionId,
-          completedAt: new Date(),
-        });
-      } else {
-        await this.paymentRepository.update(payment.id, {
-          status: 'failed',
-          failureReason: result.error || 'Payment processing failed',
-        });
-
-        throw new Error(result.error || 'Payment processing failed');
-      }
-    }
-
-    throw new Error('Invalid payment method');
+    throw new Error(`Método de pago no soportado: ${input.paymentMethod}`);
   }
 }

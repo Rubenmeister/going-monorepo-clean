@@ -52,6 +52,24 @@ export interface PriceInput {
    * motor — editable en vivo, no hardcodeado.
    */
   stops?: number;
+  /**
+   * Viaje de ida y regreso. Multiplica la tarifa de RUTA (no los recargos por
+   * parada, que ya vienen contados de ambos tramos en `stops`).
+   *
+   * El multiplicador sale de la regla `round_trip` del motor; si no hay regla
+   * activa usa 2 — un viaje de ida y regreso son DOS trayectos, así que 2 es el
+   * piso aritmético, no una invención. La regla existe para bajarlo (descuento
+   * por no volver vacío) o subirlo (espera, pernocte) sin tocar código.
+   */
+  roundTrip?: boolean;
+  /**
+   * Recargo del cliente como fracción (0.18 = +18%), NEGOCIADO por empresa.
+   *
+   * Si viene, gana sobre el recargo genérico del segmento. Lo envía
+   * corporate-service, que es quien conoce lo acordado con cada empresa; nunca
+   * el navegador. Si no viene, rige el recargo estándar del segmento.
+   */
+  surchargeRate?: number;
   /** Código de promoción (F4-2) — aplica reglas condition:promo_code vigentes. */
   promoCode?: string;
   /** Conductor (F4-2) — aplica su precio propio (regla flat_override con tope). */
@@ -65,7 +83,11 @@ export interface PriceResult {
   platformFee: number;
   providerAmount: number;
   listVersion: number | null;
-  breakdown: Record<string, number | string>;
+  /**
+   * Detalle de cómo se armó el precio, para mostrarlo al cliente. Admite
+   * booleanos porque hay conceptos que son un sí/no (`roundTrip`), no un monto.
+   */
+  breakdown: Record<string, number | string | boolean>;
 }
 
 const PLATFORM_FEE_SHARED = 0.2; // RATES.shared.platformFeePct — paridad
@@ -273,6 +295,46 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
     return { count, unit, total: round(unit * count) };
   }
 
+  /**
+   * Multiplicador por ida y regreso. Sale de la regla `round_trip` del motor
+   * (`effect.value` = multiplicador, ej. 2 o 1.8 si hay descuento).
+   *
+   * A diferencia de `stopSurcharge`, el default NO es "no cobrar": si no hay
+   * regla activa devuelve 2. Cobrar 1× un viaje que recorre la ruta dos veces
+   * no es un descuento, es un error de facturación — y era justo el fallo que
+   * tenía el panel de empresas (mostraba "por trayecto" y enviaba un trayecto).
+   */
+  /**
+   * Recargo del cliente sobre el precio privado.
+   *
+   * Prioridad: el NEGOCIADO que envía corporate-service → el estándar del
+   * segmento. Un valor fuera de rango se descarta (un `30` que quiso ser `0.30`
+   * cobraría 3000%), y en ese caso rige el estándar en vez de un disparate.
+   */
+  private recargoCliente(input: PriceInput, segment: ClientSegment): number {
+    const r = input.surchargeRate;
+    if (typeof r === 'number' && Number.isFinite(r) && r >= 0 && r <= 1) return r;
+    if (r !== undefined) {
+      this.logger.warn(
+        `surchargeRate inválido (${r}) — se aplica el estándar del segmento "${segment}"`,
+      );
+    }
+    return getClientSurchargeRate(segment);
+  }
+
+  private roundTripMultiplier(dt: Date, mode: string): number {
+    let mult = 0;
+    for (const r of this.rules) {
+      if ((r as any).effect?.type !== 'round_trip') continue;
+      if ((r as any).active === false) continue;
+      const modes = (r as any).scope?.modes;
+      if (modes && !modes.includes(mode)) continue;
+      if (!this.conditionMatches((r as any).condition, dt)) continue;
+      mult = Math.max(mult, Number((r as any).effect.value) || 0);
+    }
+    return mult > 0 ? mult : 2;
+  }
+
   /** Recargo dinámico: reglas de Atlas si existen, si no el código (paridad). */
   private surge(dt: Date, mode: string): number {
     const fromRules = this.surchargeFromRules(dt, mode);
@@ -365,32 +427,47 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
       }
 
       // ── Privado interurbano inmediato ────────────────────────────────────────
-      // Elige la lista por segmento: corporativo/agencia → 'empresas', si no → 'privado'.
-      // Si la lista tiene precio explícito por vehículo → lo usa (la lista YA encodea el
-      // segmento, así que solo aplica surge de tiempo). Si NO → fallback EXACTO a la
-      // fórmula de libs/pricing (calcIntercityFare) para conservar paridad.
+      // UNA sola tabla de precios: `privado`, con precios planos de mercado.
+      //
+      // El precio corporativo es esa tabla MÁS un recargo — una operación, no una
+      // lista aparte. Antes existía una lista `empresas` con los valores ya
+      // multiplicados: 862 números duplicados que había que mantener
+      // sincronizados a mano, y que se desalineaban en silencio en cuanto
+      // alguien editaba una sola de las dos. Ahora el recargo se aplica al
+      // cotizar, así que cambiar un precio en `privado` actualiza el corporativo
+      // por definición, no por copia.
       case 'intercity_private': {
         const veh = (input.vehicleType ?? 'suv') as any;
-        const isCorp = segment === 'corporate' || segment === 'agency';
-        const svcList = this.listFor(isCorp ? 'empresas' : 'privado');
+        const svcList = this.listFor('privado');
         const explicit = this.privateFare(svcList, input.origin, input.destination, veh);
         const originSurcharge = input.originSurcharge ?? 0;
 
+        // Recargo del cliente: el NEGOCIADO con la empresa si viene, si no el
+        // estándar del segmento. Aplica en ambos caminos (explícito y derivado).
+        const clientRate = this.recargoCliente(input, segment);
+
         const stopFee = this.stopSurcharge(input, dt, 'privado');
+        // El multiplicador pega sobre la RUTA, no sobre las paradas: cada parada
+        // se cobra una vez, y `stops` ya trae las de ambos tramos.
+        const rtMult = input.roundTrip ? this.roundTripMultiplier(dt, 'privado') : 1;
 
         if (explicit != null) {
           const surge = this.surge(dt, 'privado'); // reglas Atlas (o código); NO segmento
-          const total = round(explicit * (1 + surge)) + originSurcharge + stopFee.total;
+          const route = round(explicit * (1 + surge + clientRate) * rtMult);
+          const total = route + originSurcharge + stopFee.total;
           const { platformFee, providerAmount } = this.feeSplit(total);
           return {
             total, currency, base: explicit, platformFee, providerAmount,
             listVersion: svcList?.version ?? listVersion,
             breakdown: {
               basePrice: explicit, timeSurchargeRate: surge, originSurcharge,
+              clientSurchargeRate: clientRate,
+              roundTrip: !!input.roundTrip,
+              roundTripMultiplier: rtMult,
               stops: stopFee.count,
               stopSurchargeUnit: stopFee.unit,
               stopSurchargeTotal: stopFee.total,
-              list: isCorp ? 'empresas' : 'privado',
+              list: 'privado',
             },
           };
         }
@@ -402,14 +479,17 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
         if (perSeat == null) throw new Error(`Sin tarifa para ${input.origin}→${input.destination}`);
         const base = getPrivateFare(perSeat, veh);
         const surge = this.surge(dt, 'privado');
-        const segRate = getClientSurchargeRate(segment);
-        const total = round(base * (1 + surge + segRate)) + originSurcharge + stopFee.total;
+        const segRate = clientRate;
+        const route = round(base * (1 + surge + segRate) * rtMult);
+        const total = route + originSurcharge + stopFee.total;
         const { platformFee, providerAmount } = this.feeSplit(total);
         return {
           total, currency, base, platformFee, providerAmount, listVersion,
           breakdown: {
             basePrice: base, timeSurchargeRate: surge,
             clientSurchargeRate: segRate, originSurcharge,
+            roundTrip: !!input.roundTrip,
+            roundTripMultiplier: rtMult,
             stops: stopFee.count,
             stopSurchargeUnit: stopFee.unit,
             stopSurchargeTotal: stopFee.total,

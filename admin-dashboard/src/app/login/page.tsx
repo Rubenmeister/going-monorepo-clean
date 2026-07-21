@@ -88,7 +88,7 @@ function LoginForm() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/going-logo-v-trans.png" alt="Going App" className="h-20 w-auto object-contain mx-auto" />
+            <img src="/going-logo-v-trans.png" alt="Going App" className="h-[7.5rem] w-auto object-contain mx-auto" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Panel Admin</h1>
           <p className="text-gray-500 mt-1">Acceso exclusivo para administradores</p>

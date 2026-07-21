@@ -347,20 +347,36 @@ export const FARES = {
 };
 
 /**
- * Calcula el precio privado para un vehículo dado la tarifa compartida base
+ * Calcula el precio privado para un vehículo dado la tarifa compartida base.
+ *
+ * Solo se usa como ÚLTIMO recurso, en rutas sin precio privado propio. El modelo
+ * de Going son precios planos de mercado, no fórmulas: si una ruta llega aquí,
+ * es que le falta precio en la tabla.
+ *
+ * Lanza un error legible cuando el vehículo no está en la tabla de referencia.
+ * Antes hacía `vehicle.multiplier` sobre un `undefined`: pedir un bus de 40+ en
+ * una ruta derivada devolvía un 500 con "Cannot read properties of undefined",
+ * que no le dice nada a nadie ni permite distinguirlo de una caída del motor.
  */
 export function getPrivateFare(
   sharedFarePerPerson: number,
   vehicleType: keyof typeof FARES.vehicles,
 ): number {
   const BASE_SHARED = 15; // tarifa de referencia (Quito↔Santo Domingo)
-  const vehicle = FARES.vehicles[vehicleType];
 
   if (vehicleType === 'minibus') {
     return Math.round(FARES.minibus_fixed * (sharedFarePerPerson / BASE_SHARED));
   }
   if (vehicleType === 'bus') {
     return Math.round(FARES.bus_fixed * (sharedFarePerPerson / BASE_SHARED));
+  }
+
+  const vehicle = FARES.vehicles[vehicleType];
+  if (!vehicle) {
+    throw new Error(
+      `Sin tarifa para el vehículo "${String(vehicleType)}" en esta ruta. ` +
+        `Esa ruta necesita precio propio en la tabla privada.`,
+    );
   }
   return sharedFarePerPerson * (vehicle.multiplier ?? vehicle.capacity);
 }

@@ -67,7 +67,7 @@ export class WhatsAppNotificationGateway implements INotificationGateway {
       return err(new Error('Notificación sin teléfono destino'));
     }
 
-    const cuerpo = this.formatMessage(props);
+    const payload = this.construirPayload(props, to);
 
     try {
       const res = await fetch(`${META_GRAPH}/${this.phoneNumberId}/messages`, {
@@ -76,12 +76,7 @@ export class WhatsAppNotificationGateway implements INotificationGateway {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to,
-          type: 'text',
-          text: { body: cuerpo },
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -99,10 +94,98 @@ export class WhatsAppNotificationGateway implements INotificationGateway {
   }
 
   /**
-   * Mensaje listo para WhatsApp: título en negrita + cuerpo + enlace opcional.
-   * Sin plantillas de Meta todavía, así que solo funciona dentro de la ventana
-   * de 24h o con conversaciones iniciadas por el usuario.
+   * Decide entre PLANTILLA y texto libre.
+   *
+   * Meta solo entrega texto libre dentro de la ventana de 24h desde el último
+   * mensaje del usuario. Fuera de ella **acepta la petición (201) y no entrega
+   * nada**: no hay error que detectar, el aviso simplemente no llega. Verificado
+   * en producción — el primer intento no llegó, y tras escribirle "hola" al
+   * número de negocio, el segundo sí.
+   *
+   * Con una plantilla aprobada por Meta el mensaje se entrega siempre. Por eso,
+   * si hay plantilla configurada, se usa esa. La elección es por variable de
+   * entorno: el día que exista la plantilla se activa sin tocar código ni
+   * redesplegar nada más que la variable.
    */
+  private construirPayload(props: any, to: string): Record<string, unknown> {
+    const plantilla = this.resolverPlantilla(props);
+
+    if (plantilla) {
+      this.logger.log(`[WhatsApp] Enviando por plantilla "${plantilla.name}"`);
+      return {
+        messaging_product: 'whatsapp',
+        to,
+        type: 'template',
+        template: {
+          name: plantilla.name,
+          language: { code: plantilla.language },
+          components: [
+            {
+              type: 'body',
+              parameters: plantilla.params.map((text) => ({ type: 'text', text })),
+            },
+          ],
+        },
+      };
+    }
+
+    // Sin plantilla: texto libre. Se avisa en el log, porque este mensaje puede
+    // no entregarse nunca y no habrá ningún error que lo delate.
+    this.logger.warn(
+      '[WhatsApp] Sin plantilla configurada — se envía texto libre, que Meta ' +
+        'solo entrega dentro de la ventana de 24h. Si el aviso es importante, ' +
+        'configura WHATSAPP_TEMPLATE_DEFAULT con una plantilla aprobada.',
+    );
+    return {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'text',
+      text: { body: this.formatMessage(props) },
+    };
+  }
+
+  /**
+   * Plantilla a usar, si hay.
+   *
+   * Prioridad: la que declare la notificación (`data.template`) → la de su tipo
+   * (`WHATSAPP_TEMPLATE_<TIPO>`) → la general (`WHATSAPP_TEMPLATE_DEFAULT`).
+   *
+   * Los parámetros van en el orden en que Meta los espera en el cuerpo de la
+   * plantilla. Por defecto: título y cuerpo del aviso. Una plantilla como
+   * "{{1}}: {{2}}" cubre cualquier notificación sin crear una por evento.
+   */
+  private resolverPlantilla(
+    props: any,
+  ): { name: string; language: string; params: string[] } | null {
+    const declarada = props.data?.template;
+    const tipo = String(props.type ?? props.data?.tipo ?? '').toUpperCase();
+
+    const name =
+      (typeof declarada === 'string' ? declarada : declarada?.name) ||
+      (tipo ? this.config.get<string>(`WHATSAPP_TEMPLATE_${tipo}`) : undefined) ||
+      this.config.get<string>('WHATSAPP_TEMPLATE_DEFAULT');
+
+    if (!name) return null;
+
+    const language =
+      declarada?.language ||
+      this.config.get<string>('WHATSAPP_TEMPLATE_LANG') ||
+      'es';
+
+    // Parámetros explícitos si la notificación los trae; si no, título + cuerpo.
+    const params: string[] = Array.isArray(declarada?.params)
+      ? declarada.params.map((p: unknown) => String(p ?? ''))
+      : [String(props.title ?? 'Aviso de Going'), String(props.body ?? '')];
+
+    // Meta rechaza parámetros vacíos o con saltos de línea.
+    return {
+      name,
+      language,
+      params: params.map((p) => (p.trim() || '—').replace(/\s*\n+\s*/g, ' ').slice(0, 900)),
+    };
+  }
+
+  /** Mensaje de texto libre: título en negrita + cuerpo + enlace opcional. */
   private formatMessage(props: any): string {
     const titulo = props.title ? `*${props.title}*\n` : '';
     const cuerpo = props.body ?? '';
