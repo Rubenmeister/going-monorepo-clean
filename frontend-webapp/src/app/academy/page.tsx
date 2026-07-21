@@ -170,7 +170,8 @@ const SCHOOLS: Record<string, School> = {
     Icon: IconCompass,
     name: 'Escuela de Guías Locales',
     tagline: 'Experiencias y cultura ecuatoriana',
-    color: COLORS.state.success,
+    // verde bosque accesible (#16A34A fallaba ~3.3:1 con texto blanco)
+    color: '#166534',
     bg: '#F0FDF4',
     badge: 'Embajador Local Going App',
     badgeIcon: IconMedal,
@@ -194,7 +195,7 @@ const SCHOOLS: Record<string, School> = {
     Icon: IconMap,
     name: 'Escuela de Operadores',
     tagline: 'Tours profesionales y grupos',
-    color: '#8B5CF6',
+    color: '#6D28D9', // violeta accesible (#8B5CF6 fallaba ~3.5:1 con texto blanco)
     bg: '#F5F3FF',
     badge: 'Operador Certificado Going App',
     badgeIcon: IconMedal,

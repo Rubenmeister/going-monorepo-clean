@@ -16,15 +16,9 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { COLORS } from '../components/design-tokens';
 import { completeAcademyCourse, completeAcademyLesson, CompleteCourseResult } from '../../lib/academy/api';
-import { nextCourse } from './course-nav';
+import { nextCourse, schoolKeyOf } from './catalog';
 import { useIsAuthenticated } from '../../lib/providers/auth-client';
 import { CourseArt } from './CourseArt';
-
-const SCHOOL_KEY_BY_PREFIX: Record<string, string> = { c: 'conductores', a: 'anfitriones', g: 'guias', o: 'operadores', v: 'viajeros' };
-function schoolKeyOf(courseId: string): string {
-  if (courseId.startsWith('tc')) return 'tronco';
-  return SCHOOL_KEY_BY_PREFIX[courseId[0]] || 'viajeros';
-}
 
 /**
  * Convierte el manual HTML en texto hablado limpio para la voz (TTS):
