@@ -13,7 +13,7 @@ export default function ComunidadPage() {
       {/* Hero */}
       <div className="relative bg-[#011627] py-24 px-6 overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85" alt="Ecuador" fill className="object-cover opacity-20" />
+          <Image src="https://storage.googleapis.com/mintur2023/FOTOS%20GOING/xai%20Grock/jovenes%20en%20la%20monta%C3%B1a%20sonriendo.jpg" alt="Ecuador" fill className="object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-br from-[#011627]/95 to-[#0a2540]/80" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -73,7 +73,7 @@ export default function ComunidadPage() {
             </Link>
           </div>
           <div className="relative h-[400px] rounded-3xl overflow-hidden">
-            <Image src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=700&q=85" alt="Conductora o conductor de Going App" fill className="object-cover" />
+            <Image src="https://storage.googleapis.com/mintur2023/FOTOS%20GOING/xai%20Grock/mujer%20frendte%20a%20suv%20y%20basilica.jpg" alt="Conductora o conductor de Going App" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#011627]/60 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
               <p className="text-white font-black text-[16px] mb-1">Manejá con Going App</p>

@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 
 // Rutas activas hoy: Quito y Aeropuerto de Quito ↔ Riobamba, Santo Domingo e Ibarra.
 // Precios "Desde" = tarifa compartida por persona desde Quito (libs/pricing FARES).
-// Nota: imágenes son placeholders (Unsplash) pendientes de fotos reales de Ecuador.
+// Imágenes reales de Ecuador desde la biblioteca MINTUR 2023 (bucket público mintur2023).
 const DESTINOS = [
-  { name: 'Ibarra', region: 'Sierra Norte', tag: '🚂 Histórico', hours: '2.5h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=700&q=85', desc: 'Ciudad blanca del Ecuador. Helados de paila, tren de la libertad y Laguna de Yahuarcocha.' },
-  { name: 'Santo Domingo', region: 'Trópico', tag: '🌿 Naturaleza', hours: '3h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85', desc: 'La puerta de entrada a la Costa. Clima cálido, naturaleza exuberante y la cultura Tsáchila.' },
-  { name: 'Riobamba', region: 'Sierra Centro', tag: '🏔️ Andes', hours: '4h', price: 'Desde $20', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=85', desc: 'La Sultana de los Andes. Puerta al volcán Chimborazo, el punto más cercano al sol del planeta.' },
+  { name: 'Ibarra', region: 'Sierra Norte', tag: '🚂 Histórico', hours: '2.5h', price: 'Desde $15', img: 'https://storage.googleapis.com/mintur2023/SIERRA/COTACACHI/cuicocha.jpg', desc: 'Ciudad blanca del Ecuador. Helados de paila, tren de la libertad y Laguna de Yahuarcocha.' },
+  { name: 'Santo Domingo', region: 'Trópico', tag: '🌿 Naturaleza', hours: '3h', price: 'Desde $15', img: 'https://storage.googleapis.com/mintur2023/19-napo-cascada-rio-malo-napo-64.jpg', desc: 'La puerta de entrada a la Costa. Clima cálido, naturaleza exuberante y la cultura Tsáchila.' },
+  { name: 'Riobamba', region: 'Sierra Centro', tag: '🏔️ Andes', hours: '4h', price: 'Desde $20', img: 'https://storage.googleapis.com/mintur2023/SIERRA/CHIMBORAZO/laguna%20de%20atillo%20chimborazo.jpg', desc: 'La Sultana de los Andes. Puerta al volcán Chimborazo, el punto más cercano al sol del planeta.' },
 ];
 
 export default function DestinosPage() {
@@ -22,7 +22,7 @@ export default function DestinosPage() {
       {/* Hero */}
       <div className="relative bg-[#011627] py-24 px-6 overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85" alt="Ecuador" fill className="object-cover opacity-25" />
+          <Image src="https://storage.googleapis.com/mintur2023/SIERRA/COTOPAXI/COTOPAXI%20Y%20LAGUNA%20DE%20LIMPIOPUNGO.jpg" alt="Ecuador" fill className="object-cover opacity-25" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#011627]/95 to-[#011627]/60" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">

@@ -16,10 +16,12 @@ const NAV_ITEMS = [
   { label: 'Destinos', href: '/destinos' },
   { label: 'Promociones', href: '/promociones' },
   {
-    label: 'Editorial',
+    label: 'Comunicación',
     dropdown: [
-      { href: '/noticiero', icon: '📰', label: 'Noticiero Going App', sub: 'Actualidad del país' },
-      { href: '/revista', icon: '📖', label: 'Revista', sub: 'Cultura y turismo' },
+      { href: 'https://app.goingec.com/news', icon: '📰', label: 'Noticias', sub: 'Actualidad de Going y el país' },
+      { href: 'https://app.goingec.com/revista', icon: '📖', label: 'Revista', sub: 'Cultura y turismo' },
+      { href: 'https://app.goingec.com/blog', icon: '✍️', label: 'Blog', sub: 'Guías y consejos de viaje' },
+      { href: 'https://app.goingec.com/academy', icon: '🎓', label: 'Academia Going', sub: 'Formación gratuita' },
     ],
   },
   { label: 'Comunidad', href: '/comunidad' },

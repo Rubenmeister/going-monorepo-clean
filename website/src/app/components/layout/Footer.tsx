@@ -19,10 +19,12 @@ const FOOTER_COLS = [
     ],
   },
   {
-    title: 'Editorial',
+    title: 'Comunicación',
     links: [
-      { label: 'Noticiero Going App', href: '/noticiero' },
-      { label: 'Revista', href: '/revista' },
+      { label: 'Noticias', href: 'https://app.goingec.com/news' },
+      { label: 'Revista', href: 'https://app.goingec.com/revista' },
+      { label: 'Blog', href: 'https://app.goingec.com/blog' },
+      { label: 'Academia Going', href: 'https://app.goingec.com/academy' },
       { label: 'Destinos', href: '/destinos' },
       { label: 'Promociones', href: '/promociones' },
     ],
@@ -42,7 +44,7 @@ const FOOTER_COLS = [
     links: [
       { label: 'Quiénes somos', href: '/quienes-somos' },
       { label: 'Trabaja con nosotros', href: '/quienes-somos#careers' },
-      { label: 'Prensa', href: '/noticiero' },
+      { label: 'Prensa', href: 'https://app.goingec.com/news' },
       { label: 'Contacto', href: 'mailto:hola@goingec.com' },
       { label: 'Seguridad', href: '/legal#seguridad' },
     ],

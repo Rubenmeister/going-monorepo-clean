@@ -13,7 +13,7 @@ export default function QuienesSomosPage() {
       {/* Hero */}
       <div className="relative bg-[#011627] py-28 px-6 overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600&q=85" alt="Ecuador" fill className="object-cover opacity-20" />
+          <Image src="https://storage.googleapis.com/mintur2023/FOTOS%20GOING/cuenca%20%20aire.jpg" alt="Ecuador" fill className="object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-br from-[#011627] to-[#011627]/70" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">

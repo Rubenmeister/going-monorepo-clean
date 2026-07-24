@@ -14,30 +14,30 @@ const SERVICES = [
 // Rutas activas hoy: Quito y Aeropuerto de Quito ↔ Riobamba, Santo Domingo e Ibarra.
 // Precios "Desde" = tarifa compartida por persona desde Quito (libs/pricing FARES).
 const DESTINOS = [
-  { name: 'Ibarra', region: '🚂 Sierra Norte · 2.5h desde Quito', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=700&q=85' },
-  { name: 'Santo Domingo', region: '🌿 Trópico · 3h desde Quito', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85' },
-  { name: 'Riobamba', region: '🏔️ Sierra Centro · 4h desde Quito', price: 'Desde $17', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=85' },
+  { name: 'Ibarra', region: '🚂 Sierra Norte · 2.5h desde Quito', price: 'Desde $15', img: 'https://storage.googleapis.com/mintur2023/SIERRA/COTACACHI/cuicocha.jpg' },
+  { name: 'Santo Domingo', region: '🌿 Trópico · 3h desde Quito', price: 'Desde $15', img: 'https://storage.googleapis.com/mintur2023/19-napo-cascada-rio-malo-napo-64.jpg' },
+  { name: 'Riobamba', region: '🏔️ Sierra Centro · 4h desde Quito', price: 'Desde $17', img: 'https://storage.googleapis.com/mintur2023/SIERRA/CHIMBORAZO/laguna%20de%20atillo%20chimborazo.jpg' },
 ];
 
 const ARTICLES = [
   {
-    cat: '📰 Noticiero', catHref: '/noticiero',
+    cat: '📰 Noticiero', catHref: 'https://app.goingec.com/news',
     title: 'Going App abre sus 3 primeras rutas: Quito y el aeropuerto hacia Riobamba, Santo Domingo e Ibarra',
     excerpt: 'Conductoras y conductores verificados, precio fijo y seguimiento en vivo. Empezamos con 3 rutas y vamos llegando a todo el país.',
     date: 'Jun 2026', read: '3 min',
-    img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=700&q=80', featured: true,
+    img: 'https://storage.googleapis.com/mintur2023/FOTOS%20GOING/viajando%20al%20fondo%20cotopaxi.jpg', featured: true,
   },
   {
-    cat: '📖 Revista', catHref: '/revista',
+    cat: '📖 Revista', catHref: 'https://app.goingec.com/revista',
     title: 'Los 7 paisajes andinos que te quitarán el aliento',
     date: '5 Abr 2026', read: '5 min',
-    img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&q=80', featured: false,
+    img: 'https://storage.googleapis.com/mintur2023/SIERRA/COTOPAXI/cotopaxi%20volcan.jpg', featured: false,
   },
   {
-    cat: '✍️ Blog', catHref: '/blog',
+    cat: '✍️ Blog', catHref: 'https://app.goingec.com/blog',
     title: 'Cómo viajar seguro en Ecuador: guía completa 2026',
     date: '2 Abr 2026', read: '7 min',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', featured: false,
+    img: 'https://storage.googleapis.com/mintur2023/FOTOS%20GOING/xai%20Grock/2%20jovenes%20viendo%20celular%20en%20el%20interior%20de%20una%20suv.jpg', featured: false,
   },
 ];
 
@@ -50,7 +50,7 @@ export default function Home() {
         {/* Background */}
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1526397751294-331021109fbd?w=1600&q=85"
+            src="https://storage.googleapis.com/mintur2023/SIERRA/COTOPAXI/COTOPAXI%20Y%20LAGUNA%20DE%20LIMPIOPUNGO.jpg"
             alt="Ecuador"
             fill
             className="object-cover object-center opacity-30"
@@ -193,39 +193,52 @@ export default function Home() {
         <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-[#ff4c41]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center relative z-10">
           <div>
-            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Descarga Going App</div>
+            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Empieza ahora</div>
             <h2 className="font-serif text-[clamp(32px,4.5vw,52px)] font-black text-white leading-tight mb-4">
               Tu viaje en la palma<br />de tu mano
             </h2>
-            <p className="text-[16px] text-white/50 leading-relaxed mb-9">
-              Reserva, rastrea y paga desde la app. PIN de seguridad verificado, conductor calificado y soporte 24/7.
+            <p className="text-[16px] text-white/50 leading-relaxed mb-8">
+              Reserva, rastrea y paga desde el navegador — sin descargar nada. PIN de seguridad verificado, conductor calificado y soporte 24/7. La app móvil llega muy pronto.
             </p>
+
+            {/* CTA principal: la app WEB funciona hoy. Las tiendas aún no publican. */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <a
+                href="https://app.goingec.com"
+                className="inline-flex items-center gap-2 bg-[#ff4c41] hover:bg-[#e03d32] text-white rounded-2xl px-6 py-4 text-[16px] font-black transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(255,76,65,0.35)]"
+              >
+                Abrir app web →
+              </a>
+              <span className="text-[13px] text-white/40 font-semibold">Funciona en cualquier celular, sin instalar</span>
+            </div>
+
+            {/* Tiendas: honestas — "Muy pronto", sin enlace a una ficha que aún no existe. */}
             <div className="flex flex-wrap gap-3 mb-10">
               {[
-                { icon: '🍎', sub: 'Disponible en', name: 'App Store' },
-                { icon: '▶️', sub: 'Disponible en', name: 'Google Play' },
+                { icon: '🍎', name: 'App Store' },
+                { icon: '▶️', name: 'Google Play' },
               ].map((store) => (
-                <Link
+                <div
                   key={store.name}
-                  href="/descargar"
-                  className="flex items-center gap-3 bg-white/[0.07] border border-white/[0.12] rounded-2xl px-5 py-3.5 hover:bg-white/12 hover:border-white/25 transition-all"
+                  className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3 opacity-60"
                 >
-                  <span className="text-3xl">{store.icon}</span>
+                  <span className="text-2xl grayscale">{store.icon}</span>
                   <div>
-                    <div className="text-[10px] text-white/45 font-bold uppercase tracking-wider">{store.sub}</div>
-                    <div className="text-[17px] font-black text-white">{store.name}</div>
+                    <div className="text-[15px] font-black text-white/70">{store.name}</div>
+                    <div className="text-[10px] text-[#ff4c41] font-black uppercase tracking-wider">Muy pronto</div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
+
             <div className="grid grid-cols-3 gap-4">
               {[
                 { val: 'PIN', label: 'Seguridad verificada' },
                 { val: 'En vivo', label: 'Sigue tu viaje' },
-                { val: 'Sin efectivo', label: 'Paga con tarjeta' },
+                { val: 'Tarjeta / efectivo', label: 'Tú eliges cómo pagar' },
               ].map((stat) => (
                 <div key={stat.val} className="bg-white/[0.05] rounded-2xl p-4 text-center">
-                  <div className="text-2xl font-black text-white mb-1">{stat.val}</div>
+                  <div className="text-xl font-black text-white mb-1">{stat.val}</div>
                   <div className="text-[11px] text-white/35 font-semibold">{stat.label}</div>
                 </div>
               ))}
@@ -235,14 +248,69 @@ export default function Home() {
           {/* Phone mockups */}
           <div className="flex gap-5 justify-center items-end">
             {[
-              { img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400&q=85', rotate: '-rotate-[4deg] translate-y-6' },
-              { img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=85', rotate: 'rotate-[4deg] translate-y-6' },
+              { img: 'https://storage.googleapis.com/going-content-media/library/fotos-web-ecuador/galapagos-galapagos-paisajes178-50.jpg', rotate: '-rotate-[4deg] translate-y-6' },
+              { img: 'https://storage.googleapis.com/going-content-media/library/fotos-web-ecuador/costa-santa-elena-montanita-surf-playas-paisajes008-47.jpg', rotate: 'rotate-[4deg] translate-y-6' },
             ].map(({ img, rotate }, i) => (
               <div key={i} className={`w-[170px] rounded-[32px] bg-[#0d1117] border-2 border-white/[0.08] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] ${rotate}`}>
                 <Image src={img} alt="App Going App" width={170} height={306} className="w-full" style={{ aspectRatio: '9/18', objectFit: 'cover' }} />
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ══ ECOSISTEMA — accesos a las apps de Going ═══════════ */}
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="mb-12">
+          <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">El ecosistema Going</div>
+          <h2 className="font-serif text-[clamp(28px,4vw,44px)] font-black text-[#011627] leading-tight">
+            Una plataforma,<br />varias formas de entrar
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              icon: '🧳',
+              title: 'Viajeras y viajeros',
+              sub: 'Reserva viajes compartidos, privados y envíos. Rastrea en vivo y paga como prefieras.',
+              cta: 'Entrar a la app',
+              href: 'https://app.goingec.com',
+              accent: true,
+            },
+            {
+              icon: '🏢',
+              title: 'Empresas',
+              sub: 'Portal corporativo: viajes para tu equipo, aprobaciones, facturación a crédito y reportes.',
+              cta: 'Portal Empresas',
+              href: 'https://empresas.goingec.com',
+              accent: false,
+            },
+            {
+              icon: '🚗',
+              title: 'Conductoras y conductores',
+              sub: 'Genera ingresos con tu vehículo, en tus horarios. Formación gratuita en la Academia Going.',
+              cta: 'Quiero conducir',
+              href: 'https://app.goingec.com/conductores',
+              accent: false,
+            },
+          ].map((e) => (
+            <a
+              key={e.title}
+              href={e.href}
+              className={`flex flex-col rounded-2xl p-7 border-[1.5px] transition-all hover:-translate-y-1 ${
+                e.accent
+                  ? 'bg-[#011627] border-[#011627] hover:shadow-[0_20px_50px_rgba(1,22,39,0.25)]'
+                  : 'bg-white border-gray-100 hover:border-[#ff4c41] hover:shadow-[0_16px_40px_rgba(255,76,65,0.12)]'
+              }`}
+            >
+              <div className="text-4xl mb-4">{e.icon}</div>
+              <h3 className={`text-[19px] font-black mb-2 ${e.accent ? 'text-white' : 'text-[#011627]'}`}>{e.title}</h3>
+              <p className={`text-[13px] leading-relaxed mb-6 flex-1 ${e.accent ? 'text-white/55' : 'text-gray-500'}`}>{e.sub}</p>
+              <span className={`inline-flex items-center gap-1 text-[14px] font-black ${e.accent ? 'text-[#ff4c41]' : 'text-[#ff4c41]'}`}>
+                {e.cta} →
+              </span>
+            </a>
+          ))}
         </div>
       </section>
 
@@ -256,7 +324,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="flex gap-2">
-            {[{ label: '📰 Noticiero', href: '/noticiero' }, { label: '📖 Revista', href: '/revista' }, { label: '✍️ Blog', href: '/blog' }].map((tab) => (
+            {[{ label: '📰 Noticias', href: 'https://app.goingec.com/news' }, { label: '📖 Revista', href: 'https://app.goingec.com/revista' }, { label: '✍️ Blog', href: 'https://app.goingec.com/blog' }, { label: '🎓 Academia', href: 'https://app.goingec.com/academy' }].map((tab) => (
               <Link key={tab.label} href={tab.href} className="px-4 py-2 rounded-full text-[12px] font-black bg-gray-100 text-gray-500 hover:bg-[#ff4c41] hover:text-white transition-all">
                 {tab.label}
               </Link>
@@ -338,8 +406,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=85', mt: 'mt-8' },
-              { img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=400&q=85', mt: '' },
+              { img: 'https://storage.googleapis.com/going-content-media/library/fotos-web-ecuador/costa-ciclista-y-cotopaxi-raposa-45.jpg', mt: 'mt-8' },
+              { img: 'https://storage.googleapis.com/going-content-media/library/fotos-producidas/imagenes-fotos-producidas-viaja-primero-ecuador-vpe001-5.jpg', mt: '' },
             ].map(({ img, mt }, i) => (
               <div key={i} className={`${mt} rounded-2xl overflow-hidden`} style={{ aspectRatio: '3/4' }}>
                 <Image src={img} alt="Going App Ecuador" width={300} height={400} className="w-full h-full object-cover" />

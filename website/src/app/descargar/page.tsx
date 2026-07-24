@@ -3,25 +3,16 @@ import Link from 'next/link';
 import { GoingLogo } from '../components/GoingLogo';
 
 export const metadata: Metadata = {
-  title: 'Descarga Going App — App para iOS y Android',
-  description: 'Descarga la app de Going App Ecuador en App Store y Google Play. Reserva viajes compartidos, privados y envíos desde tu celular.',
+  title: 'Going App — Úsala hoy desde el navegador',
+  description: 'Reserva viajes compartidos, privados y envíos desde app.goingec.com — sin descargar nada. La app móvil para iPhone y Android llega muy pronto.',
 };
 
+// Tiendas: "Muy pronto". Las fichas de App Store / Google Play aún no están
+// publicadas — NO enlazamos a una ficha inexistente (daba 404). Mientras tanto,
+// la app WEB funciona hoy en cualquier celular.
 const STORES = [
-  {
-    name: 'App Store',
-    sub: 'Disponible en',
-    icon: '🍎',
-    href: 'https://apps.apple.com/ec/app/going-ecuador',
-    badge: 'iOS 15+',
-  },
-  {
-    name: 'Google Play',
-    sub: 'Disponible en',
-    icon: '▶️',
-    href: 'https://play.google.com/store/apps/details?id=com.goingec.app',
-    badge: 'Android 8+',
-  },
+  { name: 'App Store', icon: '🍎', badge: 'iPhone' },
+  { name: 'Google Play', icon: '▶️', badge: 'Android' },
 ];
 
 const FEATURES = [
@@ -48,26 +39,33 @@ export default function DescargarPage() {
           Going App en tu celular
         </h1>
         <p className="text-lg text-white/50 leading-relaxed mb-10 max-w-xl mx-auto">
-          Reserva, rastrea y paga desde la app. Disponible gratis para iPhone y Android.
+          Reserva, rastrea y paga desde el navegador — sin descargar nada. La app móvil para iPhone y Android llega muy pronto.
         </p>
 
-        {/* Store buttons */}
+        {/* CTA principal: la app WEB funciona hoy */}
+        <div className="mb-8">
+          <a
+            href="https://app.goingec.com"
+            className="inline-flex items-center gap-2 bg-[#ff4c41] hover:bg-[#e03d32] text-white rounded-2xl px-8 py-4 text-[17px] font-black transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(255,76,65,0.35)]"
+          >
+            Abrir app web →
+          </a>
+          <p className="text-[13px] text-white/40 font-semibold mt-3">Funciona en cualquier celular, sin instalar</p>
+        </div>
+
+        {/* Tiendas — "Muy pronto", sin enlace a una ficha inexistente */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
           {STORES.map((store) => (
-            <Link
+            <div
               key={store.name}
-              href={store.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 bg-white/[0.07] border border-white/[0.15] rounded-2xl px-6 py-4 hover:bg-white/12 hover:border-white/30 transition-all group"
+              className="flex items-center gap-4 bg-white/[0.04] border border-white/[0.08] rounded-2xl px-6 py-4 opacity-60"
             >
-              <span className="text-4xl">{store.icon}</span>
+              <span className="text-3xl grayscale">{store.icon}</span>
               <div className="text-left">
-                <div className="text-[10px] text-white/40 font-bold uppercase tracking-wider">{store.sub}</div>
-                <div className="text-[20px] font-black text-white group-hover:text-[#ff4c41] transition-colors">{store.name}</div>
-                <div className="text-[11px] text-white/30 font-semibold mt-0.5">{store.badge}</div>
+                <div className="text-[18px] font-black text-white/70">{store.name}</div>
+                <div className="text-[11px] text-[#ff4c41] font-black uppercase tracking-wider mt-0.5">Muy pronto · {store.badge}</div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 

@@ -12,7 +12,13 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+/* overflow-x en HTML, no solo en body: en móvil un resplandor decorativo del
+   hero (posición fixed/absolute) escapaba al recorte del body y dejaba ~21px de
+   scroll horizontal. Verificado: solo la regla en <html> lo lleva a 0. */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
 
 body {
   font-family: 'Nunito Sans', sans-serif;
