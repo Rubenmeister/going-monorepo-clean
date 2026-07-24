@@ -46,11 +46,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      # BLOQUEANTE: si detecta un secreto real, el job FALLA y corta el merge.
+      # Los falsos positivos conocidos (config Firebase pública, placeholders de
+      # dev) están silenciados en .gitleaks.toml. En pull_request/push escanea
+      # solo los commits nuevos; en el cron semanal escanea todo el historial.
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          GITLEAKS_CONFIG: .gitleaks.toml
 
   codeql:
     name: CodeQL static analysis

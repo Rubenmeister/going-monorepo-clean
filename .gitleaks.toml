@@ -1,0 +1,42 @@
+# Gitleaks — config del monorepo Going.
+#
+# Objetivo: BLOQUEAR que entre un secreto REAL (llaves de pago, JWT_SECRET de
+# prod, cadenas Atlas/Redis con credenciales, tokens sk. de Mapbox, service
+# accounts). Los secretos de producción viven en GCP Secret Manager, NUNCA en el
+# árbol. Este archivo solo silencia falsos positivos conocidos para que el escáner
+# pueda ser bloqueante sin ruido.
+
+title = "Going gitleaks"
+
+[extend]
+# Parte de las reglas por defecto de gitleaks (AWS, GCP, Stripe, private keys, etc.)
+useDefault = true
+
+[allowlist]
+description = "Falsos positivos: configs públicas por diseño y placeholders de dev"
+
+# Rutas que por diseño NO contienen secretos reales:
+paths = [
+  # Firebase client config — la apiKey va embebida en TODOS los APK publicados;
+  # es un identificador público, no una llave (se protege con Firebase Rules).
+  '''google-services\.json$''',
+  # Llave de depuración universal de Android (androiddebugkey / "android"). No firma releases.
+  '''(^|/)debug\.keystore$''',
+  # Plantillas y esquemas de entorno: solo placeholders.
+  '''(^|/)\.env\.example$''',
+  '''(^|/)\.env\.schema\.json$''',
+  '''(^|/)\.env\.phase5\.example$''',
+  '''(^|/)\.env\.sentry\.example$''',
+]
+
+# Valores concretos que son placeholders/públicos y matchean reglas por defecto:
+regexes = [
+  # Firebase Android API key (pública por diseño, embebida en el APK).
+  '''AIzaSyA0HE8V7Z_9JTjikcQ08ud_p3jx1GJAeEU''',
+  # Placeholders de dev que quedaron en el historial (commit c1e960ab).
+  '''tu_secreto_jwt_muy_largo_y_seguro''',
+  '''sk_test_\.\.\.''',
+  '''whsec_\.\.\.''',
+  '''mongodb://localhost''',
+  '''redis://localhost''',
+]
