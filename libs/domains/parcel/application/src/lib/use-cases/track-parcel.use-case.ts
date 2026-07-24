@@ -24,6 +24,16 @@ export class TrackParcelUseCase {
     }
 
     const primitives = parcel.toPrimitives();
+    // Puntos de entrega para el seguimiento. En un envío a un solo destino hay
+    // uno; en uno distribuido, varios con su estado. NO se exponen los OTP —
+    // esos solo los ve quien recibe— solo dirección, destinatario y estado.
+    const deliveries = (primitives.deliveries ?? []).map((d: any) => ({
+      sequence: d.sequence,
+      address: d.address?.address,
+      recipientName: d.recipientName,
+      status: d.status,
+      deliveredAt: d.deliveredAt,
+    }));
     return {
       trackingCode: primitives.trackingCode,
       status: primitives.status,
@@ -31,6 +41,9 @@ export class TrackParcelUseCase {
       to: primitives.destination.address,
       size: primitives.description,
       createdAt: primitives.createdAt,
+      deliveries,
+      dropCount: deliveries.length,
+      deliveredCount: deliveries.filter((d: any) => d.status === 'delivered').length,
     };
   }
 }

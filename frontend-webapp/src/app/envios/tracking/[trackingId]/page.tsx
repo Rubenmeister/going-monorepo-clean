@@ -30,6 +30,16 @@ interface ShipmentData {
   };
   createdAt: string;
   estimatedDelivery?: string;
+  // Envío distribuido: estado por punto de entrega.
+  deliveries?: Array<{
+    sequence: number;
+    address?: string;
+    recipientName?: string;
+    status: 'pending' | 'in_transit' | 'delivered' | 'failed';
+    deliveredAt?: string;
+  }>;
+  dropCount?: number;
+  deliveredCount?: number;
 }
 
 const STATUS_STEPS = [
@@ -197,6 +207,41 @@ export default function TrackingPage() {
             })}
           </div>
         </div>
+
+        {/* Puntos de entrega — solo en envíos distribuidos (varios destinos) */}
+        {shipment.deliveries && shipment.deliveries.length > 1 && (
+          <div className="bg-white rounded-2xl p-8 shadow-sm mb-6">
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="text-lg font-black text-gray-900">Puntos de entrega</h2>
+              <span className="text-sm font-bold text-gray-500">
+                {shipment.deliveredCount ?? 0}/{shipment.dropCount ?? shipment.deliveries.length} entregados
+              </span>
+            </div>
+            <div className="space-y-3">
+              {shipment.deliveries.map((d) => {
+                const done = d.status === 'delivered';
+                const failed = d.status === 'failed';
+                return (
+                  <div key={d.sequence} className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
+                      style={{ backgroundColor: done ? '#16a34a' : failed ? '#dc2626' : '#e5e7eb', color: done || failed ? 'white' : '#9ca3af' }}>
+                      {done ? '✓' : failed ? '×' : d.sequence}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-gray-800 text-sm">{d.recipientName || `Punto ${d.sequence}`}</p>
+                      {d.address && <p className="text-xs text-gray-500">{d.address}</p>}
+                      <p className="text-xs font-semibold mt-0.5"
+                        style={{ color: done ? '#16a34a' : failed ? '#dc2626' : '#9ca3af' }}>
+                        {done ? `Entregado${d.deliveredAt ? ' · ' + new Date(d.deliveredAt).toLocaleString('es-EC', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}`
+                          : failed ? 'No se pudo entregar' : 'Pendiente'}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Driver Info (if assigned) */}
         {shipment.driver && (

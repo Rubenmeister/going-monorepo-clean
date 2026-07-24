@@ -20,6 +20,53 @@ class LocationSchema {
   longitude: number;
 }
 
+/**
+ * Una ENTREGA dentro de un envío. Un envío a un solo destino tiene una entrega;
+ * un envío distribuido tiene varias, cada una con su destinatario, su estado y
+ * su OTP —cada persona confirma la SUYA al recibir— y su orden en la ruta.
+ *
+ * Sub-documento (`_id: false` es correcto AQUÍ, dentro de un array): a
+ * diferencia de una colección top-level, un sub-documento no necesita _id.
+ */
+@Schema({ _id: false })
+class DeliverySchema {
+  /** Orden de entrega en la ruta, 1-based. */
+  @Prop({ required: true })
+  sequence: number;
+
+  @Prop({ required: true, type: LocationSchema })
+  address: LocationSchema;
+
+  @Prop()
+  recipientName?: string;
+
+  @Prop()
+  recipientPhone?: string;
+
+  @Prop({ required: true })
+  description: string;
+
+  /** Estado por punto — el envío completo se da por entregado cuando TODAS lo están. */
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['pending', 'in_transit', 'delivered', 'failed'],
+    default: 'pending',
+  })
+  status: string;
+
+  /** OTP propio: cada destinatario confirma su entrega, no una sola clave para todas. */
+  @Prop({ required: true })
+  otpPin: string;
+
+  @Prop()
+  deliveredAt?: Date;
+
+  /** Motivo si la entrega falló (nadie en el punto, dirección errada). */
+  @Prop()
+  failureReason?: string;
+}
+
 export type ParcelDocument = ParcelModelSchema & Document;
 
 // Nota: NO usar _id: false aquí — eso es solo para sub-documents.
@@ -42,8 +89,19 @@ export class ParcelModelSchema {
   @Prop({ required: true, type: LocationSchema })
   origin: LocationSchema;
 
+  // Destino PRINCIPAL. En un envío distribuido, refleja la última entrega (o la
+  // primera): se conserva para que el seguimiento, listados y pagos que ya leen
+  // `destination` sigan funcionando. La verdad de los puntos vive en `deliveries`.
   @Prop({ required: true, type: LocationSchema })
   destination: LocationSchema;
+
+  /**
+   * Puntos de entrega. Un envío a un solo destino tiene UNA entrada aquí (espejo
+   * de `destination`/`recipient*`); un envío distribuido tiene varias. Fuente de
+   * verdad del multi-punto: el estado del envío se deriva de estas entregas.
+   */
+  @Prop({ type: [DeliverySchema], default: [] })
+  deliveries: DeliverySchema[];
 
   @Prop({ required: true })
   description: string;

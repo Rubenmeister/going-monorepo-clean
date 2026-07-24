@@ -40,6 +40,21 @@ export class CreateParcelUseCase {
       throw new InternalServerErrorException(destinationVOResult.error.message);
     }
 
+    // Puntos de entrega de un envío distribuido (si vienen). Cada uno lleva su
+    // dirección + destinatario; la entidad les asigna orden y OTP propio.
+    const drops = (dto.drops ?? [])
+      .filter((d) => d?.address && typeof d.address.latitude === 'number')
+      .map((d) => ({
+        address: {
+          address: d.address.address,
+          latitude: d.address.latitude,
+          longitude: d.address.longitude,
+        },
+        recipientName: d.recipientName,
+        recipientPhone: d.recipientPhone,
+        description: d.description,
+      }));
+
     const parcelResult = Parcel.create({
       userId: dto.userId,
       origin: originVOResult.value,
@@ -50,6 +65,7 @@ export class CreateParcelUseCase {
       payerRole: dto.payerRole,
       recipientPhone: dto.recipientPhone,
       recipientName: dto.recipientName,
+      ...(drops.length > 0 ? { drops } : {}),
     });
 
     if (parcelResult.isErr()) {

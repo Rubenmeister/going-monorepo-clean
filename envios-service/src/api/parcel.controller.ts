@@ -74,6 +74,8 @@ export class QuoteEnvioDto {
   @IsOptional() @IsIn(['small', 'medium', 'large']) packageSize?: 'small' | 'medium' | 'large';
   @IsOptional() @IsNumber() @Min(0) weightKg?: number;
   @IsOptional() @IsBoolean() isOverVolume?: boolean;
+  /** Nº de puntos de entrega (para cotizar el recargo por dirección extra). */
+  @IsOptional() @IsNumber() @Min(1) dropCount?: number;
 }
 
 /** Webhook de pago (S2S desde payment-service). Body validado (auditoría #7). */
@@ -126,8 +128,15 @@ export class ParcelController {
         'El origen o destino está fuera de la zona de cobertura de envíos',
       );
     }
+    // Recargo por dirección extra (+$5 por punto más allá del primero), para que
+    // el precio mostrado incluya el multi-punto y coincida con el que cobra create.
+    const puntosExtra = Math.max(0, (dto.dropCount ?? 1) - 1);
+    const total = q.price + puntosExtra * 5;
     return {
-      price: q.price,
+      price: total,
+      basePrice: q.price,
+      dropSurcharge: puntosExtra * 5,
+      dropCount: dto.dropCount ?? 1,
       currency: q.currency,
       isIntercity: q.isIntercity,
       routeClass: q.routeClass,
@@ -167,6 +176,23 @@ export class ParcelController {
         longitude: dto.toLongitude,
         city: '',
         country: '',
+      };
+    }
+
+    // Envío DISTRIBUIDO: si vienen varios puntos, el destino principal pasa a ser
+    // el ÚLTIMO (para que cobertura, pago y seguimiento tengan una coordenada
+    // válida); el detalle de cada punto viaja en `drops` → deliveries.
+    const puntos = (dto.drops ?? []).filter(
+      (d) => d?.address && typeof d.address.latitude === 'number',
+    );
+    if (puntos.length > 0) {
+      const ultimo = puntos[puntos.length - 1].address;
+      dto.destination = {
+        address: ultimo.address,
+        latitude: ultimo.latitude,
+        longitude: ultimo.longitude,
+        city: '',
+        country: 'Ecuador',
       };
     }
 
@@ -212,7 +238,13 @@ export class ParcelController {
         'El origen o destino está fuera de la zona de cobertura de envíos',
       );
     }
-    dto.price = { amount: quote.price, currency: 'USD' } as MoneyDto;
+    // Recargo por dirección EXTRA en un envío distribuido: +$5 por cada punto
+    // más allá del primero (misma regla que el motor y que empresas). El primer
+    // destino ya va en la tarifa base.
+    const RECARGO_POR_PUNTO_EXTRA = 5;
+    const puntosExtra = Math.max(0, puntos.length - 1);
+    const totalEnvio = quote.price + puntosExtra * RECARGO_POR_PUNTO_EXTRA;
+    dto.price = { amount: totalEnvio, currency: 'USD' } as MoneyDto;
 
     // Always use the authenticated user's ID — never trust client-provided userId
     const result = await this.createParcelUseCase.execute({
@@ -726,6 +758,60 @@ export class ParcelController {
       trackingCode: primitives.trackingCode,
       deliveredAt: new Date(),
       photoUrl: body.photoUrl ?? null,
+    };
+  }
+
+  /**
+   * Confirma la entrega de UN punto de un envío distribuido, con el OTP de ese
+   * destinatario. El envío completo pasa a 'delivered' cuando todos sus puntos
+   * están entregados.
+   * PATCH /api/parcels/:id/deliveries/:sequence/deliver
+   */
+  @Patch(':id/deliveries/:sequence/deliver')
+  @HttpCode(HttpStatus.OK)
+  async confirmDropDelivery(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+    @Param('sequence') sequence: string,
+    @Body() body: { otpPin: string },
+  ): Promise<any> {
+    if (!body.otpPin) {
+      throw new BadRequestException('El código OTP es requerido');
+    }
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isErr() || !findRes.value) {
+      throw new NotFoundException('Envío no encontrado');
+    }
+    const parcel = findRes.value;
+    if (parcel.toPrimitives().driverId !== user.id) {
+      throw new ForbiddenException('Solo el conductor asignado puede confirmar la entrega');
+    }
+
+    const res = parcel.deliverDrop(Number(sequence), body.otpPin);
+    if (res.isErr()) {
+      throw new ConflictException(res.error.message);
+    }
+    // Persistimos siempre (aunque el OTP falle) para no perder el contador anti brute-force.
+    await this.parcelRepository.update(parcel);
+
+    if (!res.value.ok) {
+      if (res.value.lockedUntil) {
+        const min = Math.ceil((res.value.lockedUntil.getTime() - Date.now()) / 60000);
+        throw new BadRequestException(`OTP bloqueado por demasiados intentos. Intenta en ${min} minutos.`);
+      }
+      throw new BadRequestException(`Código OTP incorrecto. Intentos restantes: ${res.value.attemptsLeft ?? 0}.`);
+    }
+
+    const prim = parcel.toPrimitives();
+    const entregadas = prim.deliveries.filter((d: any) => d.status === 'delivered').length;
+    this.logger.log(`Parcel ${id} punto ${sequence} entregado (${entregadas}/${prim.deliveries.length})`);
+    return {
+      id: parcel.id,
+      sequence: Number(sequence),
+      status: parcel.status,
+      allDelivered: res.value.allDelivered,
+      entregadas,
+      total: prim.deliveries.length,
     };
   }
 

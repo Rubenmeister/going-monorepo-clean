@@ -322,6 +322,15 @@ function FieldRow({ icon, children }: { icon: React.ReactNode; children: React.R
   );
 }
 
+// ── Un punto de entrega de un envío distribuido ─────────────────────────────
+interface Drop {
+  name: string;
+  phone: string;
+  addr: string;
+  lat: number | null;
+  lon: number | null;
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function EnviosCotizarPage() {
   const router = useRouter();
@@ -339,6 +348,12 @@ export default function EnviosCotizarPage() {
   const [recipientAddr,  setRecipientAddr]  = useState('');
   const [recipientLat,   setRecipientLat]   = useState<number | null>(null);
   const [recipientLon,   setRecipientLon]   = useState<number | null>(null);
+  // Envío DISTRIBUIDO: varias entregas en una ruta. Cada punto tiene su propio
+  // destinatario y confirma con SU código OTP. +$5 por dirección extra.
+  const [distributed, setDistributed] = useState(false);
+  const [drops, setDrops] = useState<Drop[]>([{ name: '', phone: '', addr: '', lat: null, lon: null }]);
+  const patchDrop = (i: number, p: Partial<Drop>) =>
+    setDrops(ds => ds.map((d, j) => (j === i ? { ...d, ...p } : d)));
   const [loading,        setLoading]        = useState(false);
   const [errors,         setErrors]         = useState<string[]>([]);
   // Esquema de pago — A/B/C/D (igual que mobile EnviosScreen).
@@ -374,6 +389,14 @@ export default function EnviosCotizarPage() {
   }, []);
 
   const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
+
+  // Puntos válidos (con coordenadas) del envío distribuido. El destino efectivo
+  // para cotizar es el ÚLTIMO punto; el nº de puntos define el recargo extra.
+  const validDrops = drops.filter(d => d.lat != null && d.lon != null && d.addr.trim());
+  const effDestLat  = distributed ? (validDrops.length ? validDrops[validDrops.length - 1].lat : null) : recipientLat;
+  const effDestLon  = distributed ? (validDrops.length ? validDrops[validDrops.length - 1].lon : null) : recipientLon;
+  const effDropCount = distributed ? Math.max(1, validDrops.length) : 1;
+
   // Precio mostrado: cotización autoritativa del backend si ya está disponible;
   // si no, el estimado local por tamaño (fallback antes de elegir direcciones).
   const totalPrice  = quotedPrice ?? selectedPkg.price;
@@ -382,7 +405,7 @@ export default function EnviosCotizarPage() {
   // precio real al backend (urbano flat / interurbano por tier). /parcels/quote
   // es público (no requiere login). Es lo que se cobrará al crear el envío.
   useEffect(() => {
-    if (senderLat == null || senderLon == null || recipientLat == null || recipientLon == null) {
+    if (senderLat == null || senderLon == null || effDestLat == null || effDestLon == null) {
       setQuotedPrice(null);
       return;
     }
@@ -394,22 +417,36 @@ export default function EnviosCotizarPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         origin: { lat: senderLat, lng: senderLon },
-        destination: { lat: recipientLat, lng: recipientLon },
+        destination: { lat: effDestLat, lng: effDestLon },
         packageSize: size,
+        dropCount: effDropCount,
       }),
     })
       .then(r => (r.ok ? r.json() : null))
       .then(d => { if (!cancelled) setQuotedPrice(d && typeof d.price === 'number' ? d.price : null); })
       .catch(() => { if (!cancelled) setQuotedPrice(null); });
     return () => { cancelled = true; };
-  }, [senderLat, senderLon, recipientLat, recipientLon, pkgType]);
+  }, [senderLat, senderLon, effDestLat, effDestLon, effDropCount, pkgType]);
 
   const validate = () => {
     const errs: string[] = [];
-    if (!senderAddr)     errs.push('Dirección de recogida requerida');
-    if (!recipientName)  errs.push('Nombre del destinatario requerido');
-    if (!recipientPhone) errs.push('Teléfono del destinatario requerido');
-    if (!recipientAddr)  errs.push('Dirección de entrega requerida');
+    if (!senderAddr) errs.push('Dirección de recogida requerida');
+    if (distributed) {
+      if (validDrops.length < 2) {
+        errs.push('Un envío distribuido necesita al menos 2 puntos de entrega con dirección');
+      }
+      drops.forEach((d, i) => {
+        if (d.addr.trim() || d.name.trim() || d.phone.trim()) {
+          if (!d.name.trim())  errs.push(`Punto ${i + 1}: falta el nombre del destinatario`);
+          if (!d.phone.trim()) errs.push(`Punto ${i + 1}: falta el teléfono`);
+          if (d.lat == null)   errs.push(`Punto ${i + 1}: elige la dirección de la lista`);
+        }
+      });
+    } else {
+      if (!recipientName)  errs.push('Nombre del destinatario requerido');
+      if (!recipientPhone) errs.push('Teléfono del destinatario requerido');
+      if (!recipientAddr)  errs.push('Dirección de entrega requerida');
+    }
     setErrors(errs);
     return errs.length === 0;
   };
@@ -452,11 +489,22 @@ export default function EnviosCotizarPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          origin:      { address: senderAddr,    latitude: senderLat,    longitude: senderLon },
-          destination: { address: recipientAddr, latitude: recipientLat, longitude: recipientLon },
+          origin:      { address: senderAddr, latitude: senderLat, longitude: senderLon },
+          // Destino principal = destinatario único, o el último punto en distribuido
+          // (el backend lo re-deriva igual, pero lo enviamos por claridad).
+          destination: distributed
+            ? { address: validDrops[validDrops.length - 1].addr, latitude: validDrops[validDrops.length - 1].lat, longitude: validDrops[validDrops.length - 1].lon }
+            : { address: recipientAddr, latitude: recipientLat, longitude: recipientLon },
           description: pkgDesc || `Envío ${selectedPkg.label}`,
-          recipientName,
-          recipientPhone,
+          ...(distributed
+            ? {
+                drops: validDrops.map(d => ({
+                  address: { address: d.addr, latitude: d.lat, longitude: d.lon },
+                  recipientName: d.name.trim(),
+                  recipientPhone: d.phone.trim(),
+                })),
+              }
+            : { recipientName, recipientPhone }),
           price: { amount: totalPrice, currency: 'USD' as const },
           packageSize: pkgType,
           paymentMethod: apiPayment.paymentMethod,
@@ -561,43 +609,111 @@ export default function EnviosCotizarPage() {
           />
         </SectionCard>
 
-        {/* QUIÉN RECIBE */}
-        <SectionCard icon={<IcoDown />} title="Quién recibe">
-          <FieldRow icon={<IcoPerson />}>
-            <input
-              type="text"
-              placeholder="Nombre del destinatario"
-              value={recipientName}
-              onChange={e => setRecipientName(e.target.value)}
-              className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
+        {/* Modo de entrega: un destino o varios (distribuido) */}
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          {([
+            { key: false, label: 'Un destino', desc: 'Una entrega' },
+            { key: true,  label: 'Varios destinos', desc: 'Reparto en ruta · +$5 c/u' },
+          ] as const).map(m => {
+            const active = distributed === m.key;
+            return (
+              <button key={String(m.key)} type="button"
+                onClick={() => setDistributed(m.key)}
+                className="rounded-xl p-2.5 text-left border-2 transition-all"
+                style={{
+                  borderColor:     active ? BLUE : '#F3F4F6',
+                  backgroundColor: active ? '#EFF6FF' : '#F9FAFB',
+                }}>
+                <p className="text-sm font-black" style={{ color: active ? BLUE : '#374151' }}>{m.label}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{m.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* QUIÉN RECIBE — un destino */}
+        {!distributed && (
+          <SectionCard icon={<IcoDown />} title="Quién recibe">
+            <FieldRow icon={<IcoPerson />}>
+              <input
+                type="text"
+                placeholder="Nombre del destinatario"
+                value={recipientName}
+                onChange={e => setRecipientName(e.target.value)}
+                className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
+              />
+            </FieldRow>
+            <FieldRow icon={<IcoPhone />}>
+              <input
+                type="tel"
+                placeholder="Teléfono del destinatario"
+                value={recipientPhone}
+                onChange={e => setRecipientPhone(e.target.value)}
+                className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
+              />
+            </FieldRow>
+            <LocationInput
+              label="Dirección de entrega"
+              placeholder="Ej: Guayaquil, Urdesa..."
+              value={recipientAddr}
+              onChange={setRecipientAddr}
+              onSelect={s => { setRecipientAddr(s.display_name); setRecipientLat(parseFloat(s.lat)); setRecipientLon(parseFloat(s.lon)); }}
+              accent={BLUE}
             />
-          </FieldRow>
-          <FieldRow icon={<IcoPhone />}>
-            <input
-              type="tel"
-              placeholder="Teléfono del destinatario"
-              value={recipientPhone}
-              onChange={e => setRecipientPhone(e.target.value)}
-              className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
-            />
-          </FieldRow>
-          <LocationInput
-            label="Dirección de entrega"
-            placeholder="Ej: Guayaquil, Urdesa..."
-            value={recipientAddr}
-            onChange={setRecipientAddr}
-            onSelect={s => { setRecipientAddr(s.display_name); setRecipientLat(parseFloat(s.lat)); setRecipientLon(parseFloat(s.lon)); }}
-            accent={BLUE}
-          />
-          {/* OTP note */}
-          <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 border"
-            style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
-            <IcoLock />
-            <p className="text-xs font-semibold" style={{ color: RED }}>
-              El destinatario confirmará con código OTP al recibir
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 border"
+              style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
+              <IcoLock />
+              <p className="text-xs font-semibold" style={{ color: RED }}>
+                El destinatario confirmará con código OTP al recibir
+              </p>
+            </div>
+          </SectionCard>
+        )}
+
+        {/* QUIÉN RECIBE — varios destinos (distribuido) */}
+        {distributed && (
+          <SectionCard icon={<IcoDown />} title="Puntos de entrega">
+            <p className="text-xs text-gray-500 -mt-1 mb-1">
+              Cada punto tiene su destinatario y confirma con <b>su propio código OTP</b> al recibir.
+              Se añade <b>$5</b> por cada dirección extra.
             </p>
-          </div>
-        </SectionCard>
+            {drops.map((d, i) => (
+              <div key={i} className="rounded-xl border border-gray-200 p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black" style={{ color: BLUE }}>Punto {i + 1}</span>
+                  {drops.length > 1 && (
+                    <button type="button" onClick={() => setDrops(ds => ds.filter((_, j) => j !== i))}
+                      className="text-xs font-bold text-red-500 hover:underline">Quitar</button>
+                  )}
+                </div>
+                <FieldRow icon={<IcoPerson />}>
+                  <input type="text" placeholder="Nombre del destinatario"
+                    value={d.name} onChange={e => patchDrop(i, { name: e.target.value })}
+                    className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium" />
+                </FieldRow>
+                <FieldRow icon={<IcoPhone />}>
+                  <input type="tel" placeholder="Teléfono del destinatario"
+                    value={d.phone} onChange={e => patchDrop(i, { phone: e.target.value })}
+                    className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium" />
+                </FieldRow>
+                <LocationInput
+                  label={`Dirección de entrega ${i + 1}`}
+                  placeholder="Ej: Guayaquil, Urdesa..."
+                  value={d.addr}
+                  onChange={(v) => patchDrop(i, { addr: v })}
+                  onSelect={s => patchDrop(i, { addr: s.display_name, lat: parseFloat(s.lat), lon: parseFloat(s.lon) })}
+                  accent={BLUE}
+                />
+              </div>
+            ))}
+            <button type="button"
+              onClick={() => setDrops(ds => [...ds, { name: '', phone: '', addr: '', lat: null, lon: null }])}
+              className="w-full py-2.5 rounded-xl border-2 border-dashed text-sm font-bold transition-colors"
+              style={{ borderColor: '#BFDBFE', color: BLUE }}>
+              + Agregar punto de entrega
+            </button>
+          </SectionCard>
+        )}
 
         {/* EL PAQUETE */}
         <SectionCard icon={<IcoCube />} title="El paquete">

@@ -14,6 +14,30 @@ import {
 } from 'class-validator';
 import { MoneyDto, LocationDto } from '@going-monorepo-clean/shared-domain'; // Asumiendo DTOs compartidos
 
+/**
+ * Un punto de entrega de un envío distribuido. Un envío a un solo destino no
+ * necesita `drops` (usa `destination`); un envío a varios los lista aquí, y cada
+ * uno lleva su propio destinatario.
+ */
+export class ParcelDropDto {
+  @ValidateNested()
+  @Type(() => LocationDto)
+  address: LocationDto;
+
+  @IsOptional()
+  @IsString()
+  recipientName?: string;
+
+  @IsOptional()
+  @IsString()
+  recipientPhone?: string;
+
+  /** Qué se entrega en este punto. Si se omite, hereda la descripción del envío. */
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
 export class CreateParcelDto {
   /**
    * userId — opcional en el body. El controller lo SOBRE-ESCRIBE con
@@ -119,4 +143,15 @@ export class CreateParcelDto {
   @IsOptional()
   @IsString()
   recipientName?: string;
+
+  /**
+   * Puntos de entrega de un envío DISTRIBUIDO (varias direcciones en una ruta).
+   * Si viene con 2+ entradas, el envío es multi-punto: `destination` pasa a ser
+   * el último punto y el precio suma un recargo por cada dirección extra. Si se
+   * omite o trae una sola, es un envío normal a un destino.
+   */
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ParcelDropDto)
+  drops?: ParcelDropDto[];
 }

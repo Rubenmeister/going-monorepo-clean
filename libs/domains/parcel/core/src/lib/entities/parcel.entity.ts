@@ -28,6 +28,29 @@ export type ParcelPaymentStatus =
   | 'paid_at_delivery'  // D: driver confirmó cash del receptor
   | 'failed';           // A o C: rechazo Datafast / OBS provider
 
+/** Coordenadas + dirección de un punto, como se persisten (plano, no VO). */
+export interface DeliveryLocation {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * Una entrega de un envío. Un envío a un destino tiene UNA; uno distribuido
+ * tiene varias, cada una con su destinatario, estado y OTP propios.
+ */
+export interface Delivery {
+  sequence: number;
+  address: DeliveryLocation;
+  recipientName?: string;
+  recipientPhone?: string;
+  description: string;
+  status: 'pending' | 'in_transit' | 'delivered' | 'failed';
+  otpPin: string;
+  deliveredAt?: Date;
+  failureReason?: string;
+}
+
 export interface ParcelProps {
   id: UUID;
   userId: UUID;
@@ -40,6 +63,8 @@ export interface ParcelProps {
   trackingCode: string;
   otpPin: string;
   createdAt: Date;
+  /** Puntos de entrega. Fuente de verdad del multi-punto. */
+  deliveries?: Delivery[];
   // Payment tracking — opcional para retrocompat con parcels viejos sin estos
   // campos. Por defecto, parcels legacy se asumen sender+cash (B).
   paymentMethod?: ParcelPaymentMethod;
@@ -78,6 +103,7 @@ export class Parcel {
   readonly paymentLinkUrl?: string;
   readonly recipientPhone?: string;
   readonly recipientName?: string;
+  readonly deliveries: Delivery[];
   readonly cashConfirmedAt?: Date;
   readonly cashConfirmedBy?: UUID;
   readonly otpAttempts?: number;
@@ -103,6 +129,7 @@ export class Parcel {
     this.paymentLinkUrl = props.paymentLinkUrl;
     this.recipientPhone = props.recipientPhone;
     this.recipientName = props.recipientName;
+    this.deliveries = props.deliveries ?? [];
     this.cashConfirmedAt = props.cashConfirmedAt;
     this.cashConfirmedBy = props.cashConfirmedBy;
     this.otpAttempts = props.otpAttempts;
@@ -132,6 +159,13 @@ export class Parcel {
     payerRole?: ParcelPayerRole;
     recipientPhone?: string;
     recipientName?: string;
+    /** Puntos de un envío distribuido. Si trae 2+, el envío es multi-punto. */
+    drops?: Array<{
+      address: DeliveryLocation;
+      recipientName?: string;
+      recipientPhone?: string;
+      description?: string;
+    }>;
   }): Result<Parcel, Error> {
 
     if (props.description.length < 3) {
@@ -163,7 +197,36 @@ export class Parcel {
     }
 
     const trackingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const otpPin = String(Math.floor(1000 + Math.random() * 9000));
+    const nuevoOtp = () => String(Math.floor(1000 + Math.random() * 9000));
+
+    // Entregas: si hay varios puntos, una por punto; si no, una sola derivada
+    // del destino y el destinatario del envío. Cada entrega lleva su PROPIO OTP
+    // —cada quien confirma la suya— y su orden en la ruta.
+    const puntos =
+      props.drops && props.drops.length > 0
+        ? props.drops
+        : [
+            {
+              address: props.destination.toPrimitives() as DeliveryLocation,
+              recipientName: props.recipientName,
+              recipientPhone: props.recipientPhone,
+              description: props.description,
+            },
+          ];
+
+    const deliveries: Delivery[] = puntos.map((p, i) => ({
+      sequence: i + 1,
+      address: p.address,
+      recipientName: p.recipientName,
+      recipientPhone: p.recipientPhone,
+      description: p.description?.trim() || props.description,
+      status: 'pending',
+      otpPin: nuevoOtp(),
+    }));
+
+    // El OTP top-level y el destino principal reflejan la ÚLTIMA entrega, para
+    // que el seguimiento, pagos y listados que ya leen esos campos sigan válidos.
+    const ultima = deliveries[deliveries.length - 1];
 
     const parcel = new Parcel({
       id: uuidv4(),
@@ -173,7 +236,8 @@ export class Parcel {
       paymentStatus,
       status,
       trackingCode,
-      otpPin,
+      otpPin: ultima.otpPin,
+      deliveries,
       createdAt: new Date(),
     });
 
@@ -202,6 +266,7 @@ export class Parcel {
       paymentLinkUrl: this.paymentLinkUrl,
       recipientPhone: this.recipientPhone,
       recipientName: this.recipientName,
+      deliveries: this.deliveries,
       cashConfirmedAt: this.cashConfirmedAt,
       cashConfirmedBy: this.cashConfirmedBy,
       otpAttempts: this.otpAttempts,
@@ -267,7 +332,73 @@ export class Parcel {
       }
     }
     (this as any).status = 'delivered';
+    // Un envío a un solo destino: al entregarlo, su única entrega queda entregada.
+    if (this.deliveries.length) {
+      this.deliveries.forEach((d) => {
+        if (d.status !== 'delivered') {
+          d.status = 'delivered';
+          d.deliveredAt = new Date();
+        }
+      });
+    }
     return ok(undefined);
+  }
+
+  /**
+   * Confirma la entrega de UN punto de un envío distribuido, con el OTP de ese
+   * destinatario. El envío completo pasa a 'delivered' cuando TODOS sus puntos
+   * están entregados. Comparte el rate-limit anti brute-force del envío.
+   */
+  public deliverDrop(
+    sequence: number,
+    providedOtp: string,
+  ): Result<{ ok: boolean; allDelivered: boolean; lockedUntil?: Date; attemptsLeft?: number }, Error> {
+    if (this.status !== 'in_transit') {
+      return err(new Error('El envío no está en tránsito'));
+    }
+    const drop = this.deliveries.find((d) => d.sequence === sequence);
+    if (!drop) {
+      return err(new Error(`No existe el punto de entrega ${sequence}`));
+    }
+    if (drop.status === 'delivered') {
+      return err(new Error('Ese punto ya fue entregado'));
+    }
+    if (this.payerRole === 'recipient') {
+      const pagado =
+        this.paymentMethod === 'card'
+          ? this.paymentStatus === 'paid'
+          : this.paymentStatus === 'paid_at_delivery';
+      if (!pagado) {
+        return err(new Error('Debe confirmarse el pago del receptor antes de entregar'));
+      }
+    }
+
+    const now = new Date();
+    if (this.otpLockedUntil && this.otpLockedUntil > now) {
+      return ok({ ok: false, allDelivered: false, lockedUntil: this.otpLockedUntil });
+    }
+    if (drop.otpPin !== providedOtp) {
+      const attempts = (this.otpAttempts ?? 0) + 1;
+      (this as any).otpAttempts = attempts;
+      if (attempts >= 5) {
+        const lockedUntil = new Date(now.getTime() + 60 * 60 * 1000);
+        (this as any).otpLockedUntil = lockedUntil;
+        return ok({ ok: false, allDelivered: false, lockedUntil, attemptsLeft: 0 });
+      }
+      return ok({ ok: false, allDelivered: false, attemptsLeft: 5 - attempts });
+    }
+
+    // OTP correcto: marca este punto y resetea el contador.
+    (this as any).otpAttempts = 0;
+    (this as any).otpLockedUntil = undefined;
+    drop.status = 'delivered';
+    drop.deliveredAt = now;
+
+    const allDelivered = this.deliveries.every((d) => d.status === 'delivered');
+    if (allDelivered) {
+      (this as any).status = 'delivered';
+    }
+    return ok({ ok: true, allDelivered });
   }
 
   /** Driver confirma efectivo cobrado al sender (B) o al receptor (D). */
