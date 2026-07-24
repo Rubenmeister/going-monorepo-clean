@@ -55,6 +55,13 @@ export class FareListAdminController {
 
   // ── Borrador → diff → publicación ────────────────────────────────────────
 
+  /** Crea un borrador copiando la lista activa de un servicio (para editar pocas rutas). */
+  @Post('draft/:service')
+  @HttpCode(201)
+  draftFromActive(@Param('service') service: string) {
+    return this.lists.draftFromActive(service);
+  }
+
   /** Qué cambiaría si se publicara este borrador. No modifica nada. */
   @Get(':id/diff')
   diff(@Param('id') id: string) {

@@ -140,6 +140,38 @@ export class FareListService {
   // una versión nueva; la anterior queda guardada y se puede restaurar.
 
   /**
+   * Crea un BORRADOR copiando la lista activa de un servicio.
+   *
+   * Para editar una o pocas rutas sin reescribir toda la tabla: se copia lo
+   * vivo a una versión nueva inactiva, se le aplican los cambios con
+   * `patchFares`, se revisa el diff y se publica. Así una edición puntual pasa
+   * por el mismo control que una carga completa — con autor, motivo y vuelta
+   * atrás— en vez de mutar en vivo.
+   */
+  async draftFromActive(service = 'compartido') {
+    const activa = await this.model.findOne({ service, active: true }).lean();
+    if (!activa) {
+      throw new NotFoundException(`No hay lista activa de "${service}" para copiar`);
+    }
+    const ultima = await this.model.findOne({ service }).sort({ version: -1 }).lean();
+    const version = ((ultima as any)?.version ?? 0) + 1;
+
+    const doc = await this.model.create({
+      name: `Borrador sobre v${(activa as any).version}`,
+      service,
+      version,
+      active: false,
+      source: 'manual',
+      shared: (activa as any).shared ?? {},
+      privateFares: (activa as any).privateFares ?? {},
+      rates: (activa as any).rates,
+      importedAt: new Date(),
+      createdBy: 'admin',
+    });
+    return { id: String(doc._id), service, version, fromVersion: (activa as any).version };
+  }
+
+  /**
    * Qué cambiaría si se publicara este borrador. No modifica nada.
    *
    * Es el paso que evita el error caro: ver "Cuenca–Quito SUV: 242 → 220 (−9%)"

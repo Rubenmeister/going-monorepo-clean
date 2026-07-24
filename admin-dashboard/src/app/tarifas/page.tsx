@@ -19,6 +19,21 @@ async function pReq<T>(token: string, path: string, opts?: RequestInit): Promise
 }
 
 interface FareList { id: string; name: string; service: string; version: number; active: boolean; pairs: number; }
+interface CambioPrecio { ruta: string; vehiculo: string | null; antes: number; despues: number; delta: number; deltaPct: number; }
+interface EntradaTarifa { ruta: string; vehiculo: string | null; precio: number; }
+interface DiffTarifas {
+  borrador: { id: string; name: string; service: string; version: number };
+  activa: { version: number; name: string } | null;
+  resumen: { cambios: number; nuevas: number; eliminadas: number; sinCambio: number; variacionPromedioPct: number };
+  cambios: CambioPrecio[];
+  nuevas: EntradaTarifa[];
+  eliminadas: EntradaTarifa[];
+  alertas: string[];
+}
+interface HistItem {
+  id: string; version: number; active: boolean; publishedBy: string | null;
+  publishedAt: string | null; reason: string | null; rolledBackFrom: number | null;
+}
 interface Rule {
   id: string; name: string; active: boolean; group?: string; priority?: number;
   condition?: any; effect?: any; validTo?: string | null;
@@ -67,6 +82,13 @@ export default function TarifasPage() {
   const [bSvc, setBSvc] = useState('compartido');
   const [bName, setBName] = useState('');
   const [bText, setBText] = useState('');
+  // Flujo borrador → diff → publicación
+  const [diff, setDiff] = useState<DiffTarifas | null>(null);
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  // Historial por servicio (para vuelta atrás)
+  const [histSvc, setHistSvc] = useState('privado');
+  const [hist, setHist] = useState<HistItem[]>([]);
 
   const load = useCallback(async (t: string) => {
     setLoading(true); setErr('');
@@ -88,26 +110,41 @@ export default function TarifasPage() {
 
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3500); };
 
+  /** Pide el diff de un borrador y abre el panel de revisión. */
+  async function revisar(borradorId: string) {
+    const d = await pReq<DiffTarifas>(token, `/lists/${borradorId}/diff`);
+    setDiff(d); setReason('');
+  }
+
+  // Editar/añadir UNA tarifa: se hace sobre un BORRADOR (copia de la activa),
+  // no en vivo. Así el cambio pasa por diff + motivo + vuelta atrás, igual que
+  // una carga completa. Editar la lista activa directamente está bloqueado.
   async function saveFare() {
     setErr('');
     const list = lists.find((x) => x.id === fListId);
-    if (!list || !fRoute.includes('-') || !fPrice) { setErr('Elige lista, ruta "origen-destino" y precio'); return; }
+    if (!list || !fRoute.includes('-') || !fPrice) { setErr('Elige servicio, ruta "origen-destino" y precio'); return; }
     const price = Number(fPrice);
-    const body: any = {};
-    if (list.service === 'compartido') body.shared = { [fRoute.toLowerCase()]: price };
-    else body.privateFares = { [fRoute.toLowerCase()]: { [fVeh]: price } };
+    if (Number.isNaN(price) || price < 0) { setErr('El precio debe ser un número válido'); return; }
+    setBusy(true);
     try {
-      await pReq(token, `/lists/${list.id}/fares`, { method: 'PATCH', body: JSON.stringify(body) });
-      flash(`Tarifa ${fRoute} guardada en "${list.service}" — aplica en vivo`);
-      setFPrice(''); load(token);
+      const { id } = await pReq<{ id: string }>(token, `/lists/draft/${list.service}`, { method: 'POST', body: '{}' });
+      const body: any = {};
+      if (list.service === 'compartido') body.shared = { [fRoute.toLowerCase()]: price };
+      else body.privateFares = { [fRoute.toLowerCase()]: { [fVeh]: price } };
+      await pReq(token, `/lists/${id}/fares`, { method: 'PATCH', body: JSON.stringify(body) });
+      await revisar(id);
+      setFPrice('');
     } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
   }
 
+  // Carga una lista completa como BORRADOR (inactivo) y muestra el diff. No
+  // activa nada hasta que se publique con un motivo.
   async function uploadList() {
     setErr('');
     if (!bName.trim()) { setErr('Ponle un nombre a la lista'); return; }
-    // Cada línea: compartido → "origen,destino,precio"; privado/empresas →
-    // "origen,destino,vehiculo,precio". Acepta comas O tabs (pegar del Excel).
+    // compartido → "origen,destino,precio"; privado/empresas → "origen,destino,vehiculo,precio".
+    // Acepta comas, tabs o punto y coma (pegar del Excel).
     const shared: Record<string, number> = {};
     const privateFares: Record<string, Record<string, number>> = {};
     let n = 0, bad = 0;
@@ -124,18 +161,64 @@ export default function TarifasPage() {
         const [o, d, veh, p] = c;
         const price = Number(p);
         if (!o || !d || !veh || Number.isNaN(price)) { bad++; continue; }
-        const key = `${o}-${d}`.toLowerCase();
-        (privateFares[key] ??= {})[veh.toLowerCase()] = price; n++;
+        (privateFares[`${o}-${d}`.toLowerCase()] ??= {})[veh.toLowerCase()] = price; n++;
       }
     }
     if (!n) { setErr('No pude leer filas válidas. Formato: ' + (bSvc === 'compartido' ? 'origen,destino,precio' : 'origen,destino,vehiculo,precio')); return; }
+    setBusy(true);
     try {
-      const body: any = { name: bName.trim(), service: bSvc, activate: true };
+      const body: any = { name: bName.trim(), service: bSvc, activate: false };
       if (bSvc === 'compartido') body.shared = shared; else body.privateFares = privateFares;
-      await pReq(token, '/lists', { method: 'POST', body: JSON.stringify(body) });
-      flash(`Lista "${bName}" cargada y activada en ${bSvc}: ${n} rutas${bad ? ` (${bad} filas ignoradas)` : ''}`);
-      setBText(''); setBName(''); load(token);
+      const { id } = await pReq<{ id: string }>(token, '/lists', { method: 'POST', body: JSON.stringify(body) });
+      await revisar(id);
+      if (bad) flash(`Borrador creado: ${n} rutas leídas, ${bad} filas ignoradas. Revisa el diff antes de publicar.`);
     } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
+  }
+
+  // Publica el borrador en revisión. El motivo es obligatorio (queda en el historial).
+  async function publicar() {
+    if (!diff) return;
+    if (reason.trim().length < 5) { setErr('Escribe el motivo del cambio (mínimo 5 caracteres)'); return; }
+    setBusy(true); setErr('');
+    try {
+      await pReq(token, `/lists/${diff.borrador.id}/publish`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: reason.trim(), publishedBy: auth.user?.firstName ?? 'admin' }),
+      });
+      flash(`Publicada v${diff.borrador.version} de ${diff.borrador.service} — aplica en vivo`);
+      setDiff(null); setBText(''); setBName(''); load(token);
+      if (histSvc === diff.borrador.service) loadHist(diff.borrador.service);
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
+  }
+
+  // Descarta el borrador en revisión (lo borra; nunca estuvo activo).
+  async function descartar() {
+    if (!diff) return;
+    setBusy(true); setErr('');
+    try {
+      await pReq(token, `/lists/${diff.borrador.id}`, { method: 'DELETE' });
+      setDiff(null);
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
+  }
+
+  const loadHist = useCallback(async (svc: string) => {
+    try { setHist(await pReq<HistItem[]>(token, `/lists/history/${svc}`)); }
+    catch { setHist([]); }
+  }, [token]);
+
+  async function rollback(svc: string, version: number) {
+    const motivo = window.prompt(`Volver a la versión ${version} de ${svc}. Motivo:`, `Vuelta atrás a v${version}`);
+    if (!motivo || motivo.trim().length < 5) { setErr('Vuelta atrás cancelada: falta el motivo'); return; }
+    setBusy(true); setErr('');
+    try {
+      await pReq(token, `/lists/rollback/${svc}/${version}`, { method: 'POST', body: JSON.stringify({ reason: motivo.trim(), publishedBy: auth.user?.firstName ?? 'admin' }) });
+      flash(`${svc}: restaurada la v${version} como versión nueva`);
+      load(token); loadHist(svc);
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
   }
 
   async function setRuleValue(rule: Rule, value: number) {
@@ -224,29 +307,110 @@ export default function TarifasPage() {
                 </select>
               )}
               <input value={fPrice} onChange={(e) => setFPrice(e.target.value)} placeholder="$" type="number" className="border rounded-lg px-3 py-2 text-sm w-24" />
-              <button onClick={saveFare} className="bg-[#0033A0] text-white text-sm font-bold px-4 py-2 rounded-lg">Guardar</button>
+              <button onClick={saveFare} disabled={busy} className="bg-[#0033A0] text-white text-sm font-bold px-4 py-2 rounded-lg disabled:opacity-50">Preparar cambio</button>
             </div>
+            <p className="text-xs text-gray-400 mt-1">Verás el antes/después antes de publicar. Nada cambia en vivo hasta que confirmes con un motivo.</p>
           </div>
 
           {/* Cargar lista completa (pegar del Excel) */}
           <div className="border-t border-gray-100 pt-4 mt-4">
-            <p className="text-sm font-bold text-gray-700">Cargar lista completa</p>
+            <p className="text-sm font-bold text-gray-700">Cargar lista completa (desde el Excel)</p>
             <p className="text-xs text-gray-400 mb-2">
-              Crea una lista nueva y la activa (retira la anterior de ese servicio). Pega filas — una por línea,
-              separadas por coma o tab (puedes copiar del Excel). Formato:{' '}
+              Copia las celdas del Excel y pégalas aquí — una fila por línea. Se crea un <b>borrador</b> y verás
+              exactamente qué cambia <b>antes</b> de publicar. Formato:{' '}
               <span className="font-mono text-gray-600">{bSvc === 'compartido' ? 'origen,destino,precio' : 'origen,destino,vehiculo,precio'}</span>
             </p>
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <select value={bSvc} onChange={(e) => setBSvc(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
-                {SERVICES.filter((s) => s !== 'urbano').map((s) => <option key={s} value={s}>{s}</option>)}
+                {SERVICES.filter((s) => s !== 'urbano' && s !== 'empresas').map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
               <input value={bName} onChange={(e) => setBName(e.target.value)} placeholder="Nombre de la lista (ej. Tarifas jul-2026)" className="border rounded-lg px-3 py-2 text-sm w-64" />
             </div>
             <textarea value={bText} onChange={(e) => setBText(e.target.value)} rows={5}
               placeholder={bSvc === 'compartido' ? 'ibarra,quito,15\notavalo,quito,9\n…' : 'ibarra,quito,suv,60\nibarra,quito,van,80\n…'}
               className="border rounded-lg px-3 py-2 text-sm w-full font-mono" />
-            <button onClick={uploadList} className="mt-2 bg-[#0033A0] text-white text-sm font-bold px-4 py-2 rounded-lg">Cargar y activar</button>
+            <button onClick={uploadList} disabled={busy} className="mt-2 bg-[#0033A0] text-white text-sm font-bold px-4 py-2 rounded-lg disabled:opacity-50">Preparar borrador y ver cambios</button>
+            <p className="text-[11px] text-gray-400 mt-1">Nota: el corporativo se calcula solo (privado + recargo por empresa), no se carga aquí.</p>
           </div>
+        </section>
+
+        {/* Panel de revisión del diff — nada se publica sin pasar por aquí */}
+        {diff && (
+          <section className="bg-white rounded-2xl border-2 border-[#0033A0] shadow-lg p-5">
+            <h2 className="font-black text-gray-800 mb-1">Revisar cambios antes de publicar</h2>
+            <p className="text-sm text-gray-500 mb-3">
+              Borrador <b>v{diff.borrador.version}</b> de <b>{diff.borrador.service}</b>
+              {diff.activa ? <> vs. lo que está en vivo (v{diff.activa.version})</> : <> (no hay lista activa previa)</>}
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+              <div className="rounded-xl bg-amber-50 p-3"><p className="text-2xl font-black text-amber-700">{diff.resumen.cambios}</p><p className="text-xs text-amber-800">precios cambian</p></div>
+              <div className="rounded-xl bg-green-50 p-3"><p className="text-2xl font-black text-green-700">{diff.resumen.nuevas}</p><p className="text-xs text-green-800">rutas nuevas</p></div>
+              <div className="rounded-xl bg-red-50 p-3"><p className="text-2xl font-black text-red-700">{diff.resumen.eliminadas}</p><p className="text-xs text-red-800">desaparecen</p></div>
+              <div className="rounded-xl bg-gray-50 p-3"><p className="text-2xl font-black text-gray-600">{diff.resumen.sinCambio}</p><p className="text-xs text-gray-500">sin cambio</p></div>
+            </div>
+
+            {!!diff.alertas.length && (
+              <div className="rounded-xl bg-amber-50 border border-amber-300 p-3 mb-3">
+                {diff.alertas.map((a, i) => <p key={i} className="text-sm text-amber-900">⚠️ {a}</p>)}
+              </div>
+            )}
+
+            {!!diff.cambios.length && (
+              <div className="max-h-64 overflow-auto border border-gray-100 rounded-xl mb-3">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 sticky top-0"><tr className="text-left text-gray-400 text-xs uppercase"><th className="py-1.5 px-3">Ruta</th><th>Veh</th><th>Antes</th><th>Después</th><th>Δ</th></tr></thead>
+                  <tbody>
+                    {diff.cambios.map((c, i) => (
+                      <tr key={i} className="border-t border-gray-50">
+                        <td className="py-1.5 px-3 font-mono text-xs text-gray-700">{c.ruta}</td>
+                        <td className="text-gray-500">{c.vehiculo ?? '—'}</td>
+                        <td className="text-gray-500">${c.antes}</td>
+                        <td className="font-bold text-gray-800">${c.despues}</td>
+                        <td className={c.delta > 0 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>{c.delta > 0 ? '+' : ''}{c.deltaPct}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-end gap-2 border-t border-gray-100 pt-3">
+              <div className="flex-1 min-w-[240px]">
+                <label className="text-xs text-gray-500 font-bold">Motivo del cambio (queda en el historial)</label>
+                <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ej. baja de demanda en la sierra centro" className="border rounded-lg px-3 py-2 text-sm w-full" />
+              </div>
+              <button onClick={publicar} disabled={busy} className="bg-green-600 text-white text-sm font-bold px-5 py-2 rounded-lg disabled:opacity-50">Publicar</button>
+              <button onClick={descartar} disabled={busy} className="bg-gray-100 text-gray-600 text-sm font-bold px-4 py-2 rounded-lg disabled:opacity-50">Descartar</button>
+            </div>
+          </section>
+        )}
+
+        {/* Historial + vuelta atrás */}
+        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="font-black text-gray-800">Historial de versiones</h2>
+            <select value={histSvc} onChange={(e) => { setHistSvc(e.target.value); loadHist(e.target.value); }} className="border rounded-lg px-2 py-1 text-sm ml-auto">
+              {SERVICES.filter((s) => s !== 'urbano' && s !== 'empresas').map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button onClick={() => loadHist(histSvc)} className="text-xs bg-gray-100 px-3 py-1.5 rounded-lg font-bold text-gray-600">Ver</button>
+          </div>
+          {!hist.length ? <p className="text-sm text-gray-400">Elige un servicio y pulsa “Ver”.</p> : (
+            <table className="w-full text-sm">
+              <thead><tr className="text-left text-gray-400 text-xs uppercase"><th className="py-1">Versión</th><th>Quién</th><th>Cuándo</th><th>Motivo</th><th></th></tr></thead>
+              <tbody>
+                {hist.map((h) => (
+                  <tr key={h.id} className="border-t border-gray-50">
+                    <td className="py-2 font-bold text-gray-800">v{h.version}{h.active && <span className="ml-1 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">ACTIVA</span>}{h.rolledBackFrom && <span className="ml-1 text-[10px] text-gray-400">↩v{h.rolledBackFrom}</span>}</td>
+                    <td className="text-gray-500">{h.publishedBy ?? '—'}</td>
+                    <td className="text-gray-400 text-xs">{h.publishedAt ? h.publishedAt.slice(0, 10) : '—'}</td>
+                    <td className="text-gray-500 text-xs max-w-[240px] truncate">{h.reason ?? '—'}</td>
+                    <td className="text-right">{!h.active && <button onClick={() => rollback(histSvc, h.version)} disabled={busy} className="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg font-bold disabled:opacity-50">Volver a esta</button>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
 
         {/* Reglas de recargo */}

@@ -242,6 +242,7 @@ export class ProxyModule implements NestModule {
       return passport.authenticate('jwt', { session: false })(req, res, next);
     };
 
+
     // --- PROTECTED: JWT guard + forward ---
     const guard = (prefix: string, target: string) => {
       if (!target) return;
@@ -295,6 +296,10 @@ export class ProxyModule implements NestModule {
       consumer
         .apply(makeForwardMiddleware(svc.pricing, 'snapshot'))
         .forRoutes({ path: 'snapshot', method: RequestMethod.GET });
+      // NOTA: la administración de listas (/admin/lists/*) NO se expone por el
+      // gateway a propósito. El admin-dashboard la opera con su propia ruta
+      // Next.js server-side (`/api/pricing/[...path]`) que valida admin e
+      // inyecta el x-admin-token — el token vive ahí, no en el gateway.
     }
 
     // /ratings/public — reseñas públicas (testimonios en la home/rutas) SIN login
