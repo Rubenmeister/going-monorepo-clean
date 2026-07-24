@@ -3,6 +3,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { DriverRootNavigator } from './src/navigation/DriverRootNavigator';
+import { DiagnosticErrorBoundary } from './src/components/DiagnosticErrorBoundary';
 
 // NOTA: Sentry quitado temporalmente del bundle para desbloquear el soft launch
 // del 16-jun. @sentry/react-native@8.13 tiene doble registro nativo (Expo
@@ -16,7 +17,10 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="light" backgroundColor="#FF4C41" />
-        <DriverRootNavigator />
+        {/* TEMPORAL: captura el crash de arranque en pantalla (quitar tras diagnosticar). */}
+        <DiagnosticErrorBoundary>
+          <DriverRootNavigator />
+        </DiagnosticErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
