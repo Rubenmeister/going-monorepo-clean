@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: '¿Cómo pago mi viaje?',
-    a: 'Going App acepta tarjetas de crédito/débito y Mercado Pago. Puedes gestionar tus métodos en Perfil → Métodos de pago.',
+    a: 'Puedes pagar con tarjeta (Datafast o DeUna) o en efectivo al conductor al terminar el viaje. Eliges el método al confirmar el viaje en la app.',
   },
   {
     q: '¿Qué es el modo Empresa?',

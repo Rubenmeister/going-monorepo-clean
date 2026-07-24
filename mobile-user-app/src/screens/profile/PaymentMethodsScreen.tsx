@@ -102,7 +102,8 @@ export function PaymentMethodsScreen() {
             <Ionicons name="card-outline" size={60} color="#D1D5DB" />
             <Text style={styles.emptyTitle}>Sin métodos de pago</Text>
             <Text style={styles.emptyText}>
-              Agrega una tarjeta o cuenta Mercado Pago para pagar tus viajes
+              Paga tus viajes con tarjeta (Datafast / DeUna) o en efectivo al
+              viajar. La gestión de tarjetas guardadas llega pronto.
             </Text>
           </View>
         }

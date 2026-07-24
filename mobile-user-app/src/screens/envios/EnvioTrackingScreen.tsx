@@ -19,7 +19,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
 import { api } from '@services/api';
 
-export type EnvioTrackingParams = { parcelId: string };
+export type EnvioTrackingParams = {
+  parcelId: string;
+  /** OTP recién creado, para mostrárselo al remitente y que lo comparta con quien recibe. */
+  otpPin?: string;
+};
 
 type Nav   = NativeStackNavigationProp<MainStackParamList>;
 type Route = RouteProp<MainStackParamList, 'EnvioTracking'>;
@@ -43,7 +47,7 @@ const ORDER = ['pending','assigned','picked_up','in_transit','delivered'];
 export function EnvioTrackingScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Route>();
-  const { parcelId } = params;
+  const { parcelId, otpPin } = params;
 
   const [parcel, setParcel]     = useState<any>(null);
   const [loading, setLoading]   = useState(true);
@@ -136,6 +140,16 @@ export function EnvioTrackingScreen() {
             </View>
           )}
         </View>
+
+        {/* OTP recién creado — el remitente lo comparte con quien recibe. Solo
+            se muestra hasta la entrega. */}
+        {otpPin && !isDelivered && !isCancelled && (
+          <View style={styles.otpCard}>
+            <Text style={styles.otpLabel}>Código de entrega (compártelo con quien recibe)</Text>
+            <Text style={styles.otpCode}>{otpPin}</Text>
+            <Text style={styles.otpHint}>Se lo pedirán al recibir el paquete.</Text>
+          </View>
+        )}
 
         {/* Progress steps */}
         <View style={styles.card}>
@@ -259,6 +273,10 @@ const styles = StyleSheet.create({
   liveText:    { fontSize:8, fontWeight:'800', color:RED },
 
   card: { backgroundColor:'#fff', borderRadius:16, padding:14, marginBottom:12 },
+  otpCard: { backgroundColor:'#FFF0EF', borderRadius:16, padding:16, marginBottom:12, alignItems:'center' },
+  otpLabel: { fontSize:12, fontWeight:'700', color:'#7F1D1D', textAlign:'center' },
+  otpCode: { fontSize:34, fontWeight:'900', color:'#C0392B', letterSpacing:8, marginVertical:6 },
+  otpHint: { fontSize:11.5, color:'#9CA3AF', textAlign:'center' },
   cardTitle: { fontSize:12, fontWeight:'800', color:DARK, textTransform:'uppercase', letterSpacing:0.5, marginBottom:12 },
 
   steps: { gap:0 },

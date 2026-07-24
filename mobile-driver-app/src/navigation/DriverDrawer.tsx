@@ -36,6 +36,7 @@ const MAIN_ITEMS: MenuItem[] = [
   { icon: 'car-outline',              label: 'Panel principal',    screen: 'Tabs' },
   { icon: 'time-outline',             label: 'Mis Viajes',         screen: 'TripHistory' },
   { icon: 'wallet-outline',           label: 'Wallet',             screen: 'Wallet' },
+  { icon: 'card-outline',             label: 'Datos bancarios',    screen: 'BankAccount' },
 ];
 
 const DRIVER_ITEMS: MenuItem[] = [

@@ -325,6 +325,13 @@ export const parcelsAPI = {
     payerRole?: 'sender' | 'recipient';
     recipientPhone?: string;
     recipientName?: string;
+    /** Envío DISTRIBUIDO: varios puntos de entrega. Cada uno con su destinatario. */
+    drops?: Array<{
+      address: { address: string; latitude?: number; longitude?: number };
+      recipientName?: string;
+      recipientPhone?: string;
+      description?: string;
+    }>;
   }) => api.post<{
     id: string;
     trackingCode: string;
@@ -344,9 +351,14 @@ export const parcelsAPI = {
     packageSize?: 'small' | 'medium' | 'large';
     weightKg?: number;
     isOverVolume?: boolean;
+    /** Nº de puntos de entrega (+$5 por dirección extra en un envío distribuido). */
+    dropCount?: number;
   }) =>
     api.post<{
       price: number;
+      basePrice?: number;
+      dropSurcharge?: number;
+      dropCount?: number;
       currency: string;
       isIntercity: boolean;
       routeClass: string;
@@ -404,14 +416,10 @@ export const ridesAPI = {
 };
 
 // ── Payments ─────────────────────────────────────────────────────────────────
+// Going opera con Datafast (tarjeta) y DeUna (QR/Pichincha) — ver
+// createEcuadorIntent. Stripe y MercadoPago se eliminaron del backend (no operan
+// en Ecuador), por eso ya no existe el viejo createPaymentIntent(provider).
 export const paymentAPI = {
-  createPaymentIntent: (data: {
-    amount: number;
-    currency: string;
-    provider: 'mercadopago' | 'stripe';
-    referenceId?: string;
-  }) => api.post('/payments/intent', data),
-
   getPaymentStatus: (paymentId: string) =>
     api.get(`/payments/${paymentId}/status`),
 

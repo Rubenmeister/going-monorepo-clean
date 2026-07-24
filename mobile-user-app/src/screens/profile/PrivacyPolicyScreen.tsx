@@ -32,7 +32,7 @@ const SECTIONS = [
   {
     number: '4',
     title: 'Transferencia de Datos a Terceros',
-    body: 'Going App no vende, alquila ni comercializa tus datos personales.\n\nCompartimos datos únicamente con:\n\n• Conductores: nombre, foto de perfil y ubicación de recogida (solo durante el servicio activo).\n• Procesadores de pago: datos de transacción necesarios para cobros y reembolsos (Stripe, PayPhone u operadores certificados PCI-DSS).\n• Servicios en la nube: Amazon Web Services (AWS) y Google Cloud Platform para almacenamiento y procesamiento seguro.\n• Proveedor de mapas: Mapbox Inc. para cálculo de rutas y visualización de mapas.\n• Autoridades públicas: Policía Nacional, Fiscalía, SENADI, SRI u otras, cuando sea requerido por ley o resolución judicial.\n\nTodas las transferencias internacionales de datos cumplen con el Artículo 54 de la LOPDP mediante cláusulas contractuales tipo aprobadas por la Autoridad de Protección de Datos.',
+    body: 'Going App no vende, alquila ni comercializa tus datos personales.\n\nCompartimos datos únicamente con:\n\n• Conductores: nombre, foto de perfil y ubicación de recogida (solo durante el servicio activo).\n• Procesadores de pago: datos de transacción necesarios para cobros y reembolsos (Datafast y DeUna, operadores certificados PCI-DSS).\n• Servicios en la nube: Google Cloud Platform (GCP) para almacenamiento y procesamiento seguro.\n• Proveedor de mapas: Mapbox Inc. para cálculo de rutas y visualización de mapas.\n• Autoridades públicas: Policía Nacional, Fiscalía, SENADI, SRI u otras, cuando sea requerido por ley o resolución judicial.\n\nTodas las transferencias internacionales de datos cumplen con el Artículo 54 de la LOPDP mediante cláusulas contractuales tipo aprobadas por la Autoridad de Protección de Datos.',
   },
   {
     number: '5',
@@ -77,7 +77,7 @@ const SECTIONS = [
   {
     number: '13',
     title: 'Transferencias Internacionales',
-    body: 'Algunos de nuestros proveedores tecnológicos están ubicados fuera de Ecuador. Realizamos transferencias internacionales de datos a:\n\n• Amazon Web Services (AWS): servidores en EE.UU. y Europa para almacenamiento y procesamiento.\n• Google LLC (Firebase, Maps): servicios de análisis y cartografía.\n• Mapbox Inc.: cartografía y cálculo de rutas.\n• Stripe / PayPhone: procesamiento de pagos.\n\nTodas estas transferencias se realizan con las garantías adecuadas exigidas por el Art. 54 de la LOPDP, incluyendo: Decisiones de adecuación, Cláusulas contractuales tipo, o certificaciones de privacidad reconocidas.\n\nPuedes obtener información detallada sobre las transferencias internacionales y las garantías aplicables escribiendo a privacidad@goingec.com.',
+    body: 'Algunos de nuestros proveedores tecnológicos están ubicados fuera de Ecuador. Realizamos transferencias internacionales de datos a:\n\n• Google Cloud Platform (GCP): servidores para almacenamiento y procesamiento.\n• Google LLC (Firebase, Maps): servicios de análisis y cartografía.\n• Mapbox Inc.: cartografía y cálculo de rutas.\n• Datafast y DeUna: procesamiento de pagos en Ecuador.\n\nTodas estas transferencias se realizan con las garantías adecuadas exigidas por el Art. 54 de la LOPDP, incluyendo: Decisiones de adecuación, Cláusulas contractuales tipo, o certificaciones de privacidad reconocidas.\n\nPuedes obtener información detallada sobre las transferencias internacionales y las garantías aplicables escribiendo a privacidad@goingec.com.',
   },
   {
     number: '14',

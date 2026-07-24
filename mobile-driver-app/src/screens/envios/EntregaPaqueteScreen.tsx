@@ -59,6 +59,59 @@ export function EntregaPaqueteScreen() {
   const [pollNonce, setPollNonce] = useState(0);
   const pollAttemptsRef = useRef(0);
 
+  // ── Multi-punto ────────────────────────────────────────────────────────────
+  // Cargamos el parcel real al montar: la recogida navega con datos genéricos
+  // ('Destinatario'/''), la verdad de los puntos vive en el backend.
+  type Drop = {
+    sequence: number;
+    address?: { address?: string };
+    recipientName?: string;
+    recipientPhone?: string;
+    status?: string;
+  };
+  const [deliveries, setDeliveries] = useState<Drop[]>([]);
+  const [activeSeq,  setActiveSeq]  = useState<number | null>(null);
+  // Datos de destinatario mostrados (para un solo destino): reales del backend.
+  const [recipient,  setRecipient]  = useState({
+    name:    p.recipientName,
+    phone:   p.recipientPhone,
+    address: p.deliveryAddress,
+  });
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('driver_token');
+        const { data } = await axios.get(
+          `${API_BASE_URL}/parcels/${p.envioId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        const dels: Drop[] = Array.isArray(data?.deliveries) ? data.deliveries : [];
+        setDeliveries(dels);
+        // Un solo destino: rellenamos el destinatario real (sobre los genéricos).
+        if (dels.length <= 1) {
+          setRecipient({
+            name:    data?.recipientName    || dels[0]?.recipientName  || p.recipientName,
+            phone:   data?.recipientPhone   || dels[0]?.recipientPhone || p.recipientPhone,
+            address: data?.destination?.address || dels[0]?.address?.address || p.deliveryAddress,
+          });
+        }
+      } catch {
+        /* si falla la carga, seguimos con los params (modo un destino) */
+      }
+    })();
+  }, [p.envioId]);
+
+  const multi = deliveries.length >= 2;
+  const activeDrop = activeSeq != null ? deliveries.find(d => d.sequence === activeSeq) ?? null : null;
+  const entregadas = deliveries.filter(d => d.status === 'delivered').length;
+  // Datos mostrados en la tarjeta DESTINATARIO: el punto activo (multi) o el único.
+  const disp = multi && activeDrop
+    ? { name: activeDrop.recipientName || 'Destinatario', phone: activeDrop.recipientPhone || '', address: activeDrop.address?.address || '' }
+    : recipient;
+  // En multi, el formulario OTP/foto solo aplica una vez elegido un punto pendiente.
+  const showDeliveryForm = !multi || activeSeq != null;
+
   const isRecipientCard = p.paymentMethod === 'card' && p.payerRole === 'recipient'; // C
   const isRecipientCash = p.paymentMethod === 'cash' && p.payerRole === 'recipient'; // D
   const recipientPaid = livePaymentStatus === 'paid';
@@ -205,17 +258,41 @@ export function EntregaPaqueteScreen() {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
-      // Endpoint correcto post audit: PATCH /parcels/:id/deliver con JSON body
-      // (el legacy `/envios/:id/deliver` con FormData nunca existió en el backend).
-      // El backend valida OTP con rate-limit. La foto subimos en otra request si
-      // es necesario — por ahora solo enviamos el otpPin.
-      await axios.patch(
-        `${API_BASE_URL}/parcels/${p.envioId}/deliver`,
-        { otpPin: otp.join(''), photoUrl: photo },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      hapticSuccess();
-      setDelivered(true);
+      const headers = { Authorization: `Bearer ${token}` };
+
+      if (multi && activeSeq != null) {
+        // Envío distribuido: confirmamos ESTE punto por su OTP propio. El envío
+        // completo pasa a 'delivered' cuando el backend reporta allDelivered.
+        const { data } = await axios.patch(
+          `${API_BASE_URL}/parcels/${p.envioId}/deliveries/${activeSeq}/deliver`,
+          { otpPin: otp.join('') },
+          { headers },
+        );
+        setDeliveries(ds => ds.map(d => (d.sequence === activeSeq ? { ...d, status: 'delivered' } : d)));
+        hapticSuccess();
+        if (data?.allDelivered) {
+          setDelivered(true);
+        } else {
+          // Reset para el siguiente punto.
+          setActiveSeq(null);
+          setOtp(['', '', '', '']);
+          setOtpValid(null);
+          setPhoto(null);
+          const faltan = (data?.total ?? deliveries.length) - (data?.entregadas ?? 0);
+          Alert.alert('Punto entregado ✓', `Falta${faltan === 1 ? '' : 'n'} ${faltan} punto${faltan === 1 ? '' : 's'} por entregar.`);
+        }
+      } else {
+        // Un solo destino. Endpoint correcto post audit: PATCH /parcels/:id/deliver
+        // con JSON body (el legacy `/envios/:id/deliver` con FormData nunca existió).
+        // El backend valida OTP con rate-limit.
+        await axios.patch(
+          `${API_BASE_URL}/parcels/${p.envioId}/deliver`,
+          { otpPin: otp.join(''), photoUrl: photo },
+          { headers },
+        );
+        hapticSuccess();
+        setDelivered(true);
+      }
     } catch (err: any) {
       hapticError();
       const msg = err?.response?.data?.message ?? 'No se pudo confirmar la entrega.';
@@ -287,20 +364,68 @@ export function EntregaPaqueteScreen() {
             <Ionicons name="arrow-down-circle" size={16} color={GREEN} />
             <Text style={[s.cardTitleText, { color: GREEN }]}>DESTINATARIO</Text>
           </View>
-          <View style={s.infoRow}>
-            <Ionicons name="person-outline" size={16} color="#9CA3AF" />
-            <Text style={s.infoVal}>{p.recipientName}</Text>
-          </View>
-          <TouchableOpacity style={s.infoRow}>
-            <Ionicons name="call-outline" size={16} color={NAVY} />
-            <Text style={[s.infoVal, { color: NAVY }]}>{p.recipientPhone}</Text>
-            <Ionicons name="chevron-forward" size={14} color={NAVY} />
-          </TouchableOpacity>
-          <View style={[s.infoRow, { alignItems: 'flex-start' }]}>
-            <Ionicons name="location-outline" size={16} color={GREEN} style={{ marginTop: 2 }} />
-            <Text style={s.infoVal} numberOfLines={2}>{p.deliveryAddress}</Text>
-          </View>
+          {multi && !activeDrop ? (
+            <Text style={s.otpHint}>
+              Envío distribuido con {deliveries.length} puntos. Elige abajo el punto que vas a entregar.
+            </Text>
+          ) : (
+            <>
+              <View style={s.infoRow}>
+                <Ionicons name="person-outline" size={16} color="#9CA3AF" />
+                <Text style={s.infoVal}>{disp.name}</Text>
+              </View>
+              {!!disp.phone && (
+                <TouchableOpacity style={s.infoRow}>
+                  <Ionicons name="call-outline" size={16} color={NAVY} />
+                  <Text style={[s.infoVal, { color: NAVY }]}>{disp.phone}</Text>
+                  <Ionicons name="chevron-forward" size={14} color={NAVY} />
+                </TouchableOpacity>
+              )}
+              <View style={[s.infoRow, { alignItems: 'flex-start' }]}>
+                <Ionicons name="location-outline" size={16} color={GREEN} style={{ marginTop: 2 }} />
+                <Text style={s.infoVal} numberOfLines={2}>{disp.address}</Text>
+              </View>
+            </>
+          )}
         </View>
+
+        {/* Checklist de puntos — solo envío distribuido */}
+        {multi && (
+          <View style={s.card}>
+            <View style={s.cardTitle}>
+              <Ionicons name="list-outline" size={16} color={GREEN} />
+              <Text style={[s.cardTitleText, { color: GREEN }]}>PUNTOS DE ENTREGA · {entregadas}/{deliveries.length}</Text>
+            </View>
+            {deliveries.map((d) => {
+              const done   = d.status === 'delivered';
+              const active = d.sequence === activeSeq;
+              return (
+                <TouchableOpacity
+                  key={d.sequence}
+                  style={[s.dropItem, active && s.dropItemActive, done && s.dropItemDone]}
+                  disabled={done}
+                  onPress={() => { setActiveSeq(d.sequence); setOtp(['', '', '', '']); setOtpValid(null); setPhoto(null); hapticLight(); }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[s.dropBadge, done && { backgroundColor: GREEN }, active && { backgroundColor: NAVY }]}>
+                    {done
+                      ? <Ionicons name="checkmark" size={14} color="#fff" />
+                      : <Text style={s.dropBadgeText}>{d.sequence}</Text>}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.dropName, done && { color: '#9CA3AF', textDecorationLine: 'line-through' }]}>{d.recipientName || `Punto ${d.sequence}`}</Text>
+                    <Text style={s.dropAddr} numberOfLines={1}>{d.address?.address || ''}</Text>
+                  </View>
+                  {done
+                    ? <Text style={s.dropDoneTag}>Entregado</Text>
+                    : active
+                      ? <Text style={s.dropActiveTag}>Entregando</Text>
+                      : <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         {/* PAGO — solo si recipient (C o D) */}
         {(isRecipientCard || isRecipientCash) && (
@@ -385,6 +510,8 @@ export function EntregaPaqueteScreen() {
           </View>
         )}
 
+        {showDeliveryForm && (
+        <>
         {/* OTP */}
         <View style={s.card}>
           <View style={s.cardTitle}>
@@ -462,11 +589,14 @@ export function EntregaPaqueteScreen() {
             </TouchableOpacity>
           )}
         </View>
+        </>
+        )}
 
         <View style={{ height: 24 }} />
       </ScrollView>
 
       {/* CTA */}
+      {showDeliveryForm && (
       <View style={s.footer}>
         <TouchableOpacity
           style={[s.confirmBtn, (!otpValid || !photo || loading) && { opacity: 0.5 }]}
@@ -477,11 +607,14 @@ export function EntregaPaqueteScreen() {
           {loading ? <ActivityIndicator color="#fff" /> : (
             <>
               <Ionicons name="checkmark-circle-outline" size={22} color={GOLD} />
-              <Text style={s.confirmBtnText}>Confirmar entrega</Text>
+              <Text style={s.confirmBtnText}>
+                {multi ? `Confirmar punto ${activeSeq}` : 'Confirmar entrega'}
+              </Text>
             </>
           )}
         </TouchableOpacity>
       </View>
+      )}
     </View>
   );
 }
@@ -520,6 +653,24 @@ const s = StyleSheet.create({
     backgroundColor: '#F9FAFB', borderRadius: 10, padding: 10, marginBottom: 6,
   },
   infoVal: { flex: 1, fontSize: 13, fontWeight: '600', color: '#111827' },
+
+  // Checklist multi-punto
+  dropItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#F9FAFB', borderRadius: 12, padding: 10, marginBottom: 8,
+    borderWidth: 2, borderColor: '#F3F4F6',
+  },
+  dropItemActive: { borderColor: NAVY, backgroundColor: '#FFF7F6' },
+  dropItemDone:   { backgroundColor: '#F0FDF4', borderColor: '#D1FAE5' },
+  dropBadge: {
+    width: 26, height: 26, borderRadius: 13, backgroundColor: '#9CA3AF',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  dropBadgeText: { fontSize: 12, fontWeight: '900', color: '#fff' },
+  dropName: { fontSize: 13, fontWeight: '700', color: '#111827' },
+  dropAddr: { fontSize: 11, color: '#9CA3AF', marginTop: 1 },
+  dropDoneTag:   { fontSize: 10, fontWeight: '800', color: GREEN },
+  dropActiveTag: { fontSize: 10, fontWeight: '800', color: NAVY },
 
   otpHint: { fontSize: 11, color: '#6B7280', lineHeight: 16, marginBottom: 14 },
   otpRow:  { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 14 },

@@ -30,7 +30,15 @@ const PACKAGE_TYPES = [
 ] as const;
 
 type PackageType = typeof PACKAGE_TYPES[number]['id'];
-type ScreenView  = 'form' | 'tracking' | 'delivered';
+
+/** Un punto de entrega de un envío distribuido. */
+interface Drop {
+  name: string;
+  phone: string;
+  addr: string;
+  lat: number | null;
+  lon: number | null;
+}
 
 /**
  * 4 esquemas de pago para envíos:
@@ -70,7 +78,6 @@ export function EnviosScreen() {
   const route      = useRoute<RouteProp<{ params: any }, 'params'>>();
   const { user }   = useAuthStore();
 
-  const [view,           setView]          = useState<ScreenView>('form');
   const [pkgType,        setPkgType]       = useState<PackageType>('small');
   const [pkgDesc,        setPkgDesc]       = useState('');
   const [pkgPhoto,       setPkgPhoto]      = useState<string | null>(null);
@@ -79,10 +86,21 @@ export function EnviosScreen() {
   const [recipientPhone, setRecipientPhone]= useState('');
   const [recipientAddr,  setRecipientAddr] = useState('');
   const [loading,        setLoading]       = useState(false);
-  const [otpCode,        setOtpCode]       = useState('');
-  const [trackingRef,    setTrackingRef]   = useState('');
   const [paymentScheme,  setPaymentScheme] = useState<PaymentScheme>('B'); // efectivo por defecto: tarjeta (A/C) deshabilitada hasta integrar pasarela
   const [quotedPrice,    setQuotedPrice]   = useState<number | null>(null);
+
+  // Envío DISTRIBUIDO: varias entregas en una ruta. Cada punto tiene su
+  // destinatario y confirma con SU código OTP. +$5 por dirección extra.
+  const [distributed,  setDistributed] = useState(false);
+  const [drops,        setDrops]       = useState<Drop[]>([{ name: '', phone: '', addr: '', lat: null, lon: null }]);
+  const [editingDrop,  setEditingDrop] = useState<number | null>(null);
+  const patchDrop = (i: number, p: Partial<Drop>) =>
+    setDrops(ds => ds.map((d, j) => (j === i ? { ...d, ...p } : d)));
+
+  // Puntos válidos (con coordenadas). El destino efectivo para cotizar es el
+  // ÚLTIMO punto; el número de puntos define el recargo por dirección extra.
+  const validDrops   = drops.filter(d => d.lat != null && d.lon != null && d.addr.trim());
+  const effDropCount = distributed ? Math.max(1, validDrops.length) : 1;
 
   // Recibir ubicaciones del LocationPicker
   useEffect(() => {
@@ -95,27 +113,43 @@ export function EnviosScreen() {
     if (dst) setRecipientAddr(dst.address);
   }, [route.params?.selectedDelivery]);
 
+  // Retorno del LocationPicker para un PUNTO de entrega (envío distribuido):
+  // se aplica al punto que se estaba editando.
+  useEffect(() => {
+    const loc = route.params?.selectedDropLoc;
+    if (loc?.address && editingDrop != null) {
+      patchDrop(editingDrop, { addr: loc.address, lat: loc.latitude, lon: loc.longitude });
+      setEditingDrop(null);
+    }
+  }, [route.params?.selectedDropLoc]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Destino efectivo para cotizar: el destinatario único, o el ÚLTIMO punto en
+  // distribuido. El nº de puntos define el recargo (+$5 por dirección extra).
+  const lastDrop = validDrops[validDrops.length - 1];
+  const effDestLat = distributed ? (lastDrop?.lat ?? null) : (route.params?.selectedDelivery?.latitude ?? null);
+  const effDestLon = distributed ? (lastDrop?.lon ?? null) : (route.params?.selectedDelivery?.longitude ?? null);
+
   // Cotización autoritativa: cuando hay origen+destino+tamaño, pedimos el precio
-  // real al backend (urbano flat / interurbano por tier). Es lo que se cobrará.
+  // real al backend. Es lo que se cobrará.
   useEffect(() => {
     const pickup = route.params?.selectedPickup;
-    const dropoff = route.params?.selectedDelivery;
     if (
       typeof pickup?.latitude === 'number' && typeof pickup?.longitude === 'number' &&
-      typeof dropoff?.latitude === 'number' && typeof dropoff?.longitude === 'number'
+      typeof effDestLat === 'number' && typeof effDestLon === 'number'
     ) {
       parcelsAPI
         .quote({
           origin: { lat: pickup.latitude, lng: pickup.longitude },
-          destination: { lat: dropoff.latitude, lng: dropoff.longitude },
+          destination: { lat: effDestLat, lng: effDestLon },
           packageSize: pkgType,
+          dropCount: effDropCount,
         })
         .then(({ data }) => setQuotedPrice(typeof data.price === 'number' ? data.price : null))
         .catch(() => setQuotedPrice(null));
     } else {
       setQuotedPrice(null);
     }
-  }, [route.params?.selectedPickup, route.params?.selectedDelivery, pkgType]);
+  }, [route.params?.selectedPickup, effDestLat, effDestLon, effDropCount, pkgType]);
 
   const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
   // Precio mostrado: la cotización autoritativa si ya la tenemos; si no, el
@@ -133,10 +167,22 @@ export function EnviosScreen() {
   };
 
   const validate = () => {
-    if (!senderAddr)     { Alert.alert('Falta dirección', 'Ingresa la dirección de recogida.'); return false; }
-    if (!recipientName)  { Alert.alert('Falta destinatario', 'Ingresa el nombre de quien recibe.'); return false; }
-    if (!recipientPhone) { Alert.alert('Falta teléfono', 'Ingresa el teléfono del destinatario.'); return false; }
-    if (!recipientAddr)  { Alert.alert('Falta dirección', 'Ingresa la dirección de entrega.'); return false; }
+    if (!senderAddr) { Alert.alert('Falta dirección', 'Ingresa la dirección de recogida.'); return false; }
+    if (distributed) {
+      if (validDrops.length < 2) { Alert.alert('Envío distribuido', 'Agrega al menos 2 puntos de entrega con dirección.'); return false; }
+      for (let i = 0; i < drops.length; i++) {
+        const d = drops[i];
+        if (d.addr.trim() || d.name.trim() || d.phone.trim()) {
+          if (!d.name.trim())  { Alert.alert(`Punto ${i + 1}`, 'Falta el nombre del destinatario.'); return false; }
+          if (!d.phone.trim()) { Alert.alert(`Punto ${i + 1}`, 'Falta el teléfono.'); return false; }
+          if (d.lat == null)   { Alert.alert(`Punto ${i + 1}`, 'Elige la dirección de entrega.'); return false; }
+        }
+      }
+    } else {
+      if (!recipientName)  { Alert.alert('Falta destinatario', 'Ingresa el nombre de quien recibe.'); return false; }
+      if (!recipientPhone) { Alert.alert('Falta teléfono', 'Ingresa el teléfono del destinatario.'); return false; }
+      if (!recipientAddr)  { Alert.alert('Falta dirección', 'Ingresa la dirección de entrega.'); return false; }
+    }
     return true;
   };
 
@@ -158,36 +204,45 @@ export function EnviosScreen() {
       });
 
       const apiPayment = schemeToApi(paymentScheme);
+      // Destino principal = destinatario único, o el ÚLTIMO punto en distribuido
+      // (el backend lo re-deriva igual, pero lo enviamos por claridad).
+      const lastValid = validDrops[validDrops.length - 1];
       const { data } = await parcelsAPI.create({
         origin: {
           address:   senderAddr,
           latitude:  pickup?.latitude,
           longitude: pickup?.longitude,
         },
-        destination: {
-          address:   recipientAddr,
-          latitude:  dropoff?.latitude,
-          longitude: dropoff?.longitude,
-        },
+        destination: distributed
+          ? { address: lastValid.addr, latitude: lastValid.lat!, longitude: lastValid.lon! }
+          : { address: recipientAddr, latitude: dropoff?.latitude, longitude: dropoff?.longitude },
         description: descriptionPayload,
         price: { amount: totalPrice, currency: 'USD' },
         packageSize: selectedPkg.id,
         paymentMethod: apiPayment.paymentMethod,
         payerRole:     apiPayment.payerRole,
-        recipientPhone: recipientPhone,
-        recipientName: recipientName,
+        ...(distributed
+          ? {
+              drops: validDrops.map(d => ({
+                address: { address: d.addr, latitude: d.lat!, longitude: d.lon! },
+                recipientName: d.name.trim(),
+                recipientPhone: d.phone.trim(),
+              })),
+            }
+          : { recipientPhone, recipientName }),
       });
 
-      setTrackingRef(data.trackingCode);
-      setOtpCode(data.otpPin);
+      hapticSuccess();
 
-      // Caso A (sender+card): backend devuelve paymentUrl. Abrimos en navegador
-      // para que el usuario pague con widget Datafast/DeUna. Cuando cierre el
-      // navegador, ya está la pantalla de tracking esperando.
+      // Al SEGUIMIENTO REAL (pollea GET /parcels/:id). Antes se mostraba un
+      // tracking FALSO con coordenadas de Quito fijas, ETA inventado y un botón
+      // donde el propio remitente se auto-marcaba "entregado". El OTP viaja
+      // como parámetro para mostrárselo al remitente y que lo comparta.
+      navigation.navigate('EnvioTracking', { parcelId: data.id, otpPin: data.otpPin });
+
+      // Caso A (sender+card): el backend devuelve paymentUrl → abrir el pago
+      // (Datafast/DeUna) después de dejar montado el rastreador.
       if (data.paymentUrl) {
-        hapticSuccess();
-        setView('tracking');
-        // Pequeño delay para que la transición sea suave antes de abrir browser
         setTimeout(() => {
           Linking.openURL(data.paymentUrl!).catch(() =>
             Alert.alert(
@@ -195,11 +250,7 @@ export function EnviosScreen() {
               `Abre manualmente: ${data.paymentUrl}`,
             ),
           );
-        }, 300);
-      } else {
-        // B, C, D: matching arranca inmediato; el cobro ocurre por otra vía.
-        hapticSuccess();
-        setView('tracking');
+        }, 400);
       }
     } catch (err: any) {
       hapticError();
@@ -207,18 +258,6 @@ export function EnviosScreen() {
       Alert.alert('Error', `No se pudo procesar el envío: ${msg}`);
     } finally { setLoading(false); }
   };
-
-  if (view === 'tracking') return (
-    <TrackingView ref_={trackingRef} otpCode={otpCode}
-      senderAddr={senderAddr} recipientName={recipientName}
-      recipientAddr={recipientAddr} recipientPhone={recipientPhone}
-      pkgType={selectedPkg} totalPrice={totalPrice}
-      onDelivered={() => setView('delivered')} navigation={navigation} />
-  );
-
-  if (view === 'delivered') return (
-    <DeliveredView recipientName={recipientName} navigation={navigation} />
-  );
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -254,7 +293,18 @@ export function EnviosScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* QUIÉN RECIBE */}
+          {/* Modo de entrega: un destino o varios (distribuido) */}
+          <View style={s.modeRow}>
+            {([{ k: false, l: 'Un destino', d: 'Una entrega' }, { k: true, l: 'Varios destinos', d: 'Reparto · +$5 c/u' }] as const).map(m => (
+              <TouchableOpacity key={String(m.k)} style={[s.modeBtn, distributed === m.k && s.modeBtnOn]} onPress={() => { setDistributed(m.k); if (m.k) setDrops(ds => (ds.length < 2 ? [...ds, { name: '', phone: '', addr: '', lat: null, lon: null }] : ds)); hapticLight(); }}>
+                <Text style={[s.modeLabel, distributed === m.k && { color: RED }]}>{m.l}</Text>
+                <Text style={s.modeDesc}>{m.d}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* QUIÉN RECIBE — un destino */}
+          {!distributed && (
           <View style={s.card}>
             <View style={s.cardTitle}><Ionicons name="arrow-down-circle-outline" size={15} color={RED} /><Text style={s.cardTitleText}>QUIÉN RECIBE</Text></View>
             <View style={s.fieldRow}>
@@ -272,6 +322,43 @@ export function EnviosScreen() {
             </TouchableOpacity>
             <View style={s.otpNote}><Ionicons name="lock-closed-outline" size={12} color={RED} /><Text style={s.otpNoteText}>El destinatario confirmará con código OTP al recibir</Text></View>
           </View>
+          )}
+
+          {/* PUNTOS DE ENTREGA — varios destinos */}
+          {distributed && (
+          <View style={s.card}>
+            <View style={s.cardTitle}><Ionicons name="arrow-down-circle-outline" size={15} color={RED} /><Text style={s.cardTitleText}>PUNTOS DE ENTREGA</Text></View>
+            <Text style={s.multiHint}>Cada punto tiene su destinatario y confirma con su propio código OTP. Se añade $5 por cada dirección extra.</Text>
+            {drops.map((d, i) => (
+              <View key={i} style={s.dropCard}>
+                <View style={s.dropHead}>
+                  <Text style={s.dropNum}>Punto {i + 1}</Text>
+                  {drops.length > 1 && (
+                    <TouchableOpacity onPress={() => setDrops(ds => ds.filter((_, j) => j !== i))}>
+                      <Text style={s.dropRemove}>Quitar</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={s.fieldRow}>
+                  <Ionicons name="person-outline" size={15} color="#9CA3AF" />
+                  <TextInput style={s.fieldInput} placeholder="Nombre del destinatario" placeholderTextColor="#9CA3AF" value={d.name} onChangeText={v => patchDrop(i, { name: v })} />
+                </View>
+                <View style={s.fieldRow}>
+                  <Ionicons name="call-outline" size={15} color="#9CA3AF" />
+                  <TextInput style={s.fieldInput} placeholder="Teléfono" placeholderTextColor="#9CA3AF" value={d.phone} onChangeText={v => patchDrop(i, { phone: v })} keyboardType="phone-pad" />
+                </View>
+                <TouchableOpacity style={s.fieldRow} onPress={() => { setEditingDrop(i); navigation.navigate('LocationPicker', { title: `Dirección ${i + 1}`, mode: 'destination', accentColor: RED, returnScreen: 'Envios', paramKey: 'selectedDropLoc' }); }}>
+                  <Ionicons name="location-outline" size={15} color={RED} />
+                  <Text style={d.addr ? s.fieldVal : s.fieldPh} numberOfLines={1}>{d.addr || 'Dirección de entrega...'}</Text>
+                  <Text style={s.fieldAction}>Buscar</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity style={s.addDrop} onPress={() => { setDrops(ds => [...ds, { name: '', phone: '', addr: '', lat: null, lon: null }]); hapticLight(); }}>
+              <Text style={s.addDropText}>+ Agregar punto de entrega</Text>
+            </TouchableOpacity>
+          </View>
+          )}
 
           {/* EL PAQUETE */}
           <View style={s.card}>
@@ -344,140 +431,6 @@ export function EnviosScreen() {
   );
 }
 
-function TrackingView({ ref_, otpCode, senderAddr, recipientName, recipientAddr, recipientPhone, pkgType, totalPrice, onDelivered, navigation }: any) {
-  const cameraRef = useRef<MapboxGL.Camera>(null);
-  // Coordenadas de Quito por defecto — en producción vendrían del envío real
-  const QUITO: [number, number] = [-78.4678, -0.1807];
-
-  return (
-    <View style={s.container}>
-
-      {/* ── MAPA TIEMPO REAL ── */}
-      <MapboxGL.MapView
-        style={StyleSheet.absoluteFillObject}
-        styleURL={MapboxGL.StyleURL.Street}
-        logoEnabled={false}
-        attributionEnabled={false}
-      >
-        <MapboxGL.Camera
-          ref={cameraRef}
-          zoomLevel={13}
-          centerCoordinate={QUITO}
-          animationMode="flyTo"
-        />
-        <MapboxGL.UserLocation visible />
-        {/* Pin origen (rojo) */}
-        <MapboxGL.PointAnnotation id="env-origin" coordinate={QUITO}>
-          <View style={s.mapPinRed} />
-        </MapboxGL.PointAnnotation>
-      </MapboxGL.MapView>
-
-      {/* ── OVERLAY DEGRADADO ── */}
-      <View style={s.mapOverlayGrad} pointerEvents="none" />
-
-      {/* ── HEADER FLOTANTE ── */}
-      <View style={s.trackFloatHeader}>
-        <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={22} color="#111827" />
-        </TouchableOpacity>
-        <Image source={require('../../../assets/going-logo-envios.png')} style={s.headerLogo} resizeMode="contain" />
-        <Text style={{ marginLeft: 'auto', fontSize: 11, color: '#9CA3AF', fontWeight: '600' }}>#{ref_}</Text>
-      </View>
-
-      {/* ── STATUS PILL FLOTANTE ── */}
-      <View style={s.statusPill}>
-        <View style={s.statusDot} />
-        <View style={{ flex: 1 }}>
-          <Text style={s.statusText}>Conductor recogiendo el paquete</Text>
-          <Text style={s.statusEta}>Estimado: ~15 minutos</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={16} color={RED} />
-      </View>
-
-      {/* ── BOTTOM SHEET ── */}
-      <View style={s.trackBottomSheet}>
-        <View style={s.trackHandle} />
-        <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={s.statusCard}>
-          <View style={s.statusDot} />
-          <View style={{ flex: 1 }}><Text style={s.statusText}>Conductor recogiendo el paquete</Text><Text style={s.statusEta}>Estimado: ~15 minutos</Text></View>
-          <Ionicons name="chevron-forward" size={16} color={RED} />
-        </View>
-        <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
-          <View style={s.partyRow}>
-            <View style={[s.partyIcon, { backgroundColor: '#FFF0EF' }]}><Ionicons name="arrow-up-circle" size={20} color={RED} /></View>
-            <View style={{ flex: 1 }}><Text style={s.partyLabel}>REMITENTE</Text><Text style={s.partyName}>Remitente</Text><Text style={s.partyAddr} numberOfLines={1}>{senderAddr}</Text></View>
-          </View>
-          <View style={s.partyDivider} />
-          <View style={s.partyRow}>
-            <View style={[s.partyIcon, { backgroundColor: '#F0FDF4' }]}><Ionicons name="arrow-down-circle" size={20} color={GREEN} /></View>
-            <View style={{ flex: 1 }}><Text style={s.partyLabel}>DESTINATARIO</Text><Text style={s.partyName}>{recipientName}</Text><Text style={s.partyAddr} numberOfLines={1}>{recipientAddr}</Text><Text style={s.partyPhone}>{recipientPhone}</Text></View>
-            <View style={s.otpBox}><Text style={s.otpLabel}>Código OTP</Text><Text style={s.otpCode}>{otpCode}</Text></View>
-          </View>
-        </View>
-        <View style={s.card}>
-          <View style={s.cardTitle}><Ionicons name="navigate-outline" size={14} color={RED} /><Text style={s.cardTitleText}>RUTA DEL ENVÍO</Text></View>
-          <View style={s.routeStep}><View style={[s.routeDot, { backgroundColor: RED }]} /><View><Text style={s.routeAddr} numberOfLines={1}>{senderAddr}</Text><Text style={s.routeTime}>Recogida · Ahora</Text></View></View>
-          <View style={s.routeLine} />
-          <View style={s.routeStep}><View style={[s.routeDot, { backgroundColor: GREEN }]} /><View><Text style={s.routeAddr} numberOfLines={1}>{recipientAddr}</Text><Text style={s.routeTime}>Entrega estimada · 2h 30min</Text></View></View>
-        </View>
-        <View style={s.card}>
-          <View style={s.cardTitle}><Ionicons name="cube-outline" size={14} color={RED} /><Text style={s.cardTitleText}>PAQUETE · {pkgType.label.toUpperCase()}</Text></View>
-          <View style={s.pkgSummaryRow}>
-            <Text style={{ fontSize: 26 }}>{pkgType.icon}</Text>
-            <View style={{ flex: 1 }}><Text style={s.pkgSummaryName}>{pkgType.label} · {pkgType.desc}</Text><Text style={s.pkgSummaryPrice}>${totalPrice.toFixed(2)}</Text></View>
-            <View style={s.paidBadge}><Ionicons name="checkmark-circle" size={14} color={GREEN} /><Text style={s.paidText}>Pagado</Text></View>
-          </View>
-        </View>
-          <View style={{ height: 16 }} />
-        </ScrollView>
-        <View style={s.trackFooter}>
-          <TouchableOpacity style={s.trackCallBtn}><Ionicons name="call-outline" size={18} color={RED} /><Text style={s.trackCallText}>Llamar</Text></TouchableOpacity>
-          <TouchableOpacity style={s.trackShareBtn}><Ionicons name="share-outline" size={18} color="#374151" /><Text style={s.trackShareText}>Compartir</Text></TouchableOpacity>
-          <TouchableOpacity style={s.trackMapBtn} onPress={onDelivered}><Ionicons name="checkmark-circle-outline" size={18} color="#fff" /><Text style={s.trackMapText}>Confirmar entrega</Text></TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function DeliveredView({ recipientName, navigation }: any) {
-  return (
-    <View style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}><Ionicons name="chevron-back" size={22} color="#111827" /></TouchableOpacity>
-        <Image source={require('../../../assets/going-logo-envios.png')} style={s.headerLogo} resizeMode="contain" />
-      </View>
-      <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
-        <View style={[s.card, { alignItems: 'center', paddingVertical: 24 }]}>
-          <View style={s.deliveredIcon}><Ionicons name="checkmark-circle" size={52} color={GREEN} /></View>
-          <Text style={s.deliveredTitle}>¡Paquete entregado!</Text>
-          <Text style={s.deliveredSub}>Entregado a {recipientName} · Confirmado con código OTP</Text>
-        </View>
-        <View style={s.card}>
-          <View style={s.cardTitle}><Ionicons name="camera-outline" size={14} color={RED} /><Text style={s.cardTitleText}>FOTO DE ENTREGA</Text></View>
-          <Image source={require('../../../assets/entrega.png')} style={s.deliveryPhoto} resizeMode="cover" />
-          <Text style={s.deliveryCaption}>Foto tomada por el conductor al momento de la entrega · {new Date().toLocaleString('es-EC')}</Text>
-        </View>
-        <View style={s.card}>
-          <View style={s.cardTitle}><Ionicons name="receipt-outline" size={14} color={RED} /><Text style={s.cardTitleText}>RESUMEN</Text></View>
-          <View style={s.summaryRow}><Text style={s.summaryLbl}>Estado</Text><Text style={[s.summaryVal, { color: GREEN }]}>✓ Entregado</Text></View>
-          <View style={s.summaryRow}><Text style={s.summaryLbl}>Destinatario</Text><Text style={s.summaryVal}>{recipientName}</Text></View>
-          <View style={s.summaryRow}><Text style={s.summaryLbl}>Hora</Text><Text style={s.summaryVal}>{new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}</Text></View>
-          <View style={s.summaryRow}><Text style={s.summaryLbl}>OTP</Text><Text style={[s.summaryVal, { color: GREEN }]}>✓ Verificado</Text></View>
-        </View>
-        <View style={{ height: 24 }} />
-      </ScrollView>
-      <View style={s.footer}>
-        <TouchableOpacity style={[s.ctaBtn, { flex: 1 }]} onPress={() => navigation.navigate('Home')} activeOpacity={0.85}>
-          <Text style={s.ctaBtnText}>Nuevo envío</Text>
-          <Ionicons name="add-circle-outline" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   header: { backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 52, paddingBottom: 10, paddingHorizontal: 16, borderBottomWidth: 3, borderBottomColor: RED },
@@ -499,6 +452,20 @@ const s = StyleSheet.create({
   verifiedText:  { fontSize: 10, fontWeight: '700', color: GREEN },
   otpNote: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFF0EF', borderRadius: 10, padding: 8, borderWidth: 1, borderColor: '#FECACA', marginTop: 4 },
   otpNoteText: { flex: 1, fontSize: 10, color: RED, fontWeight: '600' },
+  // Modo un destino / varios destinos
+  modeRow:    { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  modeBtn:    { flex: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 8, alignItems: 'center', borderWidth: 2, borderColor: '#F3F4F6', backgroundColor: '#F9FAFB' },
+  modeBtnOn:  { borderColor: RED, backgroundColor: '#FFF0EF' },
+  modeLabel:  { fontSize: 12, fontWeight: '800', color: '#374151' },
+  modeDesc:   { fontSize: 9, color: '#9CA3AF', marginTop: 2 },
+  // Puntos de entrega (distribuido)
+  multiHint:  { fontSize: 10, color: '#6B7280', marginBottom: 10, lineHeight: 15 },
+  dropCard:   { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 10, marginBottom: 10, borderWidth: 1.5, borderColor: '#F3F4F6' },
+  dropHead:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  dropNum:    { fontSize: 11, fontWeight: '800', color: RED },
+  dropRemove: { fontSize: 11, fontWeight: '700', color: '#9CA3AF' },
+  addDrop:    { borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1.5, borderStyle: 'dashed', borderColor: RED, backgroundColor: '#FFF7F6' },
+  addDropText:{ fontSize: 12, fontWeight: '800', color: RED },
   pkgRow:       { flexDirection: 'row', gap: 8, marginBottom: 10 },
   pkgCard:      { flex: 1, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 2, borderColor: '#F3F4F6', backgroundColor: '#F9FAFB' },
   pkgCardActive:{ borderColor: RED, backgroundColor: '#FFF0EF' },

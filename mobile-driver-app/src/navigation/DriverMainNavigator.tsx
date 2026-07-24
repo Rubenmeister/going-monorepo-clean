@@ -26,6 +26,7 @@ import { ActiveRideScreen }       from '@screens/ride/ActiveRideScreen';
 import { SharedActiveRideScreen } from '@screens/ride/SharedActiveRideScreen';
 import type { SharedActiveRideParams } from '@screens/ride/SharedActiveRideScreen';
 import { WithdrawScreen }         from '@screens/earnings/WithdrawScreen';
+import { BankAccountScreen }      from '@screens/earnings/BankAccountScreen';
 import { TripHistoryScreen }      from '@screens/earnings/TripHistoryScreen';
 import { DocumentsScreen }        from '@screens/profile/DocumentsScreen';
 import { DriverRatingsScreen }    from '@screens/profile/DriverRatingsScreen';
@@ -77,6 +78,7 @@ export type DriverMainStackParamList = {
   };
   SharedActiveRide: SharedActiveRideParams;
   Withdraw:    { availableBalance: number; currency: string };
+  BankAccount: undefined;
   Wallet:      undefined;
   Documents:   undefined;
   Ratings:     undefined;
@@ -197,6 +199,12 @@ function DriverStack({ navigation }: any) {
         name="Withdraw"
         component={WithdrawScreen}
         options={{ title: 'Retirar Ganancias', presentation: 'modal' }}
+      />
+
+      <Stack.Screen
+        name="BankAccount"
+        component={BankAccountScreen}
+        options={{ title: 'Datos bancarios' }}
       />
 
       {/* Sidebar-accessible screens */}

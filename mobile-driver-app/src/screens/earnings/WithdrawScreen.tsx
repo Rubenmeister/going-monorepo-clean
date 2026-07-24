@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  Linking,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
@@ -25,7 +24,6 @@ const GOING_BLUE = '#FF4C41';
 const GOING_YELLOW = '#FFD253';
 const GOING_GREEN = '#10B981';
 
-const MP_WEB_URL = 'https://www.mercadopago.com/activities';
 
 const WITHDRAWAL_METHODS = [
   // Mercado Pago oculto: no opera como medio de retiro en Ecuador.
@@ -33,7 +31,7 @@ const WITHDRAWAL_METHODS = [
   {
     id: 'bank',
     label: 'Transferencia Bancaria',
-    description: 'CBU / CVU — hasta 24 horas hábiles',
+    description: 'A tu cuenta bancaria — 24 a 48 horas hábiles',
     badge: '🏦',
     color: '#374151',
   },
@@ -71,28 +69,19 @@ export function WithdrawScreen() {
     setLoading(true);
 
     try {
-      if (method === 'mp') {
-        // Open MP web dashboard — driver manages payout from their own MP account
-        const supported = await Linking.canOpenURL(MP_WEB_URL);
-        if (supported) {
-          await Linking.openURL(MP_WEB_URL);
-        } else {
-          Alert.alert('Error', 'No se pudo abrir Mercado Pago.');
-        }
-      } else {
-        // Real bank transfer via API
-        const token = await AsyncStorage.getItem('driver_token');
-        await axios.post(
-          `${API_BASE}/drivers/me/withdraw`,
-          { amount: parseFloat(amount), paymentMethod: 'bank_account' },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        Alert.alert(
-          'Transferencia solicitada ✓',
-          `Tu retiro de $${parseFloat(amount).toFixed(2)} ${displayCurrency} fue enviado. Llegará en 1–2 días hábiles.`,
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
-        );
-      }
+      // Transferencia bancaria vía API. (Mercado Pago se eliminó: no opera como
+      // medio de retiro en Ecuador; el único método es la cuenta bancaria.)
+      const token = await AsyncStorage.getItem('driver_token');
+      await axios.post(
+        `${API_BASE}/drivers/me/withdraw`,
+        { amount: parseFloat(amount), paymentMethod: 'bank_account' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      Alert.alert(
+        'Transferencia solicitada ✓',
+        `Tu retiro de $${parseFloat(amount).toFixed(2)} ${displayCurrency} fue enviado. Llegará en 1–2 días hábiles.`,
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
     } catch {
       Alert.alert('Error', 'No se pudo procesar el retiro. Intenta de nuevo.');
     } finally {
@@ -110,6 +99,17 @@ export function WithdrawScreen() {
           <Text style={styles.balanceCurrency}>{displayCurrency}</Text>
         </Text>
       </View>
+
+      {/* Acceso a datos bancarios: sin cuenta registrada, la transferencia no
+          puede llegar. */}
+      <TouchableOpacity
+        style={styles.bankLink}
+        onPress={() => (navigation as any).navigate('BankAccount')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.bankLinkText}>🏦  Configura o edita tu cuenta bancaria</Text>
+        <Text style={styles.bankLinkArrow}>›</Text>
+      </TouchableOpacity>
 
       {/* Amount input */}
       <Text style={styles.sectionTitle}>¿Cuánto deseas retirar?</Text>
@@ -175,8 +175,8 @@ export function WithdrawScreen() {
       </TouchableOpacity>
 
       <Text style={styles.note}>
-        Los retiros a MP son instantáneos. Transferencias bancarias pueden
-        demorar hasta 1 día hábil.
+        Las transferencias a tu cuenta bancaria pueden demorar de 1 a 2 días
+        hábiles en reflejarse.
       </Text>
     </ScrollView>
   );
@@ -214,6 +214,18 @@ const styles = StyleSheet.create({
     color: '#222',
     marginBottom: 12,
   },
+  bankLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF0EF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 24,
+  },
+  bankLinkText: { fontSize: 14, fontWeight: '700', color: '#374151' },
+  bankLinkArrow: { fontSize: 22, fontWeight: '800', color: GOING_BLUE },
   amountRow: {
     flexDirection: 'row',
     alignItems: 'center',
